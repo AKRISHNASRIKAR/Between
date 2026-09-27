@@ -40,6 +40,21 @@
           "image": "./assets/splash-icon.png",
           "imageWidth": 120
         }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "enableSceneSupport": true
+          }
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Love Notes needs your photos so you can add them to your shared journal.",
+          "cameraPermission": "Love Notes uses the camera so you can snap a memory for your shared journal."
+        }
       ]
     ],
     "experiments": {

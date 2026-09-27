@@ -1,0 +1,112 @@
+{
+  "questions": [
+    { "slug": "d-better-cook", "kind": "who", "promptSelf": "Who's the better cook?" },
+    { "slug": "d-ready-longer", "kind": "who", "promptSelf": "Who takes longer to get ready?" },
+    { "slug": "d-forget-birthday", "kind": "who", "promptSelf": "Who's more likely to forget a birthday?" },
+    { "slug": "d-picks-movie", "kind": "who", "promptSelf": "Who picks the movie more often?" },
+    { "slug": "d-morning-person", "kind": "who", "promptSelf": "Who's the morning person?" },
+    { "slug": "d-texts-first", "kind": "who", "promptSelf": "Who texts first after an argument?" },
+    { "slug": "d-blanket", "kind": "who", "promptSelf": "Who hogs the blanket?" },
+    { "slug": "d-trivia", "kind": "who", "promptSelf": "Who would win at trivia night?" },
+    { "slug": "d-foodie", "kind": "who", "promptSelf": "Who's the bigger foodie?" },
+    { "slug": "d-sings", "kind": "who", "promptSelf": "Who sings in the shower?" },
+    {
+      "slug": "d-beach-mountains",
+      "kind": "choice",
+      "promptSelf": "Beach or mountains?",
+      "promptGuess": "What would {partner} pick?",
+      "options": [
+        { "id": "beach", "label": "Beach", "glyph": "🏖️" },
+        { "id": "mountains", "label": "Mountains", "glyph": "⛰️" }
+      ]
+    },
+    {
+      "slug": "d-in-or-out",
+      "kind": "choice",
+      "promptSelf": "Stay in or go out tonight?",
+      "promptGuess": "What would {partner} pick?",
+      "options": [{ "id": "in", "label": "Stay in", "glyph": "🏠" }, { "id": "out", "label": "Go out", "glyph": "✨" }]
+    },
+    {
+      "slug": "d-cats-dogs",
+      "kind": "choice",
+      "promptSelf": "Cats or dogs?",
+      "promptGuess": "What would {partner} pick?",
+      "options": [{ "id": "cats", "label": "Cats", "glyph": "🐈" }, { "id": "dogs", "label": "Dogs", "glyph": "🐕" }]
+    },
+    {
+      "slug": "d-sunrise-sunset",
+      "kind": "choice",
+      "promptSelf": "Sunrise or sunset?",
+      "promptGuess": "What would {partner} pick?",
+      "options": [
+        { "id": "sunrise", "label": "Sunrise", "glyph": "🌅" },
+        { "id": "sunset", "label": "Sunset", "glyph": "🌇" }
+      ]
+    },
+    {
+      "slug": "d-sweet-savory",
+      "kind": "choice",
+      "promptSelf": "Sweet or savoury?",
+      "promptGuess": "What would {partner} pick?",
+      "options": [
+        { "id": "sweet", "label": "Sweet", "glyph": "🍩" },
+        { "id": "savory", "label": "Savoury", "glyph": "🥨" }
+      ]
+    },
+    {
+      "slug": "d-books-movies",
+      "kind": "choice",
+      "promptSelf": "The book or the movie?",
+      "promptGuess": "What would {partner} pick?",
+      "options": [
+        { "id": "book", "label": "The book", "glyph": "📖" },
+        { "id": "movie", "label": "The movie", "glyph": "🎬" }
+      ]
+    },
+    {
+      "slug": "d-plan-wing",
+      "kind": "choice",
+      "promptSelf": "Plan the trip or wing it?",
+      "promptGuess": "What would {partner} pick?",
+      "options": [
+        { "id": "plan", "label": "Plan it", "glyph": "🗂️" },
+        { "id": "wing", "label": "Wing it", "glyph": "🪁" }
+      ]
+    },
+    {
+      "slug": "d-rain-sun",
+      "kind": "choice",
+      "promptSelf": "Rainy day or sunny day?",
+      "promptGuess": "What would {partner} pick?",
+      "options": [{ "id": "rain", "label": "Rainy", "glyph": "🌧️" }, { "id": "sun", "label": "Sunny", "glyph": "☀️" }]
+    },
+    {
+      "slug": "d-call-text",
+      "kind": "choice",
+      "promptSelf": "Call or text?",
+      "promptGuess": "What would {partner} pick?",
+      "options": [{ "id": "call", "label": "Call", "glyph": "📞" }, { "id": "text", "label": "Text", "glyph": "💬" }]
+    },
+    {
+      "slug": "d-early-late",
+      "kind": "choice",
+      "promptSelf": "Early to bed or night owl?",
+      "promptGuess": "What would {partner} pick?",
+      "options": [
+        { "id": "early", "label": "Early to bed", "glyph": "😴" },
+        { "id": "owl", "label": "Night owl", "glyph": "🦉" }
+      ]
+    },
+    { "slug": "d-smile-today", "kind": "open", "promptSelf": "What made you smile today?" },
+    { "slug": "d-one-word", "kind": "open", "promptSelf": "One word for us this week?" },
+    { "slug": "d-looking-forward", "kind": "open", "promptSelf": "What are you looking forward to?" },
+    { "slug": "d-tiny-thing", "kind": "open", "promptSelf": "A tiny thing {partner} does that you love?" },
+    { "slug": "d-next-trip", "kind": "open", "promptSelf": "Where should our next trip be?" },
+    { "slug": "d-try-together", "kind": "open", "promptSelf": "One thing you'd like us to try together?" },
+    { "slug": "d-best-meal", "kind": "open", "promptSelf": "Best thing you've eaten recently?" },
+    { "slug": "d-song-stuck", "kind": "open", "promptSelf": "What song is stuck in your head?" },
+    { "slug": "d-small-win", "kind": "open", "promptSelf": "A small win from this week?" },
+    { "slug": "d-comfort-show", "kind": "open", "promptSelf": "Your comfort show right now?" }
+  ]
+}

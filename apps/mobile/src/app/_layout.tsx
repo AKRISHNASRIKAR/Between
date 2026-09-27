@@ -15,6 +15,7 @@ import { StatusBar } from "expo-status-bar";
 import { useCallback, useEffect, useRef } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import { DevFab } from "@/components/DevFab";
 import { palette, ToastProvider } from "@/design-system";
 import { type FlowState, flowState, restorablePath } from "@/features/space/flow";
 import { FlowContext } from "@/features/space/flow-context";
@@ -94,10 +95,19 @@ function RootNavigator() {
             <Stack.Screen name="(tabs)" />
             <Stack.Screen name="pet" options={{ animation: "slide_from_bottom" }} />
             <Stack.Screen name="settings" options={{ animation: "slide_from_right" }} />
+            <Stack.Screen name="vibes" options={{ animation: "slide_from_right" }} />
+            <Stack.Screen name="notes/new" options={{ animation: "slide_from_bottom" }} />
+            <Stack.Screen name="notes/[id]" options={{ animation: "slide_from_right" }} />
+            <Stack.Screen name="quiz/[id]" options={{ animation: "slide_from_right" }} />
+            <Stack.Screen name="daily" options={{ animation: "slide_from_right" }} />
+            <Stack.Screen name="journal/new" options={{ animation: "slide_from_bottom" }} />
+            <Stack.Screen name="journal/[id]" options={{ animation: "slide_from_right" }} />
           </Stack.Protected>
           <Stack.Screen name="invite/[code]" />
           <Stack.Screen name="dev/gallery" options={{ animation: "slide_from_right" }} />
+          <Stack.Screen name="dev/partner" options={{ animation: "slide_from_right" }} />
         </Stack>
+        {state === "waiting" || state === "naming" || state === "ready" ? <DevFab /> : null}
       </RealtimeProvider>
     </FlowContext.Provider>
   );

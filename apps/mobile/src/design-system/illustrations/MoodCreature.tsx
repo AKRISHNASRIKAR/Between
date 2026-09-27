@@ -20,7 +20,7 @@ function fillFor(mood: MoodId) {
 const ink = palette.ink;
 
 /** Shapes live in a 100×100 box. */
-const SHAPES: Record<MoodId, { body: string; extra?: (fill: string) => React.ReactNode; face: Face }> = {
+const SHAPES: Record<MoodId, { body: string; extra?: (backdrop: string) => React.ReactNode; face: Face }> = {
   joyful: {
     body: polarPath(50, 52, () => 27),
     extra: () => (
@@ -142,9 +142,9 @@ const SHAPES: Record<MoodId, { body: string; extra?: (fill: string) => React.Rea
   },
   insecure: {
     body: polarPath(50, 56, () => 20),
-    extra: () => (
+    extra: (backdrop) => (
       <G>
-        <Rect x={10} y={60} width={80} height={24} fill={palette.canvas} />
+        <Rect x={10} y={60} width={80} height={24} fill={backdrop} />
         <Line x1={10} y1={60} x2={90} y2={60} stroke={ink} strokeWidth={stroke.illustration} strokeLinecap="round" />
       </G>
     ),
@@ -237,9 +237,16 @@ function Eyes({ face, color }: { face: Face; color: string }) {
   );
 }
 
-type Props = { mood: MoodId; size?: number /** dim silhouette for "not shared yet" */; silhouette?: boolean };
+type Props = {
+  mood: MoodId;
+  size?: number;
+  /** dim silhouette for "not shared yet" */
+  silhouette?: boolean;
+  /** Color behind the creature (the "insecure" wall blends into it). */
+  backdrop?: string;
+};
 
-export function MoodCreature({ mood, size = 96, silhouette }: Props) {
+export function MoodCreature({ mood, size = 96, silhouette, backdrop = palette.canvas }: Props) {
   const shape = SHAPES[mood];
   const fill = silhouette ? palette.line : fillFor(mood);
   const faceColor =
@@ -251,7 +258,7 @@ export function MoodCreature({ mood, size = 96, silhouette }: Props) {
       ) : (
         <>
           <RisoPath d={shape.body} fill={fill} />
-          {shape.extra?.(fill)}
+          {shape.extra?.(backdrop)}
           <Eyes face={shape.face} color={faceColor} />
           {shape.face.brows ? (
             <Path d={shape.face.brows} stroke={faceColor} strokeWidth={2} strokeLinecap="round" fill="none" />

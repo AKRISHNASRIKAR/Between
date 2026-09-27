@@ -30,6 +30,7 @@ import {
   Text,
   useToast,
 } from "@/design-system";
+import { useWaitingNotes } from "@/features/notes/NoteWaiting";
 import { partnerOf, useMe, usePetInteract } from "@/features/space/hooks";
 import { useRealtime } from "@/features/space/realtime-sync";
 import { humanError } from "@/lib/errors";
@@ -51,6 +52,7 @@ export function PetStage({ size: requested, onPressPet, compact }: Props) {
   const partner = partnerOf(space, myId);
   const { online, lastInteraction } = useRealtime();
   const interact = usePetInteract(space?.id);
+  const waiting = useWaitingNotes();
   const toast = useToast();
 
   const [reaction, setReaction] = useState<PetReaction | null>(null);
@@ -143,35 +145,38 @@ export function PetStage({ size: requested, onPressPet, compact }: Props) {
     partnerName: partner?.displayName ?? null,
     partnerOnline: !!partner && online.includes(partner.id),
     partnerAction,
+    noteWaiting: waiting.length > 0,
     seed: dayOfYear(),
   });
 
   return (
     <View className="items-center" style={{ gap: compact ? 12 : 20 }}>
+      {/* Speech bubble: tail is a sibling centered under the bubble (no % offsets). */}
       <Animated.View
         key={line}
         entering={FadeIn.duration(dur.base)}
-        style={{
-          backgroundColor: palette.paper,
-          borderRadius: radius.md,
-          borderWidth: stroke.regular,
-          borderColor: palette.ink,
-          paddingHorizontal: 14,
-          paddingVertical: 8,
-          maxWidth: 280,
-          alignSelf: "center",
-        }}
+        style={{ alignItems: "center" }}
         accessibilityLiveRegion="polite"
       >
-        <Text variant="body-sm" align="center">
-          {line}
-        </Text>
         <View
           style={{
-            position: "absolute",
-            bottom: -7,
-            left: "50%",
-            marginLeft: -6,
+            backgroundColor: palette.paper,
+            borderRadius: radius.md,
+            borderWidth: stroke.regular,
+            borderColor: palette.ink,
+            paddingHorizontal: 14,
+            paddingVertical: 8,
+            maxWidth: 280,
+            zIndex: 1,
+          }}
+        >
+          <Text variant="body-sm" align="center">
+            {line}
+          </Text>
+        </View>
+        <View
+          style={{
+            marginTop: -7,
             width: 12,
             height: 12,
             backgroundColor: palette.paper,
@@ -179,6 +184,7 @@ export function PetStage({ size: requested, onPressPet, compact }: Props) {
             borderBottomWidth: stroke.regular,
             borderColor: palette.ink,
             transform: [{ rotate: "45deg" }],
+            zIndex: 2,
           }}
         />
       </Animated.View>

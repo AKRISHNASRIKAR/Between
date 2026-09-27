@@ -4,7 +4,12 @@ import { z } from "zod";
 import { validate } from "../../lib/validate";
 import { requireSpaceMember } from "../../middleware/space";
 import type { AppEnv } from "../../types";
+import { futureRoutes } from "../future/routes";
+import { journalRoutes, mediaRoutes, memoryRoutes } from "../journal/routes";
+import { vibeRoutes } from "../moods/routes";
+import { noteRoutes } from "../notes/routes";
 import { petRoutes } from "../pet/routes";
+import { dailyRoutes, quizRoutes } from "../quizzes/routes";
 import {
   acceptInvite,
   createInvite,
@@ -31,7 +36,15 @@ const spaceScoped = new Hono<AppEnv>()
     await leaveSpace(c.get("scope"));
     return c.body(null, 204);
   })
-  .route("/pet", petRoutes);
+  .route("/pet", petRoutes)
+  .route("/vibe", vibeRoutes)
+  .route("/notes", noteRoutes)
+  .route("/quizzes", quizRoutes)
+  .route("/daily", dailyRoutes)
+  .route("/future", futureRoutes)
+  .route("/journal", journalRoutes)
+  .route("/media", mediaRoutes)
+  .route("/memories", memoryRoutes);
 
 export const spaceRoutes = new Hono<AppEnv>()
   .post("/", validate("json", CreateSpaceInput), async (c) =>

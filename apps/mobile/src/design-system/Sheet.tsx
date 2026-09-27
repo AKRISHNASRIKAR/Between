@@ -1,5 +1,5 @@
 import { type ReactNode, useEffect, useState } from "react";
-import { KeyboardAvoidingView, Modal, Platform, Pressable, useWindowDimensions, View } from "react-native";
+import { KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, useWindowDimensions, View } from "react-native";
 import { Gesture, GestureDetector, GestureHandlerRootView } from "react-native-gesture-handler";
 import Animated, { runOnJS, useAnimatedStyle, useSharedValue, withSpring, withTiming } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -76,7 +76,14 @@ export function Sheet({ open, onClose, children, accessibilityLabel }: Props) {
                 <View style={{ width: 36, height: 4, borderRadius: 2, backgroundColor: palette["line-strong"] }} />
               </View>
             </GestureDetector>
-            <View className="px-5">{children}</View>
+            <ScrollView
+              style={{ flexGrow: 0 }}
+              contentContainerStyle={{ paddingHorizontal: 20 }}
+              keyboardShouldPersistTaps="handled"
+              showsVerticalScrollIndicator={false}
+            >
+              {children}
+            </ScrollView>
           </Animated.View>
         </KeyboardAvoidingView>
       </GestureHandlerRootView>

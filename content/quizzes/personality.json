@@ -1,0 +1,70 @@
+{
+  "slug": "how-i-work",
+  "category": "personality",
+  "title": "How I work",
+  "subtitle": "What recharges you, what winds you up.",
+  "sort": 30,
+  "questions": [
+    {
+      "slug": "recharge",
+      "kind": "choice",
+      "promptSelf": "How do you recharge?",
+      "promptGuess": "How does {partner} recharge?",
+      "options": [
+        { "id": "alone", "label": "Alone time", "glyph": "🎧" },
+        { "id": "people", "label": "Around people", "glyph": "🫶" },
+        { "id": "outside", "label": "Getting outside", "glyph": "🌳" },
+        { "id": "making", "label": "Making something", "glyph": "🎨" }
+      ]
+    },
+    {
+      "slug": "planner",
+      "kind": "choice",
+      "promptSelf": "When it comes to plans, you're…",
+      "promptGuess": "When it comes to plans, {partner} is…",
+      "options": [
+        { "id": "planner", "label": "A planner", "glyph": "📋" },
+        { "id": "spontaneous", "label": "Spontaneous", "glyph": "🎲" },
+        { "id": "between", "label": "Somewhere in between", "glyph": "⚖️" },
+        { "id": "what", "label": "Plans? What plans?", "glyph": "🤷" }
+      ]
+    },
+    {
+      "slug": "competitive",
+      "kind": "choice",
+      "promptSelf": "Secretly competitive about…",
+      "promptGuess": "{partner} is secretly competitive about…",
+      "options": [
+        { "id": "games", "label": "Board games", "glyph": "🎯" },
+        { "id": "cooking", "label": "Cooking", "glyph": "👩‍🍳" },
+        { "id": "right", "label": "Being right", "glyph": "🧐" },
+        { "id": "sports", "label": "Sports", "glyph": "🏸" }
+      ]
+    },
+    {
+      "slug": "happiest",
+      "kind": "choice",
+      "promptSelf": "You're happiest when…",
+      "promptGuess": "{partner} is happiest when…",
+      "options": [
+        { "id": "learning", "label": "Learning something", "glyph": "📚" },
+        { "id": "caring", "label": "Looking after someone", "glyph": "🤲" },
+        { "id": "cozy", "label": "Cozy and warm", "glyph": "🧣" },
+        { "id": "adventure", "label": "On an adventure", "glyph": "🗺️" }
+      ]
+    },
+    {
+      "slug": "after-argument",
+      "kind": "choice",
+      "promptSelf": "After a disagreement you need…",
+      "promptGuess": "After a disagreement {partner} needs…",
+      "options": [
+        { "id": "space", "label": "A little space", "glyph": "🌫️" },
+        { "id": "talk", "label": "To talk it through now", "glyph": "🗣️" },
+        { "id": "write", "label": "To write it down", "glyph": "✍️" },
+        { "id": "laugh", "label": "A laugh to reset", "glyph": "😅" }
+      ]
+    },
+    { "slug": "unknown-fact", "kind": "open", "promptSelf": "Something most people don't know about you?" }
+  ]
+}

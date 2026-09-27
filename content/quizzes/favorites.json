@@ -1,0 +1,70 @@
+{
+  "slug": "favorites-round",
+  "category": "favorites",
+  "title": "Favorites round",
+  "subtitle": "Quick picks. No overthinking.",
+  "sort": 20,
+  "questions": [
+    {
+      "slug": "fav-season",
+      "kind": "choice",
+      "promptSelf": "Favourite season?",
+      "promptGuess": "{partner}'s favourite season?",
+      "options": [
+        { "id": "spring", "label": "Spring", "glyph": "🌸" },
+        { "id": "summer", "label": "Summer", "glyph": "☀️" },
+        { "id": "monsoon", "label": "Monsoon", "glyph": "🌧️" },
+        { "id": "winter", "label": "Winter", "glyph": "❄️" }
+      ]
+    },
+    {
+      "slug": "fav-genre",
+      "kind": "choice",
+      "promptSelf": "Movie night pick?",
+      "promptGuess": "{partner}'s movie night pick?",
+      "options": [
+        { "id": "romcom", "label": "Rom-com", "glyph": "💞" },
+        { "id": "thriller", "label": "Thriller", "glyph": "🔪" },
+        { "id": "animated", "label": "Animated", "glyph": "🧸" },
+        { "id": "docs", "label": "Documentary", "glyph": "🎥" }
+      ]
+    },
+    {
+      "slug": "fav-time",
+      "kind": "choice",
+      "promptSelf": "Best time of day?",
+      "promptGuess": "{partner}'s best time of day?",
+      "options": [
+        { "id": "early", "label": "Early morning", "glyph": "🌅" },
+        { "id": "afternoon", "label": "Lazy afternoon", "glyph": "🌤️" },
+        { "id": "golden", "label": "Golden hour", "glyph": "🌇" },
+        { "id": "late", "label": "Late night", "glyph": "🌙" }
+      ]
+    },
+    {
+      "slug": "fav-drink",
+      "kind": "choice",
+      "promptSelf": "Go-to drink?",
+      "promptGuess": "{partner}'s go-to drink?",
+      "options": [
+        { "id": "coffee", "label": "Coffee", "glyph": "☕" },
+        { "id": "tea", "label": "Tea", "glyph": "🍵" },
+        { "id": "juice", "label": "Fresh juice", "glyph": "🧃" },
+        { "id": "cocoa", "label": "Hot chocolate", "glyph": "🍫" }
+      ]
+    },
+    {
+      "slug": "fav-spot",
+      "kind": "choice",
+      "promptSelf": "Favourite spot at home?",
+      "promptGuess": "{partner}'s favourite spot at home?",
+      "options": [
+        { "id": "bed", "label": "Bed, obviously", "glyph": "🛏️" },
+        { "id": "kitchen", "label": "The kitchen", "glyph": "🍳" },
+        { "id": "window", "label": "By the window", "glyph": "🪟" },
+        { "id": "couch", "label": "The couch", "glyph": "🛋️" }
+      ]
+    },
+    { "slug": "fav-smell", "kind": "open", "promptSelf": "Your favourite smell in the world?" }
+  ]
+}

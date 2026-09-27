@@ -1,0 +1,37 @@
+{
+  "slug": "us-two",
+  "category": "relationship",
+  "title": "Us two",
+  "subtitle": "Our story, from both sides.",
+  "sort": 40,
+  "questions": [
+    { "slug": "who-said-it-first", "kind": "who", "promptSelf": "Who said \"I love you\" first?" },
+    { "slug": "who-fell-first", "kind": "who", "promptSelf": "Who fell first?" },
+    {
+      "slug": "fav-together",
+      "kind": "choice",
+      "promptSelf": "Favourite thing to do together?",
+      "promptGuess": "{partner}'s favourite thing to do together?",
+      "options": [
+        { "id": "cook", "label": "Cooking", "glyph": "🍝" },
+        { "id": "walk", "label": "Long walks", "glyph": "🚶" },
+        { "id": "movies", "label": "Movie nights", "glyph": "🍿" },
+        { "id": "trips", "label": "Little trips", "glyph": "🧳" }
+      ]
+    },
+    {
+      "slug": "ideal-date",
+      "kind": "choice",
+      "promptSelf": "Ideal date?",
+      "promptGuess": "{partner}'s ideal date?",
+      "options": [
+        { "id": "fancy", "label": "A fancy dinner", "glyph": "🕯️" },
+        { "id": "picnic", "label": "A picnic", "glyph": "🧺" },
+        { "id": "new", "label": "Trying something new", "glyph": "🎳" },
+        { "id": "in", "label": "A cozy night in", "glyph": "🫖" }
+      ]
+    },
+    { "slug": "first-impression", "kind": "open", "promptSelf": "Your first impression of {partner}?" },
+    { "slug": "fav-memory", "kind": "open", "promptSelf": "Your favourite memory of us so far?" }
+  ]
+}

@@ -8,6 +8,8 @@ export type PetLineContext = {
   partnerOnline: boolean;
   /** Partner just interacted with the pet (realtime). */
   partnerAction?: "feed" | "pet" | "play" | null;
+  /** Someone left the viewer an unopened note. */
+  noteWaiting?: boolean;
   /** Deterministic pick (e.g. day-of-year) so the line doesn't flicker on re-render. */
   seed: number;
 };
@@ -19,6 +21,7 @@ export function petLine(c: PetLineContext): string {
   if (c.partnerAction === "feed") return `${p} just gave me a snack!`;
   if (c.partnerAction === "pet") return `${p} is giving me head scratches.`;
   if (c.partnerAction === "play") return `${p} threw the ball!`;
+  if (c.noteWaiting) return pick([`${p} left you something!`, `psst… I'm holding a note from ${p}`], c.seed);
   if (c.partnerOnline) return pick([`You're both here!`, `Oh! ${p} is here too.`, `Everyone's home.`], c.seed);
 
   switch (c.mood) {

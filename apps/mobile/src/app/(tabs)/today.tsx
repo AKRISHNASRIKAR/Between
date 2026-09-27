@@ -1,9 +1,11 @@
 import { router } from "expo-router";
 import { View } from "react-native";
 import { Avatar, PressableScale, Screen, Text } from "@/design-system";
+import { NoteWaitingMoment } from "@/features/notes/NoteWaiting";
 import { PetStage } from "@/features/pet/PetStage";
 import { partnerOf, useMe } from "@/features/space/hooks";
 import { useRealtime } from "@/features/space/realtime-sync";
+import { VibeSection } from "@/features/vibe/VibeSection";
 
 const weekday = (d: Date) => d.toLocaleDateString(undefined, { weekday: "long" });
 const monthDay = (d: Date) => d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
@@ -49,8 +51,12 @@ export default function Today() {
           </View>
         ) : null}
 
+        <NoteWaitingMoment />
+
+        <VibeSection />
+
         <View className="pt-2">
-          <PetStage size={180} onPressPet={() => router.push("/pet")} />
+          <PetStage size={170} onPressPet={() => router.push("/pet")} />
         </View>
       </View>
     </Screen>

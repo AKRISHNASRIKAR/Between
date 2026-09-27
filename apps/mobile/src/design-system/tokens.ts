@@ -192,3 +192,24 @@ export const lift = {
 
 export const stroke = { hairline: 1, regular: 1.5, illustration: 2 } as const;
 export const opacity = { disabled: 0.4, dimmed: 0.6 } as const;
+
+/** Card fill for a mood: contrasts with the creature's own fill (DESIGN §7.3 VibeCard). */
+export function moodCardFill(fam: Family | "neutral", tone: "base" | "soft"): string {
+  if (fam === "neutral") return palette.sunken;
+  return tone === "base" ? palette[`${fam}-soft`] : palette[`${fam}-base`];
+}
+
+/** Note paper stocks (DESIGN §7.3 NoteCard). */
+export const paperFill = {
+  cream: palette.paper,
+  blush: palette["pink-soft"],
+  kraft: palette["paper-kraft"],
+  sky: palette["sky-soft"],
+} as const;
+
+/** Stable small tilt (degrees) from an id, so a note always sits at the same angle. */
+export function seededTilt(id: string, max = 1.5): number {
+  let h = 0;
+  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) | 0;
+  return ((Math.abs(h) % 1000) / 1000) * max * 2 - max;
+}

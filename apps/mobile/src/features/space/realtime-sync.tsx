@@ -1,6 +1,7 @@
-import type { PetInteractionKind, ServerEvent } from "@lovenotes/contracts";
+import type { Me, PetInteractionKind, ServerEvent } from "@lovenotes/contracts";
 import { useQueryClient } from "@tanstack/react-query";
 import { createContext, type ReactNode, useContext, useEffect, useState } from "react";
+import { noteKeys, patchNoteCaches } from "@/features/notes/hooks";
 import { realtime } from "@/lib/realtime";
 import { setCachedPet } from "./hooks";
 import { keys } from "./keys";
@@ -37,6 +38,36 @@ export function RealtimeProvider({ active, children }: { active: boolean; childr
             setState((s) => ({ ...s, lastInteraction: { ...interaction, at: Date.now() } }));
           }
           break;
+        case "note.created":
+        case "note.updated":
+        case "note.deleted": {
+          const sid = qc.getQueryData<Me>(keys.me)?.space?.id;
+          if (!sid) break;
+          if (e.t === "note.updated") patchNoteCaches(qc, sid, e.note);
+          qc.invalidateQueries({ queryKey: noteKeys.all(sid) });
+          break;
+        }
+        case "quiz.updated": {
+          const sid = qc.getQueryData<Me>(keys.me)?.space?.id;
+          if (sid) qc.invalidateQueries({ queryKey: ["space", sid, "quiz"] });
+          break;
+        }
+        case "future.changed": {
+          const sid = qc.getQueryData<Me>(keys.me)?.space?.id;
+          if (sid) qc.invalidateQueries({ queryKey: ["space", sid, "future"] });
+          break;
+        }
+        case "journal.changed": {
+          const sid = qc.getQueryData<Me>(keys.me)?.space?.id;
+          if (sid) qc.invalidateQueries({ queryKey: ["space", sid, "journal"] });
+          break;
+        }
+        case "mood.shared":
+        case "mood.unshared": {
+          const sid = qc.getQueryData<Me>(keys.me)?.space?.id;
+          if (sid) qc.invalidateQueries({ queryKey: ["space", sid, "vibe"] });
+          break;
+        }
         case "space.member_joined":
         case "space.updated":
         case "space.closed":

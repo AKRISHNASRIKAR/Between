@@ -76,6 +76,7 @@ export default function Settings() {
         </Section>
         {__DEV__ ? (
           <Section title="Developer">
+            <Row label="Simulated partner" onPress={() => router.push("/dev/partner")} />
             <Row label="Design system gallery" onPress={() => router.push("/dev/gallery")} />
           </Section>
         ) : null}

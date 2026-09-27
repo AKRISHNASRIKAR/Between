@@ -1,0 +1,70 @@
+{
+  "slug": "little-things-about-me",
+  "category": "about_me",
+  "title": "Little things about me",
+  "subtitle": "The small stuff that makes you, you.",
+  "sort": 10,
+  "questions": [
+    {
+      "slug": "ideal-sunday",
+      "kind": "choice",
+      "promptSelf": "What's your ideal Sunday?",
+      "promptGuess": "What's {partner}'s ideal Sunday?",
+      "options": [
+        { "id": "slow", "label": "Sleep in, slow breakfast", "glyph": "🥐" },
+        { "id": "explore", "label": "Out exploring somewhere new", "glyph": "🧭" },
+        { "id": "friends", "label": "Seeing friends", "glyph": "🍻" },
+        { "id": "nothing", "label": "Doing absolutely nothing", "glyph": "🛋️" }
+      ]
+    },
+    {
+      "slug": "comfort-food",
+      "kind": "choice",
+      "promptSelf": "Pick your comfort food.",
+      "promptGuess": "What's {partner}'s comfort food?",
+      "options": [
+        { "id": "pizza", "label": "Pizza", "glyph": "🍕" },
+        { "id": "home", "label": "Something from home", "glyph": "🍲" },
+        { "id": "noodles", "label": "Noodles", "glyph": "🍜" },
+        { "id": "sweet", "label": "Anything sweet", "glyph": "🍫" }
+      ]
+    },
+    {
+      "slug": "pet-peeve",
+      "kind": "choice",
+      "promptSelf": "Your biggest pet peeve?",
+      "promptGuess": "What's {partner}'s biggest pet peeve?",
+      "options": [
+        { "id": "chewing", "label": "Loud chewing", "glyph": "😬" },
+        { "id": "late", "label": "People running late", "glyph": "⏰" },
+        { "id": "mess", "label": "Messy spaces", "glyph": "🧦" },
+        { "id": "slow", "label": "Slow walkers", "glyph": "🐢" }
+      ]
+    },
+    {
+      "slug": "dream-trip",
+      "kind": "choice",
+      "promptSelf": "Dream holiday?",
+      "promptGuess": "{partner}'s dream holiday?",
+      "options": [
+        { "id": "beach", "label": "Beach and sunsets", "glyph": "🏝️" },
+        { "id": "mountains", "label": "Mountains and quiet", "glyph": "🏔️" },
+        { "id": "city", "label": "A big, loud city", "glyph": "🌆" },
+        { "id": "road", "label": "A long road trip", "glyph": "🚗" }
+      ]
+    },
+    {
+      "slug": "when-stressed",
+      "kind": "choice",
+      "promptSelf": "When you're stressed, you…",
+      "promptGuess": "When {partner} is stressed, they…",
+      "options": [
+        { "id": "quiet", "label": "Go quiet", "glyph": "🤫" },
+        { "id": "talk", "label": "Talk it out", "glyph": "💬" },
+        { "id": "busy", "label": "Get busy", "glyph": "🧹" },
+        { "id": "snacks", "label": "Need snacks", "glyph": "🍪" }
+      ]
+    },
+    { "slug": "happy-song", "kind": "open", "promptSelf": "A song that instantly makes you happy?" }
+  ]
+}

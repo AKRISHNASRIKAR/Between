@@ -14,6 +14,33 @@ const ROUTES: Array<[method: string, path: string, body?: unknown]> = [
   ["GET", "/pet"],
   ["POST", "/pet/interactions", { id: "0192f000-0000-7000-8000-000000000000", kind: "feed" }],
   ["POST", "/pet/name", { action: "propose", name: "x" }],
+  ["GET", `/vibe?date=${new Date().toISOString().slice(0, 10)}`],
+  [
+    "PUT",
+    `/vibe/${new Date().toISOString().slice(0, 10)}`,
+    { id: "0192f000-0000-7000-8000-000000000001", mood: "calm", visibility: "shared" },
+  ],
+  ["GET", `/vibe/history?month=${new Date().toISOString().slice(0, 7)}`],
+  ["GET", "/notes"],
+  ["POST", "/notes", { id: "0192f000-0000-7000-8000-000000000002", body: "hi", paper: "cream" }],
+  ["GET", "/notes/0192f000-0000-7000-8000-000000000003"],
+  ["POST", "/notes/0192f000-0000-7000-8000-000000000003/open"],
+  ["GET", "/quizzes"],
+  ["GET", "/quizzes/0192f000-0000-7000-8000-000000000004"],
+  ["POST", "/quizzes/0192f000-0000-7000-8000-000000000004/complete"],
+  ["GET", "/daily"],
+  ["GET", "/future"],
+  ["POST", "/future", { id: "0192f000-0000-7000-8000-000000000005", title: "x" }],
+  ["POST", "/future/0192f000-0000-7000-8000-000000000006/complete"],
+  ["GET", "/journal/pages"],
+  ["POST", "/journal/pages", { id: "0192f000-0000-7000-8000-000000000007", pageDate: "2026-01-01" }],
+  ["GET", "/journal/pages/0192f000-0000-7000-8000-000000000008"],
+  ["GET", "/memories"],
+  [
+    "POST",
+    "/media/uploads",
+    { id: "0192f000-0000-7000-8000-000000000009", mime: "image/png", bytes: 10, thumbBytes: 10, width: 1, height: 1 },
+  ],
 ];
 
 let intruder: Client;

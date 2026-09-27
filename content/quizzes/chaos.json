@@ -1,0 +1,15 @@
+{
+  "slug": "chaos-couple",
+  "category": "chaos",
+  "title": "Who's more likely…",
+  "subtitle": "Point fingers. Lovingly.",
+  "sort": 50,
+  "questions": [
+    { "slug": "zombie", "kind": "who", "promptSelf": "Who survives a zombie apocalypse longer?" },
+    { "slug": "spend-money", "kind": "who", "promptSelf": "Who spends all the money first?" },
+    { "slug": "get-lost", "kind": "who", "promptSelf": "Who gets lost first on holiday?" },
+    { "slug": "famous", "kind": "who", "promptSelf": "Who accidentally becomes famous?" },
+    { "slug": "cries-movie", "kind": "who", "promptSelf": "Who cries at a movie first?" },
+    { "slug": "ten-pets", "kind": "who", "promptSelf": "Who comes home with ten pets?" }
+  ]
+}

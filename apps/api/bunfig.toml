@@ -1,0 +1,3 @@
+[test]
+# Integration tests hit a real Postgres; allow for slow machines / CI.
+timeout = 20000

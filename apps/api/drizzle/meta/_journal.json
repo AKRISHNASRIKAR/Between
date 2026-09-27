@@ -15,6 +15,41 @@
       "when": 1790536066064,
       "tag": "0001_member_limit",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1790541069006,
+      "tag": "0002_moods_notifications",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1790541897154,
+      "tag": "0003_notes",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1790542619725,
+      "tag": "0004_quizzes",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1790544464160,
+      "tag": "0005_future",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1790544734945,
+      "tag": "0006_journal",
+      "breakpoints": true
     }
   ]
 }

@@ -6,7 +6,8 @@ export function BackButton({ onPress, label = "Back" }: { onPress?: () => void; 
   return (
     <PressableScale
       accessibilityLabel={label}
-      onPress={onPress ?? (() => router.back())}
+      // If history was cleared (e.g. a guard flipped after hatching), go home instead of doing nothing.
+      onPress={onPress ?? (() => (router.canGoBack() ? router.back() : router.replace("/")))}
       hitSlop={8}
       style={{
         width: 44,

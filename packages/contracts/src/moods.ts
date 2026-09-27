@@ -44,3 +44,43 @@ export const MOODS: Record<MoodId, MoodDef> = {
   hurt: { id: "hurt", label: "Hurt", family: "pink", tone: "soft", valence: "negative" },
   angry: { id: "angry", label: "Angry", family: "coral", tone: "base", valence: "negative" },
 };
+
+export const MoodVisibility = z.enum(["private", "shared"]);
+export type MoodVisibility = z.infer<typeof MoodVisibility>;
+
+export const MoodCheckin = z.object({
+  id: z.uuid(),
+  userId: z.uuid(),
+  localDate: z.iso.date(),
+  mood: MoodId,
+  note: z.string().nullable(),
+  visibility: MoodVisibility,
+  sharedAt: z.string().nullable(),
+  updatedAt: z.string(),
+});
+export type MoodCheckin = z.infer<typeof MoodCheckin>;
+
+export const UpsertMoodInput = z.object({
+  /** Client id — used only when this is the day's first check-in. */
+  id: z.uuid(),
+  mood: MoodId,
+  note: z.string().trim().max(140).nullable().optional(),
+  visibility: MoodVisibility,
+});
+export type UpsertMoodInput = z.infer<typeof UpsertMoodInput>;
+
+export const Vibe = z.object({
+  date: z.iso.date(),
+  me: MoodCheckin.nullable(),
+  /** Only ever a *shared* check-in. A private mood is indistinguishable from none (SPEC D11). */
+  partner: MoodCheckin.nullable(),
+  observation: z.string().nullable(),
+});
+export type Vibe = z.infer<typeof Vibe>;
+
+export const VibeMonth = z.object({
+  month: z.string().regex(/^\d{4}-\d{2}$/),
+  mine: z.array(MoodCheckin),
+  partner: z.array(MoodCheckin),
+});
+export type VibeMonth = z.infer<typeof VibeMonth>;

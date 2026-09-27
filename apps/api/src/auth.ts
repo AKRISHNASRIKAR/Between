@@ -28,6 +28,7 @@ export const auth = betterAuth({
       otpLength: 6,
       expiresIn: 600,
       allowedAttempts: 5,
+      ...(env.DEV_FIXED_OTP && { generateOTP: () => env.DEV_FIXED_OTP }),
       async sendVerificationOTP({ email, otp }) {
         await sendEmail({
           to: email,

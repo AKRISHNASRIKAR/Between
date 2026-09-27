@@ -16,6 +16,7 @@ import {
   Text,
   useToast,
 } from "@/design-system";
+import { useCreateDevPartner } from "@/features/dev/hooks";
 import { useCreateInvite, useLeaveSpace, useMe } from "@/features/space/hooks";
 import { inviteStore } from "@/features/space/invite-store";
 import { humanError } from "@/lib/errors";
@@ -33,6 +34,7 @@ export default function Waiting() {
   const [confirmCancel, setConfirmCancel] = useState(false);
   const create = useCreateInvite(space?.id);
   const leave = useLeaveSpace(space?.id);
+  const devPartner = useCreateDevPartner();
 
   const fresh = useCallback(() => {
     if (!space) return;
@@ -128,6 +130,18 @@ export default function Waiting() {
             </View>
           ) : null}
         </View>
+        {__DEV__ ? (
+          <Button
+            fullWidth
+            variant="accent"
+            family="purple"
+            label="Dev: simulate your partner joining"
+            loading={devPartner.isPending}
+            onPress={() =>
+              devPartner.mutate("Ananya", { onError: (e) => toast({ kind: "error", message: humanError(e) }) })
+            }
+          />
+        ) : null}
         <View className="items-center">
           <Button variant="quiet" label="Sign out" onPress={signOut} />
         </View>
