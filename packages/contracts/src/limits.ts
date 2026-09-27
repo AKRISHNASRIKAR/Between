@@ -1,0 +1,20 @@
+/** Every product limit lives here. Never inline these numbers elsewhere. */
+export const LIMITS = {
+  displayName: { min: 1, max: 40 },
+  spaceName: { min: 1, max: 40 },
+  petName: { min: 1, max: 24 },
+  noteBody: { min: 1, max: 500 },
+  moodNote: { max: 140 },
+  quizOpenAnswer: { max: 280 },
+  journalTitle: { max: 80 },
+  journalBlockBody: { max: 5000 },
+  mediaCaption: { max: 280 },
+  futureTitle: { min: 1, max: 120 },
+  futureNote: { max: 500 },
+  inviteCodeLength: 8,
+  inviteTtlDays: 7,
+  otpLength: 6,
+  membersPerSpace: 2,
+  pageSize: { default: 30, max: 100 },
+  closedSpaceRetentionDays: 30,
+} as const;
