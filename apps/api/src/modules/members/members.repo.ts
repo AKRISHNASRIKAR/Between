@@ -71,12 +71,6 @@ export const membersRepo = {
   },
 };
 
-/** "you" for the viewer, the member's name for everyone else. */
-export function nameResolver(members: MemberRow[], viewerId: string) {
-  return (userId: string) =>
-    userId === viewerId ? "you" : members.find((m) => m.id === userId)?.name || "your person";
-}
-
 export const displayName = (members: MemberRow[], userId: string) =>
   members.find((m) => m.id === userId)?.name || "Your person";
 

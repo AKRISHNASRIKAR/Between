@@ -9,14 +9,8 @@ export const ageDays = (p: PetRow, now = new Date()) =>
 
 export const petName = (p: PetRow) => p.name ?? SPECIES[p.species as SpeciesId]?.defaultName ?? "Your pet";
 
-/** Row → API shape, as seen by one viewer (mood uses their local hour; reasons say "you"). */
-export function toPetView(
-  p: PetRow,
-  viewer: { timezone: string },
-  recentCare: CareMoment[],
-  name: (userId: string) => string,
-  now = new Date(),
-): Pet {
+/** Row → API shape. Mood uses the viewer's local hour (a pet is sleepy at your night). */
+export function toPetView(p: PetRow, viewer: { timezone: string }, recentCare: CareMoment[], now = new Date()): Pet {
   const stage = p.stage as Pet["stage"];
   return {
     id: p.id,
@@ -28,6 +22,6 @@ export function toPetView(
     mood: derivePetMood({ ...p, stage }, now, localHour(now, viewer.timezone)),
     hatchedAt: p.hatchedAt?.toISOString() ?? null,
     ageDays: ageDays(p, now),
-    wellbeing: deriveWellbeing({ ...p, stage }, recentCare, name, now),
+    wellbeing: deriveWellbeing({ ...p, stage }, recentCare, now),
   };
 }

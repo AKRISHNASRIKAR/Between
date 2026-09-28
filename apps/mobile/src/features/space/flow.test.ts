@@ -35,7 +35,7 @@ const me = (over: { name?: string | null; members?: number; petName?: string | n
             fullness: { value: 0.5, word: "content" },
             energy: { value: 0.5, word: "playful" },
             love: { value: 0.5, word: "loved" },
-            reasons: [],
+            lastCare: [],
           },
         },
       },

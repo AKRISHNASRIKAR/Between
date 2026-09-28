@@ -111,6 +111,12 @@ export default function Settings() {
                 value={p.future}
                 onChange={(v) => setPref({ future: v })}
               />
+              <ToggleRow
+                label="Pet updates"
+                hint={`Good news from ${space?.pet.name ?? "your pet"} — at most one a day`}
+                value={p.petUpdates}
+                onChange={(v) => setPref({ petUpdates: v })}
+              />
               <View style={{ paddingVertical: 12, gap: 10 }}>
                 <Text variant="body">Quiet hours</Text>
                 <View className="flex-row flex-wrap gap-2">

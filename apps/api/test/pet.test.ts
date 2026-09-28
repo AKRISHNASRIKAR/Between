@@ -21,7 +21,7 @@ function captureEvents() {
 }
 
 describe("pet well-being", () => {
-  test("never below the floor, and care fills it with a reason naming who cared", async () => {
+  test("never below the floor, and care fills it, recording who cared", async () => {
     const { a, b, spaceId } = await pairedCouple();
     const before = (await a.req("GET", `/spaces/${spaceId}/pet`)).json;
     for (const k of ["fullness", "energy", "love"] as const)
@@ -30,7 +30,8 @@ describe("pet well-being", () => {
     await b.req("POST", `/spaces/${spaceId}/pet/interactions`, care("feed"));
     const after = (await a.req("GET", `/spaces/${spaceId}/pet`)).json;
     expect(after.wellbeing.fullness.value).toBeGreaterThan(before.wellbeing.fullness.value);
-    expect(after.wellbeing.reasons.join(" ")).toContain("Ananya");
+    const bId = (await b.req("GET", "/me")).json.profile.id;
+    expect(after.wellbeing.lastCare).toContainEqual(expect.objectContaining({ kind: "feed", byUserId: bId }));
   });
 });
 

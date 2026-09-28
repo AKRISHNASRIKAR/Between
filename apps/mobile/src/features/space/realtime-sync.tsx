@@ -2,6 +2,7 @@ import type { Me, PetInteractionKind, ServerEvent } from "@lovenotes/contracts";
 import { useQueryClient } from "@tanstack/react-query";
 import { createContext, type ReactNode, useContext, useEffect, useState } from "react";
 import { noteKeys, patchNoteCaches } from "@/features/notes/hooks";
+import { petKeys } from "@/features/pet/hooks";
 import { realtime } from "@/lib/realtime";
 import { setCachedPet } from "./hooks";
 import { keys } from "./keys";
@@ -31,13 +32,16 @@ export function RealtimeProvider({ active, children }: { active: boolean; childr
             online: e.online ? [...new Set([...s.online, e.userId])] : s.online.filter((u) => u !== e.userId),
           }));
           break;
-        case "pet.updated":
+        case "pet.updated": {
           setCachedPet(qc, e.pet);
+          const sid = qc.getQueryData<Me>(keys.me)?.space?.id;
+          if (sid) qc.invalidateQueries({ queryKey: petKeys.timeline(sid) });
           if (e.interaction) {
             const interaction = e.interaction;
             setState((s) => ({ ...s, lastInteraction: { ...interaction, at: Date.now() } }));
           }
           break;
+        }
         case "note.created":
         case "note.updated":
         case "note.deleted": {

@@ -20,28 +20,15 @@ function settle(last: Date | null, hours: number, now: Date): number {
 
 const word = (v: number, high: string, mid: string, low: string) => (v >= 0.8 ? high : v >= 0.55 ? mid : low);
 
-export function ago(at: Date, now: Date): string {
-  const h = (now.getTime() - at.getTime()) / HOUR_MS;
-  if (h < 1) return "just now";
-  if (h < 12) return `${Math.floor(h)}h ago`;
-  if (h < 36) return "yesterday";
-  return `${Math.floor(h / 24)} days ago`;
-}
-
 /**
  * Well-being (CONTEXT "Well-being", ADR 0003): three soft states derived from recent care.
- * Nothing drains to empty; the lowest any state goes is "calm". `name(userId)` returns
- * "you" for the viewer and the partner's name otherwise.
+ * Nothing drains to empty; the lowest any state goes is "calm". The result is the same for
+ * both members (it's broadcast as-is), so it names no one — the app phrases `lastCare` per viewer.
  */
-export function deriveWellbeing(
-  p: WellbeingInput,
-  recent: CareMoment[],
-  name: (userId: string) => string,
-  now: Date,
-): PetWellbeing {
+export function deriveWellbeing(p: WellbeingInput, recent: CareMoment[], now: Date): PetWellbeing {
   if (p.stage === "egg") {
     const calm = { value: WELLBEING_FLOOR, word: "cozy" };
-    return { fullness: calm, energy: calm, love: calm, reasons: ["Warm in the nest, waiting to hatch"] };
+    return { fullness: calm, energy: calm, love: calm, lastCare: [] };
   }
   const loveFrom =
     [p.lastPettedAt, p.lastSharedActivityAt]
@@ -51,19 +38,15 @@ export function deriveWellbeing(
   const energy = settle(p.lastPlayedAt, 24, now);
   const love = settle(loveFrom, 36, now);
 
-  const VERB = { feed: "Fed", pet: "Petted", play: "Played with" } as const;
   const latest = new Map<string, CareMoment>();
   for (const c of [...recent].sort((a, b) => b.at.getTime() - a.at.getTime()))
     if (!latest.has(c.kind)) latest.set(c.kind, c);
-  const reasons = [...latest.values()]
-    .slice(0, 3)
-    .map((c) => `${VERB[c.kind]} by ${name(c.byUserId)} ${ago(c.at, now)}`);
-  if (reasons.length === 0) reasons.push("Resting and happy to see you");
+  const lastCare = [...latest.values()].map((c) => ({ kind: c.kind, byUserId: c.byUserId, at: c.at.toISOString() }));
 
   return {
     fullness: { value: fullness, word: word(fullness, "full", "content", "peckish") },
     energy: { value: energy, word: word(energy, "bouncy", "playful", "cozy") },
     love: { value: love, word: word(love, "adored", "loved", "calm") },
-    reasons,
+    lastCare,
   };
 }

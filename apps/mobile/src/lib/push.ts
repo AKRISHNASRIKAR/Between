@@ -1,3 +1,4 @@
+import type { NoticePillar } from "@lovenotes/contracts";
 import Constants from "expo-constants";
 import * as Notifications from "expo-notifications";
 import { router } from "expo-router";
@@ -5,15 +6,31 @@ import { useEffect } from "react";
 import { Platform } from "react-native";
 import { api, unwrap } from "./api";
 
-// Foreground: show a quiet banner (realtime already updates the screen).
+// In the foreground the app shows its own themed notice instead of the system banner.
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
-    shouldShowBanner: true,
+    shouldShowBanner: false,
     shouldShowList: true,
     shouldPlaySound: false,
     shouldSetBadge: false,
   }),
 });
+
+export type ForegroundPush = { title: string; body: string; url: string; pillar: NoticePillar };
+
+const PILLARS = new Set<string>(["today", "know", "notes", "remember", "future", "pet"]);
+
+/** A push that arrived while the app is open, handed to the in-app notice host. */
+export function onForegroundPush(fn: (p: ForegroundPush) => void) {
+  const sub = Notifications.addNotificationReceivedListener((n) => {
+    const { title, body, data } = n.request.content;
+    const url = typeof data?.url === "string" ? data.url : "/";
+    const pillar =
+      typeof data?.pillar === "string" && PILLARS.has(data.pillar) ? (data.pillar as NoticePillar) : "today";
+    if (title) fn({ title, body: body ?? "", url, pillar });
+  });
+  return () => sub.remove();
+}
 
 const projectId = (Constants.expoConfig?.extra as { eas?: { projectId?: string } } | undefined)?.eas?.projectId;
 

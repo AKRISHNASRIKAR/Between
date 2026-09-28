@@ -17,6 +17,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { DevFab } from "@/components/DevFab";
 import { palette, ToastProvider } from "@/design-system";
+import { NoticeHost } from "@/features/notices/NoticeHost";
 import { type FlowState, flowState, restorablePath } from "@/features/space/flow";
 import { FlowContext } from "@/features/space/flow-context";
 import { useMe } from "@/features/space/hooks";
@@ -111,6 +112,7 @@ function RootNavigator() {
           <Stack.Screen name="dev/gallery" options={{ animation: "slide_from_right" }} />
           <Stack.Screen name="dev/partner" options={{ animation: "slide_from_right" }} />
         </Stack>
+        {state === "ready" ? <NoticeHost /> : null}
         {state === "waiting" || state === "naming" || state === "ready" ? <DevFab /> : null}
       </RealtimeProvider>
     </FlowContext.Provider>

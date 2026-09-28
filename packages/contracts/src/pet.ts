@@ -34,8 +34,11 @@ export const PetWellbeing = z.object({
   fullness: WellbeingState,
   energy: WellbeingState,
   love: WellbeingState,
-  /** Why the pet feels this way, in plain words ("Fed by Ananya this morning"). */
-  reasons: z.array(z.string()),
+  /**
+   * Why the pet feels this way: the latest care of each kind. Sent as data, not sentences, so
+   * each viewer's app can say "You fed Mochi" or "Ananya fed Mochi" (the same Pet is broadcast to both).
+   */
+  lastCare: z.array(z.object({ kind: PetInteractionKind, byUserId: z.string(), at: IsoDateTime })),
 });
 export type PetWellbeing = z.infer<typeof PetWellbeing>;
 

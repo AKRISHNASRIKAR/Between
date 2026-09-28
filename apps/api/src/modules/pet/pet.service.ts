@@ -13,7 +13,6 @@ import { DAY_MS, HOUR_MS } from "../../lib/time";
 import { withTx } from "../../lib/tx";
 import { publish } from "../../realtime/hub";
 import { activityRepo } from "../activity";
-import { membersRepo, nameResolver } from "../members";
 import { notify } from "../notifications";
 import { type BondSource, bondFor } from "./bond";
 import { eligibleMilestones, nextStage } from "./growth";
@@ -41,10 +40,9 @@ export function mergePetOutcomes(a: PetOutcome | null, b: PetOutcome | null): Pe
 
 const RECENT_CARE = 12;
 
-/** The pet as this viewer sees it (mood, well-being and reasons). */
+/** The pet with its mood and well-being, derived from recent care. */
 export async function petView(tx: Tx, scope: SpaceScope, row: PetRow): Promise<Pet> {
-  const [care, members] = await Promise.all([petRepo.recentCare(tx, scope, RECENT_CARE), membersRepo.of(tx, scope)]);
-  return toPetView(row, scope, care, nameResolver(members, scope.userId));
+  return toPetView(row, scope, await petRepo.recentCare(tx, scope, RECENT_CARE));
 }
 
 /** Stage-ups and milestones earned by the current state of the pet. */

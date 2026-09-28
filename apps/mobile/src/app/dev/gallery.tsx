@@ -1,4 +1,4 @@
-import { MOOD_IDS, type PetMood } from "@lovenotes/contracts";
+import { MOOD_IDS, type Notice, noticeCopy, type PetMood } from "@lovenotes/contracts";
 import { useState } from "react";
 import { View } from "react-native";
 import { BackButton } from "@/components/BackButton";
@@ -12,6 +12,7 @@ import {
   EmptyState,
   ErrorState,
   MoodCreature,
+  NoticeCard,
   Pet,
   Screen,
   Sheet,
@@ -23,6 +24,15 @@ import {
   type as typeScale,
   useToast,
 } from "@/design-system";
+
+const SAMPLE_NOTICES: Notice[] = [
+  { type: "note.waiting", noteId: "n", from: "Ananya" },
+  { type: "vibe.shared", from: "Ananya" },
+  { type: "quiz.ready", sessionId: "q", daily: false },
+  { type: "journal.photos", pageId: "p", from: "Ananya", count: 3 },
+  { type: "future.done", from: "Ananya", title: "Watch the sunrise together" },
+  { type: "pet.milestone", kind: "bond_150" },
+];
 
 /** Dev-only: every design-system primitive in every state, for review at multiple sizes. */
 export default function Gallery() {
@@ -125,6 +135,21 @@ export default function Gallery() {
               </View>
             ))}
           </View>
+        </Section>
+
+        <Section title="Notices">
+          {SAMPLE_NOTICES.map((n) => {
+            const c = noticeCopy(n, "Mochi");
+            return (
+              <NoticeCard
+                key={n.type}
+                title={c.title}
+                body={c.body}
+                pillar={c.pillar}
+                pet={{ stage: "baby", mood: "happy" }}
+              />
+            );
+          })}
         </Section>
 
         <Section title="Overlays">

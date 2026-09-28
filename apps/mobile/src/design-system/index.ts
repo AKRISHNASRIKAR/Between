@@ -17,6 +17,7 @@ export * from "./motion";
 export * from "./objects/Envelope";
 export * from "./objects/FutureTicket";
 export * from "./objects/NoteCard";
+export * from "./objects/NoticeCard";
 export * from "./objects/PhotoFrame";
 export * from "./objects/QuizCard";
 export * from "./objects/VibeCard";

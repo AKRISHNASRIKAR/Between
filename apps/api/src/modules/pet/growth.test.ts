@@ -33,10 +33,9 @@ describe("well-being", () => {
     lastPettedAt: null,
     lastSharedActivityAt: null,
   };
-  const name = (id: string) => (id === "me" ? "you" : "Ananya");
 
   test("never drops below calm, even after weeks alone", () => {
-    const w = deriveWellbeing({ ...base, lastFedAt: hoursAgo(24 * 30) }, [], name, now);
+    const w = deriveWellbeing({ ...base, lastFedAt: hoursAgo(24 * 30) }, [], now);
     expect(w.fullness.value).toBe(WELLBEING_FLOOR);
     expect(w.love.value).toBe(WELLBEING_FLOOR);
     expect(w.love.word).toBe("calm");
@@ -45,14 +44,15 @@ describe("well-being", () => {
     const w = deriveWellbeing(
       { ...base, lastFedAt: hoursAgo(0.2) },
       [{ kind: "feed", at: hoursAgo(0.2), byUserId: "partner" }],
-      name,
       now,
     );
     expect(w.fullness.value).toBeGreaterThan(0.95);
     expect(w.fullness.word).toBe("full");
-    expect(w.reasons[0]).toBe("Fed by Ananya just now");
+    expect(w.lastCare).toEqual([{ kind: "feed", byUserId: "partner", at: hoursAgo(0.2).toISOString() }]);
   });
   test("eggs are simply cozy", () => {
-    expect(deriveWellbeing({ ...base, stage: "egg" }, [], name, now).reasons[0]).toContain("hatch");
+    const egg = deriveWellbeing({ ...base, stage: "egg" }, [], now);
+    expect(egg.love.word).toBe("cozy");
+    expect(egg.lastCare).toEqual([]);
   });
 });
