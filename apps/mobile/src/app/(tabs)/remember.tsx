@@ -3,12 +3,13 @@ import { Image } from "expo-image";
 import { router } from "expo-router";
 import { useState } from "react";
 import { FlatList, RefreshControl, useWindowDimensions, View } from "react-native";
+import Animated from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
-  Button,
   Dots,
   EmptyState,
   ErrorState,
+  enter,
   identity,
   layout,
   MoodCreature,
@@ -18,6 +19,7 @@ import {
   radius,
   Segmented,
   Skeleton,
+  TabHeader,
   Text,
 } from "@/design-system";
 import { useMemories, usePages } from "@/features/journal/hooks";
@@ -98,15 +100,15 @@ export default function Remember() {
 
   const header = (
     <View style={{ gap: 16, paddingTop: insets.top + 16, paddingBottom: 16 }}>
-      <View style={{ gap: 4 }}>
-        <Text variant="label" color="butter-deep">
-          Remember
-        </Text>
-        <Text variant="display-l" accessibilityRole="header">
-          Our journal
-        </Text>
-      </View>
-      <Button label="Write about today" icon={Pencil} onPress={() => router.push("/journal/new")} />
+      <TabHeader
+        title="Our journal"
+        action={{
+          label: "Write about today",
+          icon: Pencil,
+          family: "butter",
+          onPress: () => router.push("/journal/new"),
+        }}
+      />
       <Segmented<Tab>
         value={tab}
         onChange={setTab}
@@ -147,7 +149,11 @@ export default function Remember() {
             />
           )
         }
-        renderItem={({ item }) => <PageCard page={item} myId={me.data?.profile.id} width={contentW} />}
+        renderItem={({ item, index }) => (
+          <Animated.View entering={index < 6 ? enter(index) : undefined}>
+            <PageCard page={item} myId={me.data?.profile.id} width={contentW} />
+          </Animated.View>
+        )}
       />
     );
   }

@@ -1,8 +1,19 @@
 import { router } from "expo-router";
 import { useEffect } from "react";
 import { View } from "react-native";
-import Animated, { FadeInDown } from "react-native-reanimated";
-import { ArrowRight, Envelope, lift, PressableScale, palette, radius, Screen, Sparkle, Text } from "@/design-system";
+import Animated from "react-native-reanimated";
+import {
+  ArrowRight,
+  Envelope,
+  enter,
+  lift,
+  PressableScale,
+  palette,
+  radius,
+  Screen,
+  Sparkle,
+  Text,
+} from "@/design-system";
 import { useMe } from "@/features/space/hooks";
 import { pendingInvite } from "@/features/space/pending-invite";
 
@@ -71,7 +82,7 @@ export default function Start() {
           </Text>
         </View>
         <View className="gap-5">
-          <Animated.View entering={FadeInDown.delay(100).springify().damping(18)}>
+          <Animated.View entering={enter(2)}>
             <Choice
               title="Start our space"
               body="You'll get a code to send to your person."
@@ -81,7 +92,7 @@ export default function Start() {
               onPress={() => router.push("/create")}
             />
           </Animated.View>
-          <Animated.View entering={FadeInDown.delay(200).springify().damping(18)}>
+          <Animated.View entering={enter(4)}>
             <Choice
               title="I have an invite"
               body="Enter the code they sent you."

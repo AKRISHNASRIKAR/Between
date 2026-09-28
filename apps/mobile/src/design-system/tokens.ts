@@ -17,42 +17,43 @@ export const palette = {
   "on-ink": "#FAF6EE",
   transparent: "transparent",
 
-  "sky-base": "#9CCBF2",
-  "sky-soft": "#E3F0FB",
+  // Accents (DESIGN §2.2) — drawn from the Love Notes swatch board
+  "sky-base": "#98C1E9", // attic window
+  "sky-soft": "#E7F5F9", // seafoam
   "sky-deep": "#1D5A8C",
-  "butter-base": "#F7D774",
-  "butter-soft": "#FBF0C8",
-  "butter-deep": "#735400",
-  "coral-base": "#F4876E",
-  "coral-soft": "#FCE2DA",
-  "coral-deep": "#A3371F",
-  "pink-base": "#F2A7C3",
-  "pink-soft": "#FBE3EC",
-  "pink-deep": "#9B2F5C",
-  "purple-base": "#B9A2EC",
-  "purple-soft": "#ECE4FB",
-  "purple-deep": "#5B3FA3",
-  "orange-base": "#F7A149",
+  "butter-base": "#FED57D", // butter yellow
+  "butter-soft": "#FDF1D3",
+  "butter-deep": "#876029", // dry earth
+  "tomato-base": "#EF6F3C", // blood orange
+  "tomato-soft": "#FCE3D9",
+  "tomato-deep": "#C62A29", // cherry
+  "pink-base": "#F29CC3", // bubble gum
+  "pink-soft": "#FCEDED", // milkshake
+  "pink-deep": "#6D1F42", // grape juice
+  "purple-base": "#D3B6D3", // lilacs
+  "purple-soft": "#E6E3F7", // wisteria
+  "purple-deep": "#5E4394",
+  "orange-base": "#F0A351", // apricot jam
   "orange-soft": "#FDE6CC",
   "orange-deep": "#8A4700",
-  "green-base": "#86C9A0",
-  "green-soft": "#DDF1E4",
-  "green-deep": "#1F653D",
-  "cobalt-base": "#2F4FE0",
-  "cobalt-soft": "#DFE4FC",
-  "cobalt-deep": "#2A45C4",
+  "green-base": "#5BA881", // clover
+  "green-soft": "#E4F1DC",
+  "green-deep": "#25533F", // forest
+  "teal-base": "#008471", // tropical rain
+  "teal-soft": "#D6EEE9",
+  "teal-deep": "#006B5C",
 } as const;
 
 export type ColorToken = keyof typeof palette;
 export const color = (t: ColorToken) => palette[t];
 
-export type Family = "sky" | "butter" | "coral" | "pink" | "purple" | "orange" | "green" | "cobalt";
+export type Family = "sky" | "butter" | "tomato" | "pink" | "purple" | "orange" | "green" | "teal";
 export const family = (f: Family) => ({
   base: palette[`${f}-base`],
   soft: palette[`${f}-soft`],
   deep: palette[`${f}-deep`],
   /** text/icons drawn on the base fill (DESIGN §2.2) */
-  onBase: f === "cobalt" ? palette["on-ink"] : palette.ink,
+  onBase: f === "teal" ? palette.paper : palette.ink,
 });
 
 /** Pillar → family (DESIGN §2.3). */
@@ -65,8 +66,22 @@ export const pillar = {
   pet: "orange",
 } as const satisfies Record<string, Family>;
 
+/**
+ * Quiz cards are the loudest thing in the app on purpose (DESIGN §2.6): saturated swatches with
+ * a contrasting colour for their words, like a paint-chip card. Every text pair is ≥ 4.5:1.
+ */
+export const quizTheme = {
+  about_me: { fill: "#008471", text: "#FFFDF8", accent: "#F4D242" }, // tropical rain · paper · pure sun
+  favorites: { fill: "#F4D242", text: "#6D1F42", accent: "#EF6F3C" }, // pure sun · grape juice · blood orange
+  personality: { fill: "#6D1F42", text: "#D3B6D3", accent: "#FF7BAC" }, // grape juice · lilacs · bubblegum
+  relationship: { fill: "#FF7BAC", text: "#6D1F42", accent: "#FFFDF8" }, // bubblegum · grape juice
+  chaos: { fill: "#C62A29", text: "#FCEDED", accent: "#F4D242" }, // cherry · milkshake · pure sun
+  daily: { fill: "#D6D35F", text: "#25533F", accent: "#008471" }, // limeade · forest · tropical rain
+} as const;
+export type QuizThemeKey = keyof typeof quizTheme;
+
 /** Identity markers — who wrote something. Never large fills. */
-export const identity = { you: palette["cobalt-base"], partner: palette["coral-base"] } as const;
+export const identity = { you: palette["teal-base"], partner: palette["tomato-base"] } as const;
 
 export const scrim = "rgba(29, 26, 23, 0.4)";
 
@@ -139,6 +154,7 @@ export const type = {
   heading: { fontFamily: fonts.ui700, fontSize: 18, lineHeight: 24, letterSpacing: -0.2, maxScale: 1.4 },
   body: { fontFamily: fonts.ui400, fontSize: 16, lineHeight: 24, letterSpacing: 0, maxScale: 1.6 },
   "body-sm": { fontFamily: fonts.ui400, fontSize: 14, lineHeight: 20, letterSpacing: 0, maxScale: 1.6 },
+  "body-sm-strong": { fontFamily: fonts.ui600, fontSize: 14, lineHeight: 20, letterSpacing: 0, maxScale: 1.6 },
   caption: { fontFamily: fonts.ui500, fontSize: 12, lineHeight: 16, letterSpacing: 0.2, maxScale: 1.6 },
   button: { fontFamily: fonts.ui600, fontSize: 16, lineHeight: 20, letterSpacing: 0.1, maxScale: 1.4 },
   label: {

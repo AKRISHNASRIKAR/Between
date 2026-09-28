@@ -111,7 +111,7 @@ export default function NewNote() {
             autoFocus
             accessibilityLabel="Your note"
           />
-          <Text variant="caption" color={left < 40 ? "coral-deep" : "ink-tertiary"} align="right">
+          <Text variant="caption" color={left < 40 ? "tomato-deep" : "ink-tertiary"} align="right">
             {left}
           </Text>
         </Animated.View>

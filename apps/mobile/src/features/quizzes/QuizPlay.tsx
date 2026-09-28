@@ -6,12 +6,13 @@ import {
   ArrowLeft,
   Avatar,
   Button,
-  CATEGORY_FAMILY,
   CATEGORY_LABEL,
-  family,
+  dur,
+  ease,
   lift,
   PressableScale,
   palette,
+  quizColors,
   radius,
   Text,
   TextField,
@@ -72,7 +73,7 @@ export function QuizPlay({
   const toast = useToast();
 
   const category = session.pack?.category ?? "daily";
-  const f = family(CATEGORY_FAMILY[category]);
+  const t = quizColors(category);
   const step = steps[index];
   const current = step ? answers.get(step.q.id) : undefined;
 
@@ -130,7 +131,7 @@ export function QuizPlay({
           </PressableScale>
         ) : null}
         <View style={{ flex: 1, height: 6, borderRadius: 3, backgroundColor: palette.sunken, overflow: "hidden" }}>
-          <View style={{ width: `${progress * 100}%`, height: 6, backgroundColor: f.base }} />
+          <View style={{ width: `${progress * 100}%`, height: 6, backgroundColor: t.fill }} />
         </View>
         <Text variant="caption" color="ink-tertiary">
           {index + 1}/{steps.length}
@@ -139,14 +140,14 @@ export function QuizPlay({
 
       <Animated.View
         key={`${step.q.id}-${step.part}`}
-        entering={SlideInRight.springify().damping(18)}
-        exiting={SlideOutLeft.duration(160)}
+        entering={SlideInRight.duration(dur.base).easing(ease.out)}
+        exiting={SlideOutLeft.duration(dur.fast)}
       >
-        <View style={{ backgroundColor: f.base, borderRadius: radius.xl, padding: 20, gap: 16, ...lift[1] }}>
-          <Text variant="label" style={{ color: f.onBase }}>
+        <View style={{ backgroundColor: t.fill, borderRadius: radius.xl, padding: 20, gap: 16, ...lift[1] }}>
+          <Text variant="label" style={{ color: t.text }}>
             {step.part === "guess" ? `Now guess ${partner.name}'s answer` : CATEGORY_LABEL[category]}
           </Text>
-          <Text variant="display-m" style={{ color: f.onBase }} accessibilityRole="header">
+          <Text variant="display-m" style={{ color: t.text }} accessibilityRole="header">
             {prompt}
           </Text>
 

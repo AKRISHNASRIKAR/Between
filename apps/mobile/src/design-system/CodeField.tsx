@@ -85,9 +85,9 @@ export function CodeField({
                   borderRadius: radius.sm,
                   borderWidth: stroke.regular,
                   borderColor: error
-                    ? palette["coral-base"]
+                    ? palette["tomato-base"]
                     : focused && i === activeIndex
-                      ? palette["cobalt-base"]
+                      ? palette["teal-base"]
                       : palette["line-strong"],
                   backgroundColor: palette.paper,
                   alignItems: "center",
@@ -119,7 +119,7 @@ export function CodeField({
         style={{ position: "absolute", opacity: 0, height: 1, width: 1 }}
       />
       {error ? (
-        <Text variant="caption" color="coral-deep" accessibilityLiveRegion="polite">
+        <Text variant="caption" color="tomato-deep" accessibilityLiveRegion="polite">
           {error}
         </Text>
       ) : null}

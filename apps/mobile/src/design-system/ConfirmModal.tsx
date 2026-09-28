@@ -1,6 +1,7 @@
 import { Modal, Pressable, View } from "react-native";
-import Animated, { FadeIn, ZoomIn } from "react-native-reanimated";
+import Animated, { FadeIn } from "react-native-reanimated";
 import { Button } from "./Button";
+import { pop } from "./motion";
 import { Text } from "./Text";
 import { lift, palette, radius, scrim } from "./tokens";
 
@@ -25,7 +26,7 @@ export function ConfirmModal({ open, title, body, confirmLabel, destructive, loa
       >
         <Pressable accessibilityLabel="Cancel" style={{ position: "absolute", inset: 0 }} onPress={onCancel} />
         <Animated.View
-          entering={ZoomIn.springify().damping(18).stiffness(180)}
+          entering={pop()}
           accessibilityViewIsModal
           style={{
             backgroundColor: palette.paper,

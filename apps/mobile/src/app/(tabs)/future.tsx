@@ -1,6 +1,7 @@
 import { FUTURE_CATEGORY_LABEL, type FutureCategory, type FutureItem } from "@lovenotes/contracts";
 import { useState } from "react";
 import { Alert, RefreshControl, ScrollView, useWindowDimensions, View } from "react-native";
+import Animated from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
   Button,
@@ -9,6 +10,7 @@ import {
   Confetti,
   EmptyState,
   ErrorState,
+  enter,
   FutureTicket,
   haptics,
   layout,
@@ -19,6 +21,7 @@ import {
   Sheet,
   Skeleton,
   stroke,
+  TabHeader,
   Text,
   TextField,
   useToast,
@@ -122,15 +125,10 @@ export default function Future() {
         }}
         refreshControl={<RefreshControl refreshing={false} onRefresh={() => list.refetch()} />}
       >
-        <View style={{ gap: 4 }}>
-          <Text variant="label" color="green-deep">
-            Future
-          </Text>
-          <Text variant="display-l" accessibilityRole="header">
-            Our future
-          </Text>
-        </View>
-        <Button label="Add something" icon={Plus} onPress={() => setOpen(true)} />
+        <TabHeader
+          title="Our future"
+          action={{ label: "Add something", icon: Plus, family: "green", onPress: () => setOpen(true) }}
+        />
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
           <Chip label="All" family="green" selected={filter === "all"} onPress={() => setFilter("all")} />
           {CATS.map((c) => (
@@ -160,8 +158,10 @@ export default function Future() {
         ) : (
           <>
             <View style={{ gap: 12 }}>
-              {upcoming.map((f) => (
-                <Row key={f.id} f={f} />
+              {upcoming.map((f, i) => (
+                <Animated.View key={f.id} entering={enter(i)}>
+                  <Row f={f} />
+                </Animated.View>
               ))}
             </View>
             {done.length ? (

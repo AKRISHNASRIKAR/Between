@@ -16,7 +16,7 @@ export const TextField = forwardRef<TextInput, TextFieldProps>(function TextFiel
   ref,
 ) {
   const [focused, setFocused] = useState(false);
-  const borderColor = error ? palette["coral-base"] : focused ? palette["cobalt-base"] : palette["line-strong"];
+  const borderColor = error ? palette["tomato-base"] : focused ? palette["teal-base"] : palette["line-strong"];
   return (
     <View className="gap-2">
       <Text variant="label" color="ink-secondary">
@@ -59,7 +59,7 @@ export const TextField = forwardRef<TextInput, TextFieldProps>(function TextFiel
         {...rest}
       />
       {error ? (
-        <Text variant="caption" color="coral-deep" accessibilityLiveRegion="polite">
+        <Text variant="caption" color="tomato-deep" accessibilityLiveRegion="polite">
           {error}
         </Text>
       ) : help ? (

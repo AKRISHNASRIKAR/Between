@@ -72,7 +72,7 @@ export default function Gallery() {
           <Button label="Disabled" disabled fullWidth />
           <Button variant="secondary" label="Secondary" icon={Sparkle} onPress={() => {}} fullWidth />
           <Button variant="accent" family="purple" label="Reveal ✦" onPress={() => {}} />
-          <Button variant="accent" family="cobalt" label="Cobalt accent" onPress={() => {}} />
+          <Button variant="accent" family="teal" label="Cobalt accent" onPress={() => {}} />
           <Button variant="destructive" label="Destructive" onPress={() => {}} fullWidth />
           <Button variant="quiet" label="Quiet" onPress={() => {}} />
         </Section>

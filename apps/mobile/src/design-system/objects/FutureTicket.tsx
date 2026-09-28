@@ -1,5 +1,6 @@
 import { View } from "react-native";
-import Animated, { ZoomIn } from "react-native-reanimated";
+import Animated from "react-native-reanimated";
+import { pop } from "../motion";
 import { Text } from "../Text";
 import { palette, radius } from "../tokens";
 
@@ -64,24 +65,21 @@ export function FutureTicket({ title, emoji, category, doneOn, right }: Props) {
       <View style={[notch, { top: -10 }]} />
       <View style={[notch, { bottom: -10 }]} />
       {done ? (
-        <Animated.View
-          entering={ZoomIn.springify().damping(11).stiffness(200)}
-          pointerEvents="none"
-          style={{
-            position: "absolute",
-            right: 84,
-            top: 10,
-            transform: [{ rotate: "-8deg" }],
-            borderWidth: 2,
-            borderColor: palette["green-deep"],
-            borderRadius: radius.sm,
-            paddingHorizontal: 8,
-            paddingVertical: 2,
-          }}
-        >
-          <Text variant="label" color="green-deep">
-            Done · {doneOn}
-          </Text>
+        <Animated.View entering={pop()} pointerEvents="none" style={{ position: "absolute", right: 84, top: 10 }}>
+          <View
+            style={{
+              transform: [{ rotate: "-8deg" }],
+              borderWidth: 2,
+              borderColor: palette["green-deep"],
+              borderRadius: radius.sm,
+              paddingHorizontal: 8,
+              paddingVertical: 2,
+            }}
+          >
+            <Text variant="label" color="green-deep">
+              Done · {doneOn}
+            </Text>
+          </View>
         </Animated.View>
       ) : null}
     </View>

@@ -74,7 +74,7 @@ export function VibeSection() {
         </Text>
       ) : null}
       {vibe.isError && !vibe.data ? (
-        <Text variant="caption" color="coral-deep">
+        <Text variant="caption" color="tomato-deep">
           {humanError(vibe.error)}
         </Text>
       ) : null}

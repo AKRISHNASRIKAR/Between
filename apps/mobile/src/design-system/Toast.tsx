@@ -6,6 +6,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button } from "./Button";
 import { haptics } from "./haptics";
 import { Check, WarningCircle } from "./Icon";
+import { dur, ease } from "./motion";
 import { Text } from "./Text";
 import { layout, palette, radius } from "./tokens";
 
@@ -52,8 +53,8 @@ export function ToastProvider({ children }: { children: ReactNode }) {
           <GestureDetector gesture={swipe}>
             <Animated.View
               key={toast.id}
-              entering={FadeInUp.springify().damping(18)}
-              exiting={FadeOutUp.duration(180)}
+              entering={FadeInUp.duration(dur.base).easing(ease.out)}
+              exiting={FadeOutUp.duration(dur.fast)}
               accessibilityLiveRegion="polite"
               accessibilityRole="alert"
               style={{
@@ -70,7 +71,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
               }}
             >
               {toast.kind === "success" ? <Check size={18} color={palette["green-base"]} weight="bold" /> : null}
-              {toast.kind === "error" ? <WarningCircle size={18} color={palette["coral-base"]} weight="bold" /> : null}
+              {toast.kind === "error" ? <WarningCircle size={18} color={palette["tomato-base"]} weight="bold" /> : null}
               <Text variant="body-sm" color="on-ink" style={{ flex: 1 }}>
                 {toast.message}
               </Text>

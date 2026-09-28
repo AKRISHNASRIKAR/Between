@@ -63,7 +63,7 @@ export default function DevPartner() {
         </View>
 
         {status.isError ? (
-          <Text variant="body-sm" color="coral-deep">
+          <Text variant="body-sm" color="tomato-deep">
             Dev tools are off. Set DEV_TOOLS=true in apps/api/.env and restart the API.
           </Text>
         ) : !space ? (

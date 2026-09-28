@@ -29,7 +29,7 @@ const TABS = {
 type TabName = keyof typeof TABS;
 export type TabBarProps = Parameters<NonNullable<ComponentProps<typeof Tabs>["tabBar"]>>[0];
 
-/** DESIGN §7.2 Tabs: sunken bar, bold→fill icons, a pillar-colored dot that slides to the active tab. */
+/** DESIGN §7.2 Tabs: canvas bar with a hairline, bold→fill icons in the pillar colour, and a dot that slides to the active tab. */
 export function TabBar({ state, navigation }: TabBarProps) {
   const insets = useSafeAreaInsets();
   const [width, setWidth] = useState(0);
@@ -49,7 +49,7 @@ export function TabBar({ state, navigation }: TabBarProps) {
       onLayout={(e: LayoutChangeEvent) => setWidth(e.nativeEvent.layout.width)}
       accessibilityRole="tablist"
       style={{
-        backgroundColor: palette.sunken,
+        backgroundColor: palette.canvas,
         borderTopWidth: 1,
         borderTopColor: palette.line,
         paddingBottom: insets.bottom,
@@ -61,7 +61,7 @@ export function TabBar({ state, navigation }: TabBarProps) {
         const tab = TABS[route.name as TabName];
         if (!tab) return null;
         const focused = state.index === i;
-        const color = focused ? palette.ink : palette["ink-tertiary"];
+        const color = focused ? palette[`${tab.family}-deep`] : palette["ink-tertiary"];
         return (
           <Pressable
             key={route.key}
@@ -78,7 +78,7 @@ export function TabBar({ state, navigation }: TabBarProps) {
             style={{ flex: 1, alignItems: "center", justifyContent: "center", gap: 2, paddingTop: 6 }}
           >
             <tab.Icon size={24} color={color} weight={focused ? "fill" : "bold"} />
-            <Text variant="label-sm" style={{ color }} numberOfLines={1}>
+            <Text variant="caption" style={{ color }} numberOfLines={1}>
               {tab.label}
             </Text>
           </Pressable>

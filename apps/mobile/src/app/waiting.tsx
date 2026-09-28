@@ -105,7 +105,7 @@ export default function Waiting() {
             </Animated.View>
           ) : create.error ? (
             <View className="gap-2">
-              <Text variant="body-sm" color="coral-deep">
+              <Text variant="body-sm" color="tomato-deep">
                 {humanError(create.error)}
               </Text>
               <Button variant="secondary" size="md" label="Try again" onPress={fresh} />

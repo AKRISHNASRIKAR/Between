@@ -27,6 +27,7 @@ export * from "./Screen";
 export * from "./Segmented";
 export * from "./Sheet";
 export * from "./Skeleton";
+export * from "./TabHeader";
 export * from "./Text";
 export * from "./TextField";
 export * from "./Toast";

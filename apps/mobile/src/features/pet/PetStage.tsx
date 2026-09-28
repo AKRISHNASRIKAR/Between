@@ -3,7 +3,6 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useWindowDimensions, View } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, {
-  FadeIn,
   useAnimatedStyle,
   useSharedValue,
   withDelay,
@@ -16,6 +15,7 @@ import {
   Bowl,
   BowlFood,
   dur,
+  fadeIn,
   HandHeart,
   haptics,
   layout,
@@ -152,12 +152,7 @@ export function PetStage({ size: requested, onPressPet, compact }: Props) {
   return (
     <View className="items-center" style={{ gap: compact ? 12 : 20 }}>
       {/* Speech bubble: tail is a sibling centered under the bubble (no % offsets). */}
-      <Animated.View
-        key={line}
-        entering={FadeIn.duration(dur.base)}
-        style={{ alignItems: "center" }}
-        accessibilityLiveRegion="polite"
-      >
+      <Animated.View key={line} entering={fadeIn} style={{ alignItems: "center" }} accessibilityLiveRegion="polite">
         <View
           style={{
             backgroundColor: palette.paper,

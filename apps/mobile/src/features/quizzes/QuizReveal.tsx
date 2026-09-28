@@ -1,8 +1,8 @@
 import { type QuizAnswer, type QuizQuestion, type QuizSession, RESULT_COPY, withPartner } from "@lovenotes/contracts";
 import { useEffect, useMemo, useState } from "react";
 import { useWindowDimensions, View } from "react-native";
-import Animated, { FadeIn, FlipInYRight, ZoomIn } from "react-native-reanimated";
-import { Button, CATEGORY_FAMILY, Confetti, family, haptics, lift, palette, radius, Text } from "@/design-system";
+import Animated, { FlipInYRight } from "react-native-reanimated";
+import { Button, Confetti, fadeIn, haptics, lift, palette, pop, quizColors, radius, Text } from "@/design-system";
 import { useMarkRevealSeen } from "./hooks";
 
 type Who = { id: string; name: string };
@@ -75,7 +75,7 @@ export function QuizReveal({
     () => new Map((session.partnerAnswers ?? []).map((a) => [a.questionId, a])),
     [session.partnerAnswers],
   );
-  const f = family(CATEGORY_FAMILY[session.pack?.category ?? "daily"]);
+  const t = quizColors(session.pack?.category ?? "daily");
   const q = session.questions[index];
   const atResult = index >= session.questions.length;
   const result = session.result;
@@ -103,33 +103,33 @@ export function QuizReveal({
     const copy = RESULT_COPY[result.label];
     return (
       <View style={{ gap: 20 }}>
-        <Animated.View entering={ZoomIn.springify().damping(12)}>
-          <View style={{ backgroundColor: f.base, borderRadius: radius.xl, padding: 24, gap: 12, ...lift[2] }}>
-            <Text variant="label" style={{ color: f.onBase }}>
+        <Animated.View entering={pop()}>
+          <View style={{ backgroundColor: t.fill, borderRadius: radius.xl, padding: 24, gap: 12, ...lift[2] }}>
+            <Text variant="label" style={{ color: t.text }}>
               Your vibe
             </Text>
-            <Text variant="display-xl" style={{ color: f.onBase }}>
+            <Text variant="display-xl" style={{ color: t.text }}>
               {copy.title}
             </Text>
-            <Text variant="hand-m" style={{ color: f.onBase }}>
+            <Text variant="hand-m" style={{ color: t.text }}>
               {copy.line}
             </Text>
             {result.scored > 0 ? (
               <View style={{ flexDirection: "row", gap: 24, paddingTop: 8 }}>
                 <View>
-                  <Text variant="numeral" style={{ color: f.onBase }}>
+                  <Text variant="numeral" style={{ color: t.text }}>
                     {result.agreed}/{result.scored}
                   </Text>
-                  <Text variant="caption" style={{ color: f.onBase }}>
+                  <Text variant="caption" style={{ color: t.text }}>
                     answered alike
                   </Text>
                 </View>
                 {session.questions.some((x) => x.kind === "choice") ? (
                   <View>
-                    <Text variant="numeral" style={{ color: f.onBase }}>
+                    <Text variant="numeral" style={{ color: t.text }}>
                       {result.myCorrectGuesses}
                     </Text>
-                    <Text variant="caption" style={{ color: f.onBase }}>
+                    <Text variant="caption" style={{ color: t.text }}>
                       you guessed right
                     </Text>
                   </View>
@@ -172,7 +172,7 @@ export function QuizReveal({
       <Text variant="caption" color="ink-tertiary">
         {index + 1} of {session.questions.length}
       </Text>
-      <Animated.View key={q.id} entering={FadeIn.duration(300)} style={{ gap: 12 }}>
+      <Animated.View key={q.id} entering={fadeIn} style={{ gap: 12 }}>
         <Text variant="display-m">{withPartner(q.promptSelf, partner.name)}</Text>
         <AnswerTile
           label="You said"
@@ -197,8 +197,8 @@ export function QuizReveal({
           hand={q.kind === "open"}
         />
         {verdict ? (
-          <Animated.View entering={ZoomIn.delay(1300).springify()}>
-            <Text variant="display-m" align="center" color={verdict.startsWith("Same") ? "green-deep" : "coral-deep"}>
+          <Animated.View entering={pop(1300)}>
+            <Text variant="display-m" align="center" color={verdict.startsWith("Same") ? "green-deep" : "tomato-deep"}>
               {verdict}
             </Text>
           </Animated.View>

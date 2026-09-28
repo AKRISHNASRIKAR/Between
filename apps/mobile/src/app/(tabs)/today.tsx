@@ -21,14 +21,14 @@ export default function Today() {
 
   return (
     <Screen bottomInset={false}>
-      <View className="gap-8 pt-4">
-        <View className="flex-row items-start justify-between">
+      <View className="gap-8 pt-4 pb-6">
+        <View className="flex-row items-center justify-between">
           <View className="flex-1 gap-1 pr-4">
-            <Text variant="label" color="ink-tertiary">
-              {monthDay(now)}
+            <Text variant="label" color={partnerHere ? "green-deep" : "ink-tertiary"}>
+              {partnerHere ? `${monthDay(now)} · ${partner?.displayName} is here` : monthDay(now)}
             </Text>
             <Text
-              variant="display-xl"
+              variant="display-l"
               accessibilityRole="header"
               numberOfLines={1}
               adjustsFontSizeToFit
@@ -37,19 +37,21 @@ export default function Today() {
               {weekday(now)}
             </Text>
           </View>
-          <PressableScale accessibilityLabel="Settings" onPress={() => router.push("/settings")} hitSlop={8}>
-            <Avatar name={me.data?.profile.displayName ?? null} uri={me.data?.profile.avatarUrl} who="you" />
+          {/* The two of you, overlapping; tap for settings. */}
+          <PressableScale
+            accessibilityLabel="Settings"
+            onPress={() => router.push("/settings")}
+            hitSlop={8}
+            style={{ flexDirection: "row" }}
+          >
+            {partner ? (
+              <Avatar name={partner.displayName} uri={partner.avatarUrl} who="partner" online={partnerHere} />
+            ) : null}
+            <View style={{ marginLeft: partner ? -10 : 0 }}>
+              <Avatar name={me.data?.profile.displayName ?? null} uri={me.data?.profile.avatarUrl} who="you" />
+            </View>
           </PressableScale>
         </View>
-
-        {partner ? (
-          <View className="flex-row items-center gap-2">
-            <Avatar size={28} name={partner.displayName} uri={partner.avatarUrl} who="partner" online={partnerHere} />
-            <Text variant="body-sm" color="ink-secondary">
-              {partnerHere ? `${partner.displayName} is here now` : `You & ${partner.displayName}`}
-            </Text>
-          </View>
-        ) : null}
 
         <NoteWaitingMoment />
 

@@ -2,22 +2,23 @@ import type { NoteBox } from "@lovenotes/contracts";
 import { router } from "expo-router";
 import { useState } from "react";
 import { FlatList, RefreshControl, useWindowDimensions, View } from "react-native";
+import Animated from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
-  Button,
   Chip,
   Dots,
   EmptyState,
   EnvelopeBody,
   EnvelopeFlap,
   ErrorState,
+  enter,
   layout,
   NoteCard,
   PaperPlaneTilt,
   PressableScale,
   palette,
   Skeleton,
-  seededTilt,
+  TabHeader,
   Text,
 } from "@/design-system";
 import { useNotes } from "@/features/notes/hooks";
@@ -46,17 +47,15 @@ export default function Notes() {
 
   const header = (
     <View style={{ gap: 16, paddingTop: insets.top + 16, paddingBottom: 16 }}>
-      <View className="flex-row items-end justify-between">
-        <View style={{ gap: 4, flex: 1 }}>
-          <Text variant="label" color="pink-deep">
-            Notes
-          </Text>
-          <Text variant="display-l" accessibilityRole="header">
-            Little things you leave
-          </Text>
-        </View>
-      </View>
-      <Button label="Leave a note" icon={PaperPlaneTilt} onPress={() => router.push("/notes/new")} />
+      <TabHeader
+        title="Notes"
+        action={{
+          label: "Leave a note",
+          icon: PaperPlaneTilt,
+          family: "pink",
+          onPress: () => router.push("/notes/new"),
+        }}
+      />
       <View className="flex-row gap-2">
         {FILTERS.map((f) => (
           <Chip key={f.box} label={f.label} family="pink" selected={box === f.box} onPress={() => setBox(f.box)} />
@@ -118,12 +117,12 @@ export default function Notes() {
           />
         )
       }
-      renderItem={({ item }) => {
+      renderItem={({ item, index }) => {
         const mine = item.authorId === myId;
         const sealed = !mine && !item.openedAt;
         const who = mine ? `To ${partner?.displayName ?? "them"}` : `From ${partner?.displayName ?? "them"}`;
         return (
-          <View style={{ width: itemWidth }}>
+          <Animated.View entering={index < 8 ? enter(index) : undefined} style={{ width: itemWidth }}>
             <PressableScale
               accessibilityLabel={
                 sealed ? `Sealed note from ${partner?.displayName}. Open it.` : `${who}: ${item.body}`
@@ -131,7 +130,7 @@ export default function Notes() {
               onPress={() => router.push(`/notes/${item.id}`)}
             >
               {sealed ? (
-                <View style={{ transform: [{ rotate: `${seededTilt(item.id)}deg` }], paddingTop: 10 }}>
+                <View style={{ paddingTop: 10 }}>
                   <View>
                     <EnvelopeBody paper={item.paper} width={itemWidth} />
                     <View style={{ position: "absolute", top: 0 }}>
@@ -162,7 +161,7 @@ export default function Notes() {
                 />
               )}
             </PressableScale>
-          </View>
+          </Animated.View>
         );
       }}
     />

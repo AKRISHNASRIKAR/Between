@@ -61,7 +61,7 @@ export function PhotoTray({ uploads }: { uploads: ReturnType<typeof usePhotoUplo
                 </View>
               ) : null}
               {it.failed ? (
-                <Text variant="caption" color="coral-deep" style={{ position: "absolute", bottom: 4, left: 6 }}>
+                <Text variant="caption" color="tomato-deep" style={{ position: "absolute", bottom: 4, left: 6 }}>
                   failed
                 </Text>
               ) : null}

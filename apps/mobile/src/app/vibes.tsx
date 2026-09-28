@@ -77,13 +77,13 @@ export default function Vibes() {
 
         <View className="flex-row gap-4">
           <View className="flex-row items-center gap-2">
-            <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: palette["cobalt-base"] }} />
+            <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: palette["teal-base"] }} />
             <Text variant="caption" color="ink-secondary">
               You
             </Text>
           </View>
           <View className="flex-row items-center gap-2">
-            <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: palette["coral-base"] }} />
+            <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: palette["tomato-base"] }} />
             <Text variant="caption" color="ink-secondary">
               {partner?.displayName ?? "Them"} (shared only)
             </Text>

@@ -1,9 +1,9 @@
 import { LIMITS } from "@lovenotes/contracts";
 import { useEffect, useState } from "react";
 import { View } from "react-native";
-import Animated, { FadeInDown } from "react-native-reanimated";
+import Animated from "react-native-reanimated";
 import { BackButton } from "@/components/BackButton";
-import { Avatar, Button, CodeField, Dots, lift, palette, radius, Screen, Text } from "@/design-system";
+import { Avatar, Button, CodeField, Dots, enter, lift, palette, radius, Screen, Text } from "@/design-system";
 import { useAcceptInvite, useInvitePreview } from "@/features/space/hooks";
 import { pendingInvite } from "@/features/space/pending-invite";
 import { humanError } from "@/lib/errors";
@@ -68,7 +68,7 @@ export default function Join() {
         ) : null}
         {preview.data ? (
           <Animated.View
-            entering={FadeInDown.springify().damping(18)}
+            entering={enter()}
             style={{ backgroundColor: palette.paper, borderRadius: radius.lg, padding: 20, gap: 12, ...lift[1] }}
           >
             <View className="flex-row items-center gap-3">

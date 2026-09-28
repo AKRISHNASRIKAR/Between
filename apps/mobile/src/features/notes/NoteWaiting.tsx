@@ -1,7 +1,7 @@
 import { router } from "expo-router";
 import { View } from "react-native";
-import Animated, { FadeInDown } from "react-native-reanimated";
-import { ArrowRight, EnvelopeBody, EnvelopeFlap, lift, PressableScale, palette, radius, Text } from "@/design-system";
+import Animated from "react-native-reanimated";
+import { ArrowRight, EnvelopeBody, EnvelopeFlap, enter, PressableScale, palette, radius, Text } from "@/design-system";
 import { partnerOf, useMe } from "@/features/space/hooks";
 import { useNotes } from "./hooks";
 
@@ -19,7 +19,7 @@ export function NoteWaitingMoment() {
   const next = waiting.at(-1); // oldest first
   if (!next) return null;
   return (
-    <Animated.View entering={FadeInDown.springify().damping(18)}>
+    <Animated.View entering={enter()}>
       <PressableScale
         accessibilityLabel={`${waiting.length} note${waiting.length > 1 ? "s" : ""} from ${partner?.displayName} waiting. Open.`}
         onPress={() => router.push(`/notes/${next.id}`)}
@@ -30,7 +30,6 @@ export function NoteWaitingMoment() {
           flexDirection: "row",
           alignItems: "center",
           gap: 16,
-          ...lift[1],
         }}
       >
         <View style={{ transform: [{ rotate: "-6deg" }] }}>

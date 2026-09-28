@@ -12,7 +12,7 @@ import Animated, {
   withSpring,
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { haptics, layout, NoticeCard, spring } from "@/design-system";
+import { dur, ease, haptics, layout, NoticeCard, spring } from "@/design-system";
 import { useMe } from "@/features/space/hooks";
 import { onForegroundPush } from "@/lib/push";
 import { realtime } from "@/lib/realtime";
@@ -108,23 +108,28 @@ export function NoticeHost() {
       <GestureDetector gesture={gesture}>
         <Animated.View
           key={current.id}
-          entering={SlideInUp.springify().damping(spring.gentle.damping)}
-          exiting={FadeOutUp.duration(180)}
-          accessible
-          accessibilityRole="alert"
-          accessibilityLiveRegion="polite"
-          accessibilityLabel={`${current.title}. ${current.body}`}
-          accessibilityHint="Double-tap to open"
-          accessibilityActions={[{ name: "activate" }, { name: "escape", label: "Dismiss" }]}
-          onAccessibilityAction={(e) => (e.nativeEvent.actionName === "escape" ? dismiss() : open(current.url))}
-          style={[{ marginHorizontal: layout.gutter, maxWidth: layout.maxContentWidth, alignSelf: "stretch" }, follow]}
+          entering={SlideInUp.duration(dur.slow).easing(ease.out)}
+          exiting={FadeOutUp.duration(dur.fast)}
+          style={{ marginHorizontal: layout.gutter, maxWidth: layout.maxContentWidth, alignSelf: "stretch" }}
         >
-          <NoticeCard
-            title={current.title}
-            body={current.body}
-            pillar={current.pillar}
-            pet={{ stage: pet?.stage ?? "baby", mood: pet?.mood ?? "happy" }}
-          />
+          {/* Entering/exiting and the drag transform live on separate views so neither overwrites the other. */}
+          <Animated.View
+            accessible
+            accessibilityRole="alert"
+            accessibilityLiveRegion="polite"
+            accessibilityLabel={`${current.title}. ${current.body}`}
+            accessibilityHint="Double-tap to open"
+            accessibilityActions={[{ name: "activate" }, { name: "escape", label: "Dismiss" }]}
+            onAccessibilityAction={(e) => (e.nativeEvent.actionName === "escape" ? dismiss() : open(current.url))}
+            style={follow}
+          >
+            <NoticeCard
+              title={current.title}
+              body={current.body}
+              pillar={current.pillar}
+              pet={{ stage: pet?.stage ?? "baby", mood: pet?.mood ?? "happy" }}
+            />
+          </Animated.View>
         </Animated.View>
       </GestureDetector>
     </View>

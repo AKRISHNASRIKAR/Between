@@ -250,7 +250,7 @@ export function MoodCreature({ mood, size = 96, silhouette, backdrop = palette.c
   const shape = SHAPES[mood];
   const fill = silhouette ? palette.line : fillFor(mood);
   const faceColor =
-    MOODS[mood].family === "cobalt" && MOODS[mood].tone === "base" && !silhouette ? palette["on-ink"] : ink;
+    MOODS[mood].family === "teal" && MOODS[mood].tone === "base" && !silhouette ? palette["on-ink"] : ink;
   return (
     <Svg width={size} height={size} viewBox="0 0 100 100" accessibilityLabel={MOODS[mood].label}>
       {silhouette ? (

@@ -45,8 +45,8 @@ export function Button({
     primary: { bg: palette.ink, fg: "on-ink", r: radius.md },
     secondary: { bg: palette.paper, fg: "ink", border: palette.ink, r: radius.md },
     quiet: { bg: "transparent", fg: "ink", r: radius.md },
-    accent: { bg: f.base, fg: family === "cobalt" ? "on-ink" : "ink", r: radius.pill },
-    destructive: { bg: palette.paper, fg: "coral-deep", border: palette["coral-deep"], r: radius.md },
+    accent: { bg: f.base, fg: family === "teal" ? "on-ink" : "ink", r: radius.pill },
+    destructive: { bg: palette.paper, fg: "tomato-deep", border: palette["tomato-deep"], r: radius.md },
   }[variant];
   const fgToken = look.fg as ColorToken;
 

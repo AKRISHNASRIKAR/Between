@@ -1,14 +1,16 @@
 import { LIMITS } from "@lovenotes/contracts";
 import { useEffect, useRef, useState } from "react";
 import { useWindowDimensions, View } from "react-native";
-import Animated, { FadeIn, FadeInDown, ZoomIn } from "react-native-reanimated";
+import Animated, { FadeIn } from "react-native-reanimated";
 import {
   Button,
   Confetti,
   Dots,
   type EggHandle,
+  enter,
   haptics,
   Pet,
+  pop,
   Screen,
   space as spacing,
   Text,
@@ -100,7 +102,7 @@ export default function Hatch() {
         <View className="flex-1 gap-8 pt-10">
           <View className="items-center" style={{ minHeight: 220 }}>
             {phase === "hatched" ? (
-              <Animated.View entering={ZoomIn.springify().damping(11).stiffness(200)}>
+              <Animated.View entering={pop()}>
                 <Pet stage="baby" mood="excited" size={220} />
               </Animated.View>
             ) : (
@@ -109,7 +111,7 @@ export default function Hatch() {
           </View>
 
           {phase === "hatched" ? (
-            <Animated.View entering={FadeInDown.delay(250).springify().damping(18)} style={{ gap: spacing[6] }}>
+            <Animated.View entering={enter(6)} style={{ gap: spacing[6] }}>
               <View className="gap-3">
                 <Text variant="label" color="orange-deep">
                   You and {partner?.displayName ?? "your person"}
@@ -157,7 +159,7 @@ export default function Hatch() {
                 </>
               )}
               {error && !showField ? (
-                <Text variant="caption" color="coral-deep">
+                <Text variant="caption" color="tomato-deep">
                   {error}
                 </Text>
               ) : null}

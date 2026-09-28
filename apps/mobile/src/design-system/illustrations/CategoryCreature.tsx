@@ -1,17 +1,10 @@
 import type { QuizCategory } from "@lovenotes/contracts";
 import { Circle, G, Path, Svg } from "react-native-svg";
-import { type Family, family, palette, stroke } from "../tokens";
+import { palette, quizTheme, stroke } from "../tokens";
 import { polarPath, RisoPath } from "./riso";
 
-/** Quiz category → pillar-ish family (DESIGN §7.3 / §8). */
-export const CATEGORY_FAMILY: Record<QuizCategory, Family> = {
-  about_me: "sky",
-  favorites: "butter",
-  personality: "purple",
-  relationship: "pink",
-  chaos: "orange",
-  daily: "purple",
-};
+/** Quiz category → its paint-chip colours (DESIGN §2.6). */
+export const quizColors = (category: QuizCategory) => quizTheme[category];
 
 export const CATEGORY_LABEL: Record<QuizCategory, string> = {
   about_me: "About me",
@@ -42,12 +35,13 @@ export function CategoryCreature({
   size?: number;
   onBase?: boolean;
 }) {
-  const f = family(CATEGORY_FAMILY[category]);
-  const ink = palette.ink;
-  const fill = onBase ? palette.paper : f.base;
+  const t = quizTheme[category];
+  // On its own card the creature is drawn in the card's accent with the card's text colour as ink.
+  const ink = onBase ? t.text : palette.ink;
+  const fill = onBase ? t.accent : t.fill;
   return (
     <Svg width={size} height={size} viewBox="0 0 100 100" accessibilityElementsHidden>
-      <RisoPath d={BODY[category]} fill={fill} />
+      <RisoPath d={BODY[category]} fill={fill} line={ink} />
       {category === "daily" ? (
         <Path
           d="M 42 44 C 42 34 58 34 58 44 C 58 52 50 52 50 60 M 50 68 L 50 69"

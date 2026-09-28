@@ -2,11 +2,13 @@ import type { QuizSessionSummary } from "@lovenotes/contracts";
 import { RESULT_COPY } from "@lovenotes/contracts";
 import { router } from "expo-router";
 import { RefreshControl, ScrollView, useWindowDimensions, View } from "react-native";
+import Animated from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
   CaretRight,
   EmptyState,
   ErrorState,
+  enter,
   layout,
   MoodCreature,
   PressableScale,
@@ -14,6 +16,7 @@ import {
   QuizCard,
   radius,
   Skeleton,
+  TabHeader,
   Text,
   useToast,
 } from "@/design-system";
@@ -71,14 +74,7 @@ export default function Know() {
       }}
       refreshControl={<RefreshControl refreshing={false} onRefresh={refresh} />}
     >
-      <View style={{ gap: 4 }}>
-        <Text variant="label" color="purple-deep">
-          Know
-        </Text>
-        <Text variant="display-l" accessibilityRole="header">
-          How well do you know each other?
-        </Text>
-      </View>
+      <TabHeader title="Know each other" />
 
       <DailyCard daily={daily.data} loading={daily.isPending} partnerName={partnerName} />
 
@@ -100,23 +96,15 @@ export default function Know() {
         ) : (
           <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 12 }}>
             {(packs.data ?? []).map((p, i) => (
-              <View key={p.id} style={{ width: tileW, transform: [{ rotate: `${i % 2 === 0 ? -1 : 1}deg` }] }}>
+              <Animated.View key={p.id} entering={enter(i)} style={{ width: tileW }}>
                 <PressableScale
                   accessibilityLabel={`${p.title}. ${p.questionCount} questions.`}
                   disabled={start.isPending}
                   onPress={() => openPack(p.id)}
                 >
-                  <QuizCard
-                    category={p.category}
-                    title={p.title}
-                    footer={
-                      <Text variant="caption" style={{ opacity: 0.8 }}>
-                        {p.questionCount} questions
-                      </Text>
-                    }
-                  />
+                  <QuizCard category={p.category} title={p.title} meta={`${p.questionCount} questions`} />
                 </PressableScale>
-              </View>
+              </Animated.View>
             ))}
           </View>
         )}

@@ -47,11 +47,11 @@ function MoodOption({
           paddingVertical: 8,
           borderRadius: radius.md,
           borderWidth: 2,
-          borderColor: selected ? palette["cobalt-base"] : "transparent",
-          backgroundColor: selected ? palette["cobalt-soft"] : "transparent",
+          borderColor: selected ? palette["teal-base"] : "transparent",
+          backgroundColor: selected ? palette["teal-soft"] : "transparent",
         }}
       >
-        <MoodCreature mood={mood} size={56} backdrop={selected ? palette["cobalt-soft"] : palette.paper} />
+        <MoodCreature mood={mood} size={56} backdrop={selected ? palette["teal-soft"] : palette.paper} />
         <Text variant="caption" numberOfLines={1}>
           {MOODS[mood].label}
         </Text>

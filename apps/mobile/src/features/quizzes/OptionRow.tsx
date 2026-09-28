@@ -1,7 +1,7 @@
 import { View } from "react-native";
 import { Check, haptics, PressableScale, palette, radius, stroke, Text } from "@/design-system";
 
-/** A quiz option: paper row, 56 high, cobalt ring when selected (DESIGN §7.3 QuizCard). */
+/** A quiz option: paper row, 56 high, teal ring when selected (DESIGN §7.3 QuizCard). */
 export function OptionRow({
   label,
   glyph,
@@ -29,7 +29,7 @@ export function OptionRow({
         borderRadius: radius.md,
         backgroundColor: palette.paper,
         borderWidth: 2,
-        borderColor: selected ? palette["cobalt-base"] : "transparent",
+        borderColor: selected ? palette["teal-base"] : "transparent",
         paddingHorizontal: 16,
         paddingVertical: 10,
         flexDirection: "row",
@@ -48,8 +48,8 @@ export function OptionRow({
           height: 22,
           borderRadius: 11,
           borderWidth: stroke.regular,
-          borderColor: selected ? palette["cobalt-base"] : palette["line-strong"],
-          backgroundColor: selected ? palette["cobalt-base"] : "transparent",
+          borderColor: selected ? palette["teal-base"] : palette["line-strong"],
+          backgroundColor: selected ? palette["teal-base"] : "transparent",
           alignItems: "center",
           justifyContent: "center",
         }}

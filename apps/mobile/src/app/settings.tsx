@@ -139,7 +139,7 @@ export default function Settings() {
               </View>
             </>
           ) : prefs.isError ? (
-            <Text variant="body-sm" color="coral-deep" style={{ paddingVertical: 16 }}>
+            <Text variant="body-sm" color="tomato-deep" style={{ paddingVertical: 16 }}>
               {humanError(prefs.error)}
             </Text>
           ) : (
