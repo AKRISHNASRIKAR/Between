@@ -17,9 +17,8 @@ export const spaces = pgTable(
       .default("active"),
     closedAt: ts(),
     purgeAfter: ts(),
-    createdBy: uuid()
-      .notNull()
-      .references(() => users.id),
+    // Nullable: deleting the creator's account must not block (or cascade-delete) the space.
+    createdBy: uuid().references(() => users.id, { onDelete: "set null" }),
     createdAt: createdAt(),
   },
   (t) => [check("spaces_status_ck", sql`${t.status} in ('active','closed')`)],

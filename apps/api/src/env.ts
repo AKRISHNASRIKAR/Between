@@ -30,7 +30,9 @@ const Env = z.object({
     .optional(),
 });
 
-const parsed = Env.safeParse(process.env);
+// Treat empty values (e.g. `RESEND_API_KEY=`) as unset.
+const raw = Object.fromEntries(Object.entries(process.env).filter(([, v]) => v !== ""));
+const parsed = Env.safeParse(raw);
 if (!parsed.success) {
   console.error("Invalid environment:", z.prettifyError(parsed.error));
   process.exit(1);
@@ -42,7 +44,12 @@ if (parsed.data.EMAIL_TRANSPORT === "resend" && !parsed.data.RESEND_API_KEY) {
 
 if (
   parsed.data.STORAGE_DRIVER === "s3" &&
-  !(parsed.data.S3_ENDPOINT && parsed.data.S3_BUCKET && parsed.data.S3_ACCESS_KEY_ID && parsed.data.S3_SECRET_ACCESS_KEY)
+  !(
+    parsed.data.S3_ENDPOINT &&
+    parsed.data.S3_BUCKET &&
+    parsed.data.S3_ACCESS_KEY_ID &&
+    parsed.data.S3_SECRET_ACCESS_KEY
+  )
 ) {
   console.error("STORAGE_DRIVER=s3 requires S3_ENDPOINT, S3_BUCKET, S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY");
   process.exit(1);

@@ -22,6 +22,7 @@ import { FlowContext } from "@/features/space/flow-context";
 import { useMe } from "@/features/space/hooks";
 import { RealtimeProvider } from "@/features/space/realtime-sync";
 import { authClient } from "@/lib/auth";
+import { useNotificationRouting } from "@/lib/push";
 import { CACHE_BUSTER, persister, queryClient } from "@/lib/query";
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
@@ -62,6 +63,9 @@ function RootNavigator() {
   useEffect(() => {
     if (state === "ready") restore();
   }, [state, restore]);
+
+  // Push: register once set up, and let taps on notifications open the right screen.
+  useNotificationRouting(state === "ready");
 
   if (state === "loading") return null;
 

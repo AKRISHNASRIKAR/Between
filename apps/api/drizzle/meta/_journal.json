@@ -50,6 +50,20 @@
       "when": 1790544734945,
       "tag": "0006_journal",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1790547200807,
+      "tag": "0007_space_creator_nullable",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1790547247646,
+      "tag": "0008_note_recipient_nullable",
+      "breakpoints": true
     }
   ]
 }

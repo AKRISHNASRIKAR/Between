@@ -14,9 +14,8 @@ export const notes = pgTable(
     authorId: uuid()
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
-    recipientId: uuid()
-      .notNull()
-      .references(() => users.id, { onDelete: "cascade" }),
+    // Nullable: if the recipient deletes their account, the author keeps their own words.
+    recipientId: uuid().references(() => users.id, { onDelete: "set null" }),
     body: text().notNull(),
     paper: text({ enum: ["cream", "blush", "kraft", "sky"] })
       .notNull()

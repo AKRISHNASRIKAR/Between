@@ -22,3 +22,6 @@ expo-env.d.ts
 
 # API
 /apps/api/.data/
+
+# Deploy secrets
+deploy/.env.production

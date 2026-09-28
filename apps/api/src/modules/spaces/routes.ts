@@ -6,6 +6,7 @@ import { requireSpaceMember } from "../../middleware/space";
 import type { AppEnv } from "../../types";
 import { futureRoutes } from "../future/routes";
 import { journalRoutes, mediaRoutes, memoryRoutes } from "../journal/routes";
+import { exportSpace } from "../lifecycle/service";
 import { vibeRoutes } from "../moods/routes";
 import { noteRoutes } from "../notes/routes";
 import { petRoutes } from "../pet/routes";
@@ -36,6 +37,7 @@ const spaceScoped = new Hono<AppEnv>()
     await leaveSpace(c.get("scope"));
     return c.body(null, 204);
   })
+  .get("/export", async (c) => c.json(await exportSpace(c.get("scope"))))
   .route("/pet", petRoutes)
   .route("/vibe", vibeRoutes)
   .route("/notes", noteRoutes)

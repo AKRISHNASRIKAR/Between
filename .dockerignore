@@ -1,0 +1,9 @@
+**/node_modules
+apps/mobile
+**/.env
+**/.env.*
+!**/.env.example
+apps/api/.data
+.git
+.claude
+docs

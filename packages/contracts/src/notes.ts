@@ -8,7 +8,8 @@ export type Paper = z.infer<typeof Paper>;
 export const Note = z.object({
   id: z.uuid(),
   authorId: z.uuid(),
-  recipientId: z.uuid(),
+  /** null once the recipient has deleted their account */
+  recipientId: z.uuid().nullable(),
   body: z.string(),
   paper: Paper,
   openedAt: z.string().nullable(),

@@ -55,6 +55,12 @@
           "photosPermission": "Love Notes needs your photos so you can add them to your shared journal.",
           "cameraPermission": "Love Notes uses the camera so you can snap a memory for your shared journal."
         }
+      ],
+      [
+        "expo-notifications",
+        {
+          "color": "#F2A7C3"
+        }
       ]
     ],
     "experiments": {

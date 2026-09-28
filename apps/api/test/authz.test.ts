@@ -36,6 +36,7 @@ const ROUTES: Array<[method: string, path: string, body?: unknown]> = [
   ["POST", "/journal/pages", { id: "0192f000-0000-7000-8000-000000000007", pageDate: "2026-01-01" }],
   ["GET", "/journal/pages/0192f000-0000-7000-8000-000000000008"],
   ["GET", "/memories"],
+  ["GET", "/export"],
   [
     "POST",
     "/media/uploads",
