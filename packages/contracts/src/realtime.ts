@@ -1,5 +1,6 @@
 import type { MoodCheckin } from "./moods";
 import type { Note } from "./notes";
+import type { Notice } from "./notices";
 import type { Pet, PetInteractionKind } from "./pet";
 
 /** Server → client. Every event is also an idempotent cache hint. */
@@ -17,7 +18,9 @@ export type ServerEvent =
   | { t: "note.deleted"; noteId: string }
   | { t: "quiz.updated"; sessionId: string }
   | { t: "future.changed" }
-  | { t: "journal.changed"; pageId: string };
+  | { t: "journal.changed"; pageId: string }
+  /** A notice for one member (`to`); others ignore it. Shown as an in-app banner. */
+  | { t: "notice"; to: string; notice: Notice; petName: string };
 
 /** Client → server. Kept tiny on purpose. */
 export type ClientMessage = { t: "auth"; token: string } | { t: "ping" };

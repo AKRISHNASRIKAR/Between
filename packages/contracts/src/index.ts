@@ -7,6 +7,7 @@ export * from "./limits";
 export * from "./me";
 export * from "./moods";
 export * from "./notes";
+export * from "./notices";
 export * from "./notifications";
 export * from "./observations";
 export * from "./pet";
