@@ -11,7 +11,7 @@
     "dev:mobile": "bun --filter @lovenotes/mobile start",
     "typecheck": "bun --filter '*' typecheck",
     "test": "bun --filter '*' test",
-    "lint": "biome check . && bun scripts/check-design-tokens.ts",
+    "lint": "biome check . && bun scripts/check-design-tokens.ts && bun scripts/check-architecture.ts",
     "format": "biome check --write ."
   },
   "devDependencies": {
