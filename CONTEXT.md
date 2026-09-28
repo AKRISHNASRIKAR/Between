@@ -130,6 +130,10 @@ _Avoid_: dream (as the type name), goal, bucket-list item, todo
 A small, time-sensitive thing surfaced on Today (a Note waiting, a Reveal ready).
 _Avoid_: task, reminder, notification (on screen)
 
+**Notice**:
+A piece of news for one Member (a Note waiting, a Reveal ready, a Milestone), shown in the app if they're there or pushed if they're away, in the same words either way.
+_Avoid_: alert, toast, notification (as the name of the thing)
+
 **Pet update**:
-A notification in the Pet's voice about good news in the Pet's life; opt-in and at most one a day.
+A Notice in the Pet's voice about a Milestone; pushed only if opted in, at most one a day.
 _Avoid_: pet alert, reminder, nudge

@@ -281,6 +281,26 @@ Only one `primary` per screen. Buttons are full width in forms and sheets, and h
 | **FutureTicket** | Looks like a ticket: `paper`, `r-paper`, with notched half-circle cut-outs on both sides at 70% width and a dashed perforation line | Title in `heading`, optional emoji "stub" on the right. When completed, a rotated (-8°) `green-deep` stamp reads "DONE · 27 SEP" with a rough-edged circular border, and the ticket shifts to `green-soft`. |
 | **JournalPage** | `paper`, `r-paper`, full width, with a faint `line` ruling every 28px behind text blocks | Date in `display-m` and title in `heading`. Each block has an identity-colored author marker (4px left rule + name in `caption`). |
 | **QuestionOfTheDay** | A `purple-soft` card, `r-lg`, with a purple "?" creature peeking over the top edge (clipped) | States: *your turn*, *waiting* (partner avatar with animated dots), and *reveal ready* (`accent` button "Reveal ✦"). |
+| **WellbeingCard** | `paper`, `r-lg`, in the Pet room below the pet | Three rows (Fullness / orange, Energy / sky, Love / pink): a bold glyph, the label in `body-sm`, a soft bar (family `soft` track, `base` fill, springs to its value) and the word in `hand-m`, family `deep`, right-aligned with 4px right padding so the script face isn't clipped. Bars **never empty**: calm is about a third full. Below, up to three `caption` lines in `ink-tertiary` saying who cared ("You fed Mochi · 2h ago"). Never red, never a warning. |
+| **PetTimeline** ("Mochi's story") | No container: a 2px `line` rail with entries hanging off it | Milestones are a 24px `orange-base` disc with a filled sparkle, the title in `heading` and the line in `body`. Care is an 8px `line-strong` dot with `body-sm` `ink-secondary` text, and back-to-back repeats collapse ("· twice"). Times in `caption`. |
+
+### 7.4 Notices (in-app notifications)
+
+A Notice is news delivered by the pet. In the app it appears as a **NoticeCard**, and when the app is closed the same words arrive as a push with the Love Notes chime.
+
+| Part | Spec |
+|---|---|
+| Surface | `paper`, `r-md`, 1px border in the pillar family `soft`, `lift-2`, full width minus the gutter (max content width), 8px below the safe area |
+| Pillar tape | A 4px band in the family `base` across the top edge (notes pink, today sky, know purple, remember butter, future green, pet orange) |
+| Messenger | A 48px `r-pill` badge in the family `soft`, with the pet (current stage and mood, 52px so it peeks out of the circle) |
+| Text | Pillar label in `label-sm` family `deep`; title in `heading` (up to 2 lines); body in `body-sm` `ink-secondary` (up to 2 lines) |
+| Motion | Slides in from the top (`spring.gentle`), follows the finger when dragged up, dismisses past 24px; fades out in `dur.fast`. Auto-dismisses after 5 seconds, one at a time, queue of up to 3 |
+| Feedback | `haptics.tick` on arrival, `haptics.tap` when opened |
+| Behaviour | Tap opens the Notice's link. It's skipped if you're already on that screen. In the foreground, pushes also show as a NoticeCard, never as the system banner |
+| Accessibility | `alert` role, polite live region, label = title + body, actions "Open" and "Dismiss" |
+| Sound (push only) | `chime.wav`: two soft bell tones, E6 → B6, ~0.9s. Warm, never an alarm |
+
+Copy lives in `noticeCopy()` (contracts), written in the pet's voice where it fits ("Mochi is holding something for you"). Pet updates are good news only and opt-in (at most one push a day).
 
 ---
 
