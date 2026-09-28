@@ -18,6 +18,7 @@ import { exportRoutes } from "./modules/privacy";
 import { dailyRoutes, quizPackRoutes, quizRoutes } from "./modules/quizzes";
 import { createSpaceRoutes, inviteRoutes, spaceRoutes } from "./modules/spaces";
 import { vibeRoutes } from "./modules/vibes";
+import { widgetRoutes } from "./modules/widget";
 import { realtimeHandler } from "./realtime/ws";
 import type { AppEnv } from "./types";
 
@@ -37,7 +38,8 @@ const spaceScoped = new Hono<AppEnv>()
   .route("/journal", journalRoutes)
   .route("/media", mediaRoutes)
   .route("/memories", memoryRoutes)
-  .route("/export", exportRoutes);
+  .route("/export", exportRoutes)
+  .route("/widget", widgetRoutes);
 
 /** Authenticated JSON API. Its type drives the mobile app's typed client. */
 export const v1 = new Hono<AppEnv>()

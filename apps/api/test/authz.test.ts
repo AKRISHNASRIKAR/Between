@@ -37,6 +37,7 @@ const ROUTES: Array<[method: string, path: string, body?: unknown]> = [
   ["GET", "/journal/pages/0192f000-0000-7000-8000-000000000008"],
   ["GET", "/memories"],
   ["GET", "/export"],
+  ["GET", "/widget"],
   [
     "POST",
     "/media/uploads",

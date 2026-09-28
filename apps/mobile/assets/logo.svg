@@ -1,8 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <title>Love Notes</title>
   <rect width="1024" height="1024" fill="#FF7BAC"/>
   <circle cx="820" cy="190" r="26" fill="#FFFDF8" opacity="0.55"/>
   <circle cx="190" cy="300" r="16" fill="#FFFDF8" opacity="0.45"/>
   <g transform="translate(122 -95) scale(3.9)">
+    
     <path d="M 100 70 C 141 69 163 96 161 131 C 160 158 137 168 100 168 C 62 168 39 157 38 129 C 37 95 60 71 100 70 Z" fill="#F4D242" transform="translate(2.2 2.2)"/><path d="M 100 70 C 141 69 163 96 161 131 C 160 158 137 168 100 168 C 62 168 39 157 38 129 C 37 95 60 71 100 70 Z" fill="none" stroke="#1D1A17" stroke-width="3.2" stroke-linejoin="round"/>
     <path d="M 68 80 C 50 72 33 84 34 105 C 35 119 45 125 53 118 C 59 112 62 99 72 91 Z" fill="#F0A351" transform="translate(2.2 2.2)"/><path d="M 68 80 C 50 72 33 84 34 105 C 35 119 45 125 53 118 C 59 112 62 99 72 91 Z" fill="none" stroke="#1D1A17" stroke-width="3.2" stroke-linejoin="round"/>
     <path d="M 132 80 C 150 72 167 84 166 105 C 165 119 155 125 147 118 C 141 112 138 99 128 91 Z" fill="#F0A351" transform="translate(2.2 2.2)"/><path d="M 132 80 C 150 72 167 84 166 105 C 165 119 155 125 147 118 C 141 112 138 99 128 91 Z" fill="none" stroke="#1D1A17" stroke-width="3.2" stroke-linejoin="round"/>
@@ -14,8 +16,7 @@
     <circle cx="82.2" cy="115.8" r="2" fill="#FFFDF8"/>
     <circle cx="122.2" cy="115.8" r="2" fill="#FFFDF8"/>
     <path d="M 96 126 L 104 126 L 100 131 Z" fill="#1D1A17" stroke="#1D1A17" stroke-width="1.5" stroke-linejoin="round"/>
-    <path d="M 91 134 Q 95.5 140 100 134 Q 104.5 140 109 134" fill="none" stroke="#1D1A17" stroke-width="2.6" stroke-linecap="round"/>
-  </g>
+    <path d="M 91 134 Q 95.5 140 100 134 Q 104.5 140 109 134" fill="none" stroke="#1D1A17" stroke-width="2.6" stroke-linecap="round"/></g>
   <rect x="222" y="556" width="600" height="360" rx="40" fill="#F25C95"/>
   <rect x="206" y="540" width="612" height="364" rx="40" fill="#FFFDF8" stroke="#1D1A17" stroke-width="14"/>
   <path d="M 232 566 L 512 752 L 792 566" fill="none" stroke="#CBBFAA" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>

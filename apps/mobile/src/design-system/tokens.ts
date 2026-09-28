@@ -187,6 +187,12 @@ export const type = {
 
 export type TypeVariant = keyof typeof type;
 
+/**
+ * Home-screen widget type (DESIGN §7.5). Widgets render natively with system fonts, so they get
+ * their own small scale in points; the iOS widget mirrors these values (it can't import tokens).
+ */
+export const widgetType = { title: 17, name: 15, body: 13, dot: 10, eyebrow: 11, focus: 14 } as const;
+
 /** Elevation (DESIGN §6). Warm ink-tinted, rare. */
 export const lift = {
   0: { shadowOpacity: 0, elevation: 0 },

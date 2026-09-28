@@ -3,6 +3,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { createContext, type ReactNode, useContext, useEffect, useState } from "react";
 import { noteKeys, patchNoteCaches } from "@/features/notes/hooks";
 import { petKeys } from "@/features/pet/hooks";
+import { widgetKey } from "@/features/widgets/useWidgetSync";
 import { realtime } from "@/lib/realtime";
 import { setCachedPet } from "./hooks";
 import { keys } from "./keys";
@@ -22,6 +23,11 @@ export function RealtimeProvider({ active, children }: { active: boolean; childr
     if (!active) return;
     realtime.start();
     const offEvents = realtime.subscribe((e: ServerEvent) => {
+      // Anything but presence can change what the home-screen widget shows.
+      if (e.t !== "presence" && e.t !== "hello" && e.t !== "notice") {
+        const sid = qc.getQueryData<Me>(keys.me)?.space?.id;
+        if (sid) qc.invalidateQueries({ queryKey: widgetKey(sid) });
+      }
       switch (e.t) {
         case "hello":
           setState((s) => ({ ...s, online: e.online }));

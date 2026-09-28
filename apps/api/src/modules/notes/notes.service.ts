@@ -113,3 +113,8 @@ export async function reactToNote(scope: SpaceScope, id: string, on: boolean): P
   publish(scope.spaceId, { t: "note.updated", note });
   return note;
 }
+
+/** How many notes are waiting for the caller (Today, widgets). */
+export async function countWaitingNotes(scope: SpaceScope): Promise<number> {
+  return withTx((tx) => notesRepo.waitingCount(tx, scope));
+}

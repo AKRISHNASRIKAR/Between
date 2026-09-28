@@ -8,8 +8,9 @@ const root = "apps/mobile/src";
 const rules: Array<[RegExp, string]> = [
   [/#[0-9a-fA-F]{3,8}\b/, "hex color"],
   [/\brgba?\(/, "rgb color"],
-  [/\bfontSize\s*:/, "fontSize"],
-  [/\bfontFamily\s*:/, "fontFamily"],
+  // Literal values only: `fontSize: widgetType.body` (a token) is fine, `fontSize: 13` is not.
+  [/\bfontSize\s*:\s*\d/, "fontSize"],
+  [/\bfontFamily\s*:\s*["'`]/, "fontFamily"],
   [/\b(?:text|bg|border)-\[#/, "arbitrary Tailwind color"],
 ];
 

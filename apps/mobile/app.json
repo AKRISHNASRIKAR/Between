@@ -60,10 +60,44 @@
         "expo-notifications",
         {
           "color": "#FF7BAC",
-          "sounds": [
-            "./assets/sounds/chime.wav"
-          ],
+          "sounds": ["./assets/sounds/chime.wav"],
           "icon": "./assets/android-icon-monochrome.png"
+        }
+      ],
+      [
+        "expo-widgets",
+        {
+          "groupIdentifier": "group.app.lovenotes.mobile",
+          "widgets": [
+            {
+              "name": "Us",
+              "displayName": "Love Notes",
+              "description": "Your pet, today's vibes, and anything waiting for you.",
+              "ios": {
+                "supportedFamilies": ["systemSmall", "systemMedium", "accessoryRectangular", "accessoryInline"]
+              }
+            }
+          ]
+        }
+      ],
+      [
+        "react-native-android-widget",
+        {
+          "widgets": [
+            {
+              "name": "Us",
+              "label": "Love Notes",
+              "description": "Your pet, today's vibes, and anything waiting for you.",
+              "minWidth": "110dp",
+              "minHeight": "110dp",
+              "targetCellWidth": 2,
+              "targetCellHeight": 2,
+              "maxResizeWidth": "320dp",
+              "maxResizeHeight": "180dp",
+              "resizeMode": "horizontal|vertical",
+              "updatePeriodMillis": 1800000
+            }
+          ]
         }
       ]
     ],

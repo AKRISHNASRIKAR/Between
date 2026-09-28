@@ -25,32 +25,39 @@ const C = {
 const S = 3.9; // pet scale (200 box → ~780)
 const petAt = (tx: number, ty: number) => `translate(${tx} ${ty}) scale(${S})`;
 
-/** Mochi from the waist up; the envelope in front hides the rest. */
-function mochi(mono = false) {
+/** Mochi in the in-app 200×200 pet box (feet optional; the icon hides them behind the note). */
+function mochiBox(opts: { mono?: boolean; sleepy?: boolean; feet?: boolean } = {}) {
+  const { mono = false, sleepy = false, feet = false } = opts;
   const f = (c: string) => (mono ? "#000" : c);
   const line = mono ? "none" : C.ink;
   const riso = (d: string, fill: string) =>
     mono
       ? `<path d="${d}" fill="#000"/>`
       : `<path d="${d}" fill="${fill}" transform="translate(2.2 2.2)"/><path d="${d}" fill="none" stroke="${line}" stroke-width="3.2" stroke-linejoin="round"/>`;
+  const eyes = sleepy
+    ? `<path d="M ${PET.eyeL.x - 7} ${PET.eyeL.y} Q ${PET.eyeL.x} ${PET.eyeL.y + 6} ${PET.eyeL.x + 7} ${PET.eyeL.y} M ${PET.eyeR.x - 7} ${PET.eyeR.y} Q ${PET.eyeR.x} ${PET.eyeR.y + 6} ${PET.eyeR.x + 7} ${PET.eyeR.y}" fill="none" stroke="${C.ink}" stroke-width="3" stroke-linecap="round"/>`
+    : `<circle cx="${PET.eyeL.x}" cy="${PET.eyeL.y}" r="6.5" fill="${C.ink}"/>
+    <circle cx="${PET.eyeR.x}" cy="${PET.eyeR.y}" r="6.5" fill="${C.ink}"/>
+    <circle cx="${PET.eyeL.x + 2.2}" cy="${PET.eyeL.y - 2.2}" r="2" fill="${C.paper}"/>
+    <circle cx="${PET.eyeR.x + 2.2}" cy="${PET.eyeR.y - 2.2}" r="2" fill="${C.paper}"/>`;
   const face = mono
     ? ""
     : `
     <circle cx="${PET.cheekL.x}" cy="${PET.cheekL.y}" r="8" fill="${C.cheek}" opacity="0.7"/>
     <circle cx="${PET.cheekR.x}" cy="${PET.cheekR.y}" r="8" fill="${C.cheek}" opacity="0.7"/>
-    <circle cx="${PET.eyeL.x}" cy="${PET.eyeL.y}" r="6.5" fill="${C.ink}"/>
-    <circle cx="${PET.eyeR.x}" cy="${PET.eyeR.y}" r="6.5" fill="${C.ink}"/>
-    <circle cx="${PET.eyeL.x + 2.2}" cy="${PET.eyeL.y - 2.2}" r="2" fill="${C.paper}"/>
-    <circle cx="${PET.eyeR.x + 2.2}" cy="${PET.eyeR.y - 2.2}" r="2" fill="${C.paper}"/>
+    ${eyes}
     <path d="${PET.nose}" fill="${C.ink}" stroke="${C.ink}" stroke-width="1.5" stroke-linejoin="round"/>
-    <path d="${PET.mouth.happy}" fill="none" stroke="${C.ink}" stroke-width="2.6" stroke-linecap="round"/>`;
-  return `<g transform="${petAt(122, -95)}">
+    <path d="${sleepy ? PET.mouth.content : PET.mouth.happy}" fill="none" stroke="${C.ink}" stroke-width="2.6" stroke-linecap="round"/>`;
+  return `
+    ${feet ? riso(PET.footL, f(C.body)) + riso(PET.footR, f(C.body)) : ""}
     ${riso(PET.body, f(C.body))}
     ${riso(PET.earL, f(C.ear))}
     ${riso(PET.earR, f(C.ear))}
-    ${face}
-  </g>`;
+    ${face}`;
 }
+
+/** Mochi from the waist up; the envelope in front hides the rest. */
+const mochi = (mono = false) => `<g transform="${petAt(122, -95)}">${mochiBox({ mono })}</g>`;
 
 /** The sealed note Mochi is holding, with two paws over its top edge. */
 function note(mono = false) {
@@ -82,6 +89,7 @@ const mark = (mono = false) => `${mochi(mono)}${note(mono)}`;
 /** The full-bleed App Store icon (iOS masks the corners itself). */
 export const iconSvg =
   () => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <title>Love Notes</title>
   <rect width="1024" height="1024" fill="${C.bg}"/>
   <circle cx="820" cy="190" r="26" fill="${C.paper}" opacity="0.55"/>
   <circle cx="190" cy="300" r="16" fill="${C.paper}" opacity="0.45"/>
@@ -133,6 +141,23 @@ const splash = () => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 
   ${inset(mark(), 0.8)}
 </svg>`;
 
+/**
+ * Pet art for the home-screen widgets: the whole pet (not just the head), transparent, square.
+ * Widgets can't run the app's SVG renderer, so they show these pictures instead.
+ */
+const petArt = (kind: "awake" | "sleepy" | "egg") => {
+  // Centre the pet box's content (x 34–166, y 70–171; the egg y 44–176) in an 840 square.
+  const body =
+    kind === "egg"
+      ? `<g transform="translate(0 -42) scale(4.2)">
+          <path d="${PET.egg.whole}" fill="${palette.sunken}" transform="translate(2.2 2.2)"/>
+          <path d="${PET.egg.whole}" fill="${palette.paper}" stroke="${C.ink}" stroke-width="3" stroke-linejoin="round"/>
+          ${PET.egg.speckles.map((d) => `<circle cx="${d.x}" cy="${d.y}" r="${d.r}" fill="${palette[d.c]}"/>`).join("")}
+        </g>`
+      : `<g transform="translate(0 -84) scale(4.2)">${mochiBox({ sleepy: kind === "sleepy", feet: true })}</g>`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 840 840" width="840" height="840">${body}</svg>`;
+};
+
 if (import.meta.main) {
   const { Resvg } = await import(process.env.RESVG ?? "@resvg/resvg-js");
   const root = new URL("../apps/mobile/assets/", import.meta.url).pathname;
@@ -146,6 +171,8 @@ if (import.meta.main) {
     ["favicon.png", iconSvg(), 48],
   ];
   for (const [name, svg, size] of out) await Bun.write(root + name, png(svg, size));
-  await Bun.write(root + "logo.svg", iconSvg());
+  for (const kind of ["awake", "sleepy", "egg"] as const)
+    await Bun.write(`${root}widget/pet-${kind}.png`, png(petArt(kind), 360));
+  await Bun.write(`${root}logo.svg`, iconSvg());
   console.info(`icons → ${root} (${out.map((o) => o[0]).join(", ")}, logo.svg)`);
 }

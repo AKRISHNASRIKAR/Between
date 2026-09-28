@@ -1,5 +1,5 @@
 import type { Note, Paper } from "@lovenotes/contracts";
-import { and, desc, eq, isNull, lt, or } from "drizzle-orm";
+import { and, desc, eq, isNull, lt, or, sql } from "drizzle-orm";
 import type { Tx } from "../../db/client";
 import { notes } from "../../db/schema";
 import { decodeCursor, encodeCursor } from "../../lib/cursor";
@@ -29,6 +29,21 @@ const visible = (scope: SpaceScope) =>
   );
 
 export const notesRepo = {
+  /** Unopened notes addressed to the caller (uses notes_waiting_idx). */
+  async waitingCount(tx: Tx, scope: SpaceScope) {
+    const [r] = await tx
+      .select({ n: sql<number>`count(*)::int` })
+      .from(notes)
+      .where(
+        and(
+          eq(notes.spaceId, scope.spaceId),
+          eq(notes.recipientId, scope.userId),
+          isNull(notes.openedAt),
+          isNull(notes.deletedAt),
+        ),
+      );
+    return r?.n ?? 0;
+  },
   async find(tx: Tx, scope: SpaceScope, id: string, opts: { lock?: boolean } = {}) {
     const q = tx
       .select()

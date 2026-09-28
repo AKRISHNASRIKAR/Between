@@ -43,6 +43,7 @@ All routes are composed in `app.ts`. The space-scoped ones are mounted under one
 | `/v1/spaces/:sid/future` | `futureRoutes` | future |
 | `/v1/spaces/:sid/journal`, `/media`, `/memories` | `journalRoutes`, `mediaRoutes`, `memoryRoutes` | journal |
 | `/v1/spaces/:sid/export` | `exportRoutes` | privacy |
+| `/v1/spaces/:sid/widget` | `widgetRoutes` | widget |
 | `/v1/invites/:code` | `inviteRoutes` (preview, accept) | spaces |
 | `/v1/quiz-packs` | `quizPackRoutes` | quizzes |
 | `/v1/dev/*` | `devRoutes` (404 unless `DEV_TOOLS`) | dev |
@@ -83,6 +84,7 @@ modules/notes/
 | `journal` | `journal_*`, `media` | pet, members, notifications |
 | `me` | `users` (profile fields) | members, spaces, journal |
 | `privacy` | — | every feature's read functions |
+| `widget` | — | pet, members, vibes, notes, quizzes (public reads) |
 | `dev` | test users | the public API of every module |
 
 Two rules, both checked by `bun run lint` (`scripts/check-architecture.ts`):

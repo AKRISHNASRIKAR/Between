@@ -22,6 +22,7 @@ import { type FlowState, flowState, restorablePath } from "@/features/space/flow
 import { FlowContext } from "@/features/space/flow-context";
 import { useMe } from "@/features/space/hooks";
 import { RealtimeProvider } from "@/features/space/realtime-sync";
+import { useWidgetSync } from "@/features/widgets/useWidgetSync";
 import { authClient } from "@/lib/auth";
 import { useNotificationRouting } from "@/lib/push";
 import { CACHE_BUSTER, persister, queryClient } from "@/lib/query";
@@ -67,6 +68,8 @@ function RootNavigator() {
 
   // Push: register once set up, and let taps on notifications open the right screen.
   useNotificationRouting(state === "ready");
+  // Home-screen widgets mirror the space (and are wiped on sign-out).
+  useWidgetSync(state, me.data?.space?.id);
 
   if (state === "loading") return null;
 

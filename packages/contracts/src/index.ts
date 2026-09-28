@@ -15,3 +15,4 @@ export * from "./pet-lines";
 export * from "./quizzes";
 export * from "./realtime";
 export * from "./space";
+export * from "./widget";

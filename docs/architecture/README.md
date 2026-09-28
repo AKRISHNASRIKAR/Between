@@ -13,6 +13,7 @@ Love Notes is a **modular monolith**: one Expo app, one Bun API, one Postgres, a
 | 7 | [Mobile](07-mobile.md) | Routing and flow guards, data/caching, realtime, features, design system |
 | 8 | [Local dev & testing](08-dev-and-testing.md) | Local stand-ins, the simulated partner, the test suites and lints |
 | 9 | [Deployment](09-deployment.md) | Production topology and the path to it |
+| 10 | [Widgets](10-widgets.md) | Home-screen widgets on iOS and Android: one snapshot, two native renderers |
 
 ## The shape of the system
 

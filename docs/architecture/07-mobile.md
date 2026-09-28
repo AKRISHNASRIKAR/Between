@@ -70,6 +70,7 @@ Each group of screens sits in a `<Stack.Protected guard={state === …}>`, so a 
 | `journal` | remember, new page, page | Photo picker + upload pipeline (`lib/media-upload.ts`) |
 | `future` | future | Tickets, stamp to complete |
 | `notices` | — | `NoticeHost`: in-app themed notices |
+| `widgets` | — (home screen) | `useWidgetSync`, per-platform `publish`, the iOS and Android "Us" widgets ([Widgets](10-widgets.md)) |
 | `settings` | settings | Notification preferences (incl. Pet updates), export, leave, delete account |
 | `dev` | dev/partner, dev/gallery | Simulated partner, design-system gallery (dev builds only) |
 
@@ -85,7 +86,7 @@ Each group of screens sits in a `<Stack.Protected guard={state === …}>`, so a 
 
 ## Native configuration
 
-Everything native goes through `app.json` config plugins, so `ios/` and `android/` are generated (Continuous Native Generation) and never edited by hand. Notable settings: `expo-build-properties` → `ios.enableSceneSupport: true` (required on iOS 27), image-picker permission strings, and the notification colour and sounds. Adding a native module or sound means a new dev build (`bunx expo run:ios`).
+Everything native goes through `app.json` config plugins, so `ios/` and `android/` are generated (Continuous Native Generation) and never edited by hand. Notable settings: `expo-build-properties` → `ios.enableSceneSupport: true` (required on iOS 27), image-picker permission strings, and the notification colour and sounds. The widget plugins (`expo-widgets` for the iOS extension and App Group, `react-native-android-widget` for the Android AppWidget) are configured there too, and `package.json` `main` is `index.ts` so the Android widget handler registers at startup. Adding a native module, sound or widget change means a new dev build (`LANG=en_US.UTF-8 bunx expo run:ios`).
 
 ## Tests
 

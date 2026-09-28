@@ -52,18 +52,20 @@ Each accent has three steps:
 - **`soft`** for tinted backgrounds, selected states and chips.
 - **`deep`** for text or icons drawn on canvas or on its own `soft` step.
 
-| Family | base | soft | deep | ink on base | deep on canvas / soft |
-|---|---|---|---|---|---|
-| `sky` | `#9CCBF2` | `#E3F0FB` | `#1D5A8C` | 10.1 | 6.7 / 6.3 |
-| `butter` | `#F7D774` | `#FBF0C8` | `#735400` | 12.3 | 6.5 / 6.1 |
-| `coral` | `#F4876E` | `#FCE2DA` | `#A3371F` | 7.0 | 6.2 / 5.5 |
-| `pink` | `#F2A7C3` | `#FBE3EC` | `#9B2F5C` | 9.2 | 6.6 / 5.9 |
-| `purple` | `#B9A2EC` | `#ECE4FB` | `#5B3FA3` | 7.8 | 7.3 / 6.4 |
-| `orange` | `#F7A149` | `#FDE6CC` | `#8A4700` | 8.4 | 6.5 / 5.8 |
-| `green` | `#86C9A0` | `#DDF1E4` | `#1F653D` | 9.0 | 6.5 / 6.0 |
-| `cobalt` | `#2F4FE0` | `#DFE4FC` | `#2A45C4` | ✗ 2.7, use `on-ink` (6.2) | 7.1 / 6.1 |
+Values come from the Love Notes swatch board (the names in brackets are the swatch names).
 
-Rule: text on any `base` fill uses `ink`, **except cobalt, which uses `on-ink`**.
+| Family | base | soft | deep | text on base | deep on canvas / soft |
+|---|---|---|---|---|---|
+| `sky` | `#98C1E9` (attic window) | `#E7F5F9` (seafoam) | `#1D5A8C` | ink 9.2 | 6.7 / 6.5 |
+| `butter` | `#FED57D` (butter yellow) | `#FDF1D3` | `#876029` (dry earth) | ink 12.4 | 5.2 / 5.0 |
+| `tomato` | `#EF6F3C` (blood orange) | `#FCE3D9` | `#C62A29` (cherry) | ink 5.8 | 5.2 / 4.6 |
+| `pink` | `#F29CC3` (bubble gum) | `#FCEDED` (milkshake) | `#6D1F42` (grape juice) | ink 8.5 | 10.1 / 9.6 |
+| `purple` | `#D3B6D3` (lilacs) | `#E6E3F7` (wisteria) | `#5E4394` | ink 9.4 | 7.2 / 6.2 |
+| `orange` | `#F0A351` (apricot jam) | `#FDE6CC` | `#8A4700` | ink 8.3 | 6.5 / 5.8 |
+| `green` | `#5BA881` (clover) | `#E4F1DC` | `#25533F` (forest) | ink 6.1 | 8.2 / 7.5 |
+| `teal` | `#008471` (tropical rain) | `#D6EEE9` | `#006B5C` | paper 4.6 | 6.0 / 5.3 |
+
+Rule: text on any `base` fill uses `ink`, **except teal, which uses `paper`**.
 
 ### 2.3 Semantic meaning (UI chrome)
 
@@ -75,8 +77,8 @@ Rule: text on any `base` fill uses `ink`, **except cobalt, which uses `on-ink`**
 | Reflection | `purple` | Know pillar (quizzes) |
 | Playful | `orange` | The pet, play interactions, Chaos quizzes |
 | Completed / positive | `green` | Future completion stamps, success toasts, "shared" confirmations |
-| Focus / selection | `cobalt` | Focus rings, selected radio/option outlines, links |
-| Attention / error | `coral` | Error text (`coral-deep`), destructive actions, "new" dots |
+| Focus / selection | `teal` | Focus rings, selected radio/option outlines, links |
+| Attention / error | `tomato` | Error text (`tomato-deep`, cherry), destructive actions, "new" dots |
 
 **Pillar mapping** (used for tab indicators, section eyebrows and empty-state illustrations):
 
@@ -89,7 +91,7 @@ Rule: text on any `base` fill uses `ink`, **except cobalt, which uses `on-ink`**
 | Build | Future | `green` |
 | Pet | (Today, Pet room) | `orange` |
 
-**Identity markers** mark who wrote something: `you` uses `cobalt`, and `partner` uses `coral`. They appear only as a small dot or underline next to authorship, never as large fills. They are never gendered.
+**Identity markers** mark who wrote something: `you` uses `teal`, and `partner` uses `tomato`. They appear only as a small dot or underline next to authorship, never as large fills. They are never gendered.
 
 ### 2.4 Mood palette
 
@@ -100,18 +102,33 @@ Moods are expressive content, so they may use any family. Each mood is defined i
 | Joyful | butter / base | Sun circle with short rays |
 | Excited | orange / base | Eight-point starburst |
 | Grateful | pink / base | Half-circle bowl, eyes closed with a smile |
-| Connected | coral / base | Two overlapping circles |
+| Connected | tomato / base | Two overlapping circles |
 | Calm | sky / base | Wide pebble, eyes closed |
 | Tired | sunken + line-strong | Melting semicircle, droopy eyes |
 | Sensitive | purple / base | Four-petal blob |
 | Confused | purple / soft | Squiggle-edged circle with one raised brow |
-| Stressed | cobalt / base (`on-ink` face) | Jagged square |
+| Stressed | teal / base (`on-ink` face) | Jagged square |
 | Insecure | sky / soft | Small shape half-hidden behind a line |
 | Hurt | pink / soft | Blob with a small plaster |
-| Angry | coral / base | Triangle with furrowed brows |
+| Angry | tomato / base | Triangle with furrowed brows |
 
 ### 2.5 Dark mode
 The MVP ships **light only** (`userInterfaceStyle: "light"`). The cream foundation *is* the identity. Tokens are theme-ready: a "candlelit" dark theme (warm brown-black `#1A1613` canvas) is planned for V1, and it only changes token values.
+
+### 2.6 Quiz swatches (the loud exception)
+
+Quiz cards are the one place the app gets loud on purpose. Each category is a saturated **paint chip** with its words in a contrasting colour from the same board (`quizTheme` in `tokens.ts`). The category creature is drawn in the accent, outlined in the text colour. Every text pair is ≥ 4.5:1.
+
+| Category | Fill | Text | Accent (creature) | Contrast |
+|---|---|---|---|---|
+| About me | `#008471` tropical rain | `#FFFDF8` paper | `#F4D242` pure sun | 4.6 |
+| Favorites | `#F4D242` pure sun | `#6D1F42` grape juice | `#EF6F3C` blood orange | 7.4 |
+| Personality | `#6D1F42` grape juice | `#D3B6D3` lilacs | `#FF7BAC` bubblegum | 5.9 |
+| Us | `#FF7BAC` bubblegum | `#6D1F42` grape juice | `#FFFDF8` paper | 4.5 |
+| Chaos | `#C62A29` cherry | `#FCEDED` milkshake | `#F4D242` pure sun | 4.9 |
+| Daily question | `#D6D35F` limeade | `#25533F` forest | `#008471` tropical rain | 5.6 |
+
+Quiz tiles sit **straight** (no tilt) and without shadow: the colour is the emphasis.
 
 ---
 
@@ -137,6 +154,7 @@ Line heights are absolute px. Letter spacing is in px (React Native units).
 | `heading` | DM Sans 700 | 18 | 24 | -0.2 | 1.4 | Section headings, list item titles |
 | `body` | DM Sans 400 | 16 | 24 | 0 | 1.6 | Default text |
 | `body-sm` | DM Sans 400 | 14 | 20 | 0 | 1.6 | Secondary text |
+| `body-sm-strong` | DM Sans SemiBold | 14 / 20 | 0 | Chips, compact emphasis |
 | `caption` | DM Sans 500 | 12 | 16 | 0.2 | 1.6 | Metadata, timestamps |
 | `button` | DM Sans 600 | 16 | 20 | 0.1 | 1.4 | Buttons |
 | `label` | DM Sans 700, UPPERCASE | 12 | 16 | 1.2 | 1.4 | Eyebrows ("TODAY'S VIBE"), chips |
@@ -213,11 +231,11 @@ Every component lives in `src/design-system/`. Feature code composes these and n
 |---|---|
 | **Default** | As specced |
 | **Pressed** | Scale `0.97` (spring `snappy`), shadow steps down one level, `selection` haptic for selectable items only |
-| **Selected** | `cobalt` 2px outline (inset 0) + `soft` tint of the component's family + a check glyph where meaning isn't otherwise clear. Selection is **never communicated by color alone.** |
-| **Focused** (keyboard, a11y) | 2px `cobalt` ring offset by 2px |
+| **Selected** | `teal` 2px outline (inset 0) + `soft` tint of the component's family + a check glyph where meaning isn't otherwise clear. Selection is **never communicated by color alone.** |
+| **Focused** (keyboard, a11y) | 2px `teal` ring offset by 2px |
 | **Disabled** | Opacity `0.4`, no press feedback, `accessibilityState.disabled` |
 | **Loading** | Content replaced by `<Dots>` (three ink dots bouncing in sequence). Width is locked to prevent layout shift, and the component isn't pressable. |
-| **Error** | `coral-deep` text below the element, `coral-base` 1.5px border on inputs, `warning` haptic once. The message says **what happened + what to do**. |
+| **Error** | `tomato-deep` text below the element, `tomato-base` 1.5px border on inputs, `warning` haptic once. The message says **what happened + what to do**. |
 | **Success** | A transient green check morph (400ms), then back to default or navigate away |
 
 ### 7.2 Primitives
@@ -229,29 +247,31 @@ Every component lives in `src/design-system/`. Feature code composes these and n
 | `primary` | `ink` | `on-ink` | — | 56 (lg) / 48 (md) | `r-md` |
 | `secondary` | `paper` | `ink` | 1.5 `ink` | 56 / 48 | `r-md` |
 | `quiet` | transparent | `ink` + underline on press | — | 44 | — |
-| `accent` | family `base` | `ink` (cobalt: `on-ink`) | — | 48 | `r-pill` (used only for delight moments such as "Reveal ✦") |
+| `accent` | family `base` | `ink` (teal: `on-ink`) | — | 48 | `r-pill` (used only for delight moments such as "Reveal ✦") |
 | `icon` | `sunken` | `ink` icon 22 | — | 44 × 44 | `r-pill` |
-| `destructive` | `paper` | `coral-deep` | 1.5 `coral-deep` | 48 | `r-md` |
+| `destructive` | `paper` | `tomato-deep` | 1.5 `tomato-deep` | 48 | `r-md` |
 
 Only one `primary` per screen. Buttons are full width in forms and sheets, and hug their content elsewhere.
 
 **Input** (`TextField`, `CodeField`, `TextArea`)
 - Fill `paper`, 1.5px border `line-strong`, `r-sm`, height 52, horizontal padding 16. Text is `body` and the placeholder is `ink-tertiary`.
 - The label sits above in `label` style, and help or error text sits below in `caption`.
-- States: focused gives a `cobalt` border. Error gives a `coral-base` border and `coral-deep` message. Disabled gives a `sunken` fill.
+- States: focused gives a `teal` border. Error gives a `tomato-base` border and `tomato-deep` message. Disabled gives a `sunken` fill.
 - `CodeField` (invite code): 8 boxes with a dash after the 4th. Uses `display-m` numerals. Pasting auto-splits the code. On error, the boxes shake (x ±6, 3 cycles, 300ms).
 
-**Chip**: height 36, `r-pill`, `label` text, default `sunken`. When selected: family `soft` + a 1.5px outline in the family `deep` color + a check glyph.
+**Chip**: height 34, `r-pill`, `body-sm-strong` (14/20, sentence case), **no fill and no border** at rest (`ink-tertiary` text). When selected: family `soft` fill + family `deep` text + a check glyph. Quiet until chosen, so a row of filters never competes with content.
 
 **Tabs (bottom bar)**
-- `sunken` background with a top hairline in `line`. Five items: icon (24) + `label`.
-- The active item uses an `ink` icon (filled weight) and label, with a 6px dot in its pillar color under the label. The dot slides between tabs (spring `gentle`). Inactive items use `ink-tertiary`.
+- `canvas` background with a top hairline in `line`. Five items: icon (24) + `caption` label in sentence case.
+- The active item uses its pillar's `deep` colour for the filled icon and label, with a 6px dot in the pillar `base` under the label. The dot slides between tabs (spring `gentle`). Inactive items use `ink-tertiary`.
 - No floating action button. Each screen has its own single primary action.
 
 **Segmented control** (e.g. Remember: Pages | Photos): `sunken` track with an `r-pill` `paper` thumb (`lift-1`). The thumb slides using `gentle`.
 
+**TabHeader** (every tab except Today): a one-line `display-m` title on the left and **at most one** round 48px action on the right, filled with the pillar `base` (icon in `onBase`). No eyebrow (the tab bar already says where you are), no full-width button. Titles are short: *Know each other*, *Notes*, *Our journal*, *Our future*. Today keeps its date header (`label` date + `display-l` weekday) with the two of you as overlapping avatars on the right, and "Ananya is here" in the date line when your partner is online.
+
 **Navigation header**
-- No platform nav bar chrome. Large-title screens use a `label` eyebrow over a `display-l` title, left aligned.
+- No platform nav bar chrome.
 - Pushed screens show a back `icon` button top-left and an optional action top-right.
 - On scroll, the title collapses to a centered `heading`, with a `canvas` background and hairline.
 
@@ -259,15 +279,15 @@ Only one `primary` per screen. Buttons are full width in forms and sheets, and h
 
 **Bottom sheet**: `paper`, `r-lg` top corners, a grabber (36×4, `line-strong`), `lift-2`. Snap points come from content height (max 90%). Drag to dismiss. Enters from the bottom using `gentle`. It's keyboard-aware and grows above the keyboard. Used for check-ins, compose shortcuts and pickers.
 
-**Toast**: at the top, below the safe area. `ink` fill, `on-ink` text, `r-md`, auto-dismisses after 3s, and can be swiped up. Success variant: green check icon. Error variant: coral icon with a "Retry" quiet button.
+**Toast**: at the top, below the safe area. `ink` fill, `on-ink` text, `r-md`, auto-dismisses after 3s, and can be swiped up. Success variant: green check icon. Error variant: tomato icon with a "Retry" quiet button.
 
-**Avatar**: `r-pill`. Sizes 28, 40, 64. There's a 2px identity ring (`cobalt` for you, `coral` for your partner). A presence dot (green, 10px, with a `paper` 2px ring) shows when the person is online.
+**Avatar**: `r-pill`. Sizes 28, 40, 64. There's a 2px identity ring (`teal` for you, `tomato` for your partner). A presence dot (green, 10px, with a `paper` 2px ring) shows when the person is online.
 
 **Skeleton**: `sunken` blocks with the target shape's radius, and a shimmer sweep (a `paper` @ 60% band, 1200ms loop). Reduce Motion replaces the shimmer with a static fill. Skeletons **match the final layout**.
 
 **EmptyState**: an illustration (160px, pillar family) + `display-m` title + `body` line + an optional single `secondary` button. The copy is warm and specific ("No memories yet. Start saving little moments together."). Never "No data".
 
-**ErrorState**: the pet illustration looking puzzled + `heading` saying what happened + `body-sm` saying what to do + a `secondary` "Try again" button. Uses `coral` only in the icon accent.
+**ErrorState**: the pet illustration looking puzzled + `heading` saying what happened + `body-sm` saying what to do + a `secondary` "Try again" button. Uses `tomato` only in the icon accent.
 
 ### 7.3 Content objects (each has its own personality)
 
@@ -275,7 +295,7 @@ Only one `primary` per screen. Buttons are full width in forms and sheets, and h
 |---|---|---|
 | **VibeCard** | Tinted fill that contrasts with its creature: the family `soft` behind a `base`-tone creature, the family `base` behind a `soft`-tone creature, or `sunken` for neutral moods. `r-lg`, roughly square (1:1.1) | A large `<MoodCreature>` (88px), with the mood name in `display-m` (shrinks to fit on one line) and the owner in `label` below. States: *empty-you* is a dashed `line-strong` outline on `canvas` with the prompt "How are you?". *Private* shows your mood with a lock chip ("only you"). *Hidden-partner* is `sunken` with a sleeping creature and "Not shared yet". *Shared* is full color. The two cards sit side by side with a **±2° opposite tilt**, which is the home screen's signature asymmetry. |
 | **NoteCard / Envelope** | `paper-*` stock with `r-paper`, a subtle paper grain texture (4% noise PNG) and a piece of tape at the top | Body in `hand-l`. Rotation is seeded by the note id (±1.5°). Paper stocks: `cream` (`paper`), `blush` (`pink-soft`), `kraft` (`paper-kraft`), `sky` (`sky-soft`). A sealed note is an envelope (a triangular flap in the stock color with a wax dot in the pillar `pink-base`). |
-| **QuizCard** | A category-family `base` fill, `r-xl`, tall (3:4) | Category eyebrow in `label`, question in `display-m` (ink), options as `paper` rows (`r-md`, 56 high) with an illustrated or emoji leading glyph. For the reveal, the card has a back face (`ink` fill, `on-ink` text) that flips around the Y axis. |
+| **QuizCard** | A **paint chip** (§2.6): the category swatch fill, `r-lg`, tall (3:4), straight, no shadow | Category eyebrow in `label`, title in `heading` and "6 questions" in `caption`, all in the swatch text colour. The creature is drawn in the swatch accent. In play: the card holds the prompt in `display-m`, with options as `paper` rows (`r-md`, 56 high). For the reveal, the card has a back face (`ink` fill, `on-ink` text) that flips around the Y axis. |
 | **MemoryCard** | A photo with a 6px `paper` border and `r-paper`, `lift-1`, with two tape corners | Caption in `hand-m` below the frame. In the grid, photos are borderless squares, 4px apart. In detail, the frame border returns. |
 | **PetCard** | **Not a rectangle.** The pet stands on an `orange-soft` ellipse "rug", with no card container | A speech bubble (`paper`, `r-md`, 1.5 `ink` stroke, tail) holds the pet's line in `body`, never hand. Action buttons are three `icon` buttons with orange glyphs. |
 | **FutureTicket** | Looks like a ticket: `paper`, `r-paper`, with notched half-circle cut-outs on both sides at 70% width and a dashed perforation line | Title in `heading`, optional emoji "stub" on the right. When completed, a rotated (-8°) `green-deep` stamp reads "DONE · 27 SEP" with a rough-edged circular border, and the ticket shifts to `green-soft`. |
@@ -303,6 +323,14 @@ A Notice is news delivered by the pet. In the app it appears as a **NoticeCard**
 Copy lives in `noticeCopy()` (contracts), written in the pet's voice where it fits ("Mochi is holding something for you"). Pet updates are good news only and opt-in (at most one push a day).
 
 ---
+
+### 7.5 Home-screen widgets
+
+One widget, "Us" (*Love Notes* in the gallery). It's a `pink-soft` (milkshake) card with the pet picture top-left, the pet name in a serif semibold, and one focus line in `pink-deep` ("2 notes from Ananya", "Ready to reveal ✦", "Today's question", "Mochi is happy"). The medium size adds a TODAY eyebrow and two rows (●`teal` You · ●`tomato` partner) with each vibe in serif, or "not shared yet" in `ink-tertiary`. Lock-screen sizes are text only, in the system tint: pet name + focus line, never a mood. Type sizes come from `widgetType` in tokens (17 / 15 / 14 / 13 / 11 / 10). Pet pictures are rendered from the in-app pet paths (awake, sleepy, egg). See docs/architecture/10-widgets.md.
+
+### 7.6 Brand mark
+
+The app icon is Mochi holding a sealed love note: the pet's head and paws over a cream envelope with a cherry heart seal, on bubblegum (`#FF7BAC`), in the riso outline style. It's generated by `scripts/make-icon.ts` from the same paths as the in-app pet, including the Android adaptive layers, a themed monochrome with the face and folds cut out, the splash mark and `assets/logo.svg`. Change the drawing there, never the PNGs.
 
 ## 8. Illustration language
 
@@ -374,6 +402,16 @@ Name: **Mochi** (the default; renameable). Species: `dog`. Built from the illust
 | `opacity-disabled` | 0.4 | — |
 | `stagger` | 40ms | List and grid entrance (first 8 items only) |
 
+**Entrance presets** (`motion.ts`). Screens use these instead of hand-tuned springs, so everything arrives the same way:
+
+| Preset | What | Use |
+|---|---|---|
+| `enter(i)` | fade + 8px rise, `dur-base`, `ease-out`, delay `i × stagger` (capped at 6) | Cards, list and grid items, sections arriving |
+| `fadeIn` / `fadeOut` | opacity only, `dur-base` / `dur-fast` | Replacing content in place (speech bubble, steps) |
+| `pop(delay)` | zoom-in, spring damping 16 / stiffness 220 (no overshoot) | A reward landing: stamps, reveal score, confirm modal |
+
+Rules: arrivals use timing curves with no overshoot, and springs are for things a finger moves. **A view that animates in never also carries a transform:** put the rotation or drag on an inner view (Reanimated otherwise overwrites it and warns).
+
 ### 10.2 Principles
 1. **Physical:** use springs for anything a finger touches, and timing curves only for fades.
 2. **Purposeful:** motion explains cause and effect (a note *flies to* the pet, a dream *gets stamped*).
@@ -390,7 +428,7 @@ Name: **Mochi** (the default; renameable). Species: `dog`. Built from the illust
 | **Share mood** | The card lifts (`lift-2`), slides toward the partner slot with a ghost trail, the partner card flips if they've shared, then `success`. |
 | **Send note** | The paper folds in half (scaleY 1→0 at the fold line, 260ms), becomes an envelope, and flies in an arc to the pet's position (`gentle`, 520ms). The pet catches it and trots off. `medium` haptic. |
 | **Open note** | The envelope sits center screen. Swiping up on the flap rotates it open (rotateX, gesture-driven), the paper slides up out of the envelope, and unfolds (`slow`). `light` then `success`. |
-| **Quiz answer** | The option presses in, a `cobalt` ring draws around it (stroke-dashoffset, 180ms), then the card slides left while the next slides in from the right (`gentle`). |
+| **Quiz answer** | The option presses in, a `teal` ring draws around it (stroke-dashoffset, 180ms), then the card slides left while the next slides in from the right (`gentle`). |
 | **Reveal** | 1. The cards arrive face down, stacked. 2. After a 600ms "breath", your card flips (`dur-reveal`) with a `light` haptic. 3. 400ms later their card flips, with `medium` for a mismatch or `success` + confetti for a match. 4. The result headline types in, word by word. |
 | **Complete dream** | Checkbox tap: the stamp drops from scale 1.6 to 1 with rotation −8° (`bouncy`), ink splat particles appear, a `heavy` haptic plays, and the ticket tint crossfades to `green-soft`. |
 | **Memory open** | The grid photo expands into the detail frame (measured origin rect to final, `gentle`), the border and tape fade in, and the caption rises in. |
