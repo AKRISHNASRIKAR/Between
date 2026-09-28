@@ -1,8 +1,8 @@
 import { websocket } from "hono/bun";
 import { app } from "./app";
 import { env } from "./env";
-import { runCleanup } from "./modules/lifecycle/service";
-import { syncQuizContent } from "./modules/quizzes/content-sync";
+import { runCleanup } from "./modules/privacy";
+import { syncQuizContent } from "./modules/quizzes";
 import { realtime } from "./realtime/hub";
 
 const server = Bun.serve({ port: env.PORT, hostname: "0.0.0.0", fetch: app.fetch, websocket });

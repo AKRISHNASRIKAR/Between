@@ -4,21 +4,47 @@ import { cors } from "hono/cors";
 import { requestId } from "hono/request-id";
 import { auth } from "./auth";
 import { env, isDev } from "./env";
+import { fileRoutes } from "./http/files.routes";
+import { requireSpaceMember } from "./http/require-space-member";
+import { requireUser } from "./http/require-user";
 import { AppError } from "./lib/errors";
-import { requireUser } from "./middleware/auth";
-import { devRoutes } from "./modules/dev/routes";
-import { meRoutes } from "./modules/me/routes";
-import { quizPackRoutes } from "./modules/quizzes/routes";
-import { inviteRoutes, spaceRoutes } from "./modules/spaces/routes";
+import { devRoutes } from "./modules/dev";
+import { futureRoutes } from "./modules/future";
+import { journalRoutes, mediaRoutes, memoryRoutes } from "./modules/journal";
+import { meRoutes } from "./modules/me";
+import { noteRoutes } from "./modules/notes";
+import { petRoutes } from "./modules/pet";
+import { exportRoutes } from "./modules/privacy";
+import { dailyRoutes, quizPackRoutes, quizRoutes } from "./modules/quizzes";
+import { createSpaceRoutes, inviteRoutes, spaceRoutes } from "./modules/spaces";
+import { vibeRoutes } from "./modules/vibes";
 import { realtimeHandler } from "./realtime/ws";
-import { fileRoutes } from "./routes-files";
 import type { AppEnv } from "./types";
+
+/**
+ * Everything under /v1/spaces/:sid. The membership gate runs first and puts a SpaceScope on
+ * the context; feature routers only ever read `c.get("scope")` (ADR 0002).
+ */
+const spaceScoped = new Hono<AppEnv>()
+  .use(requireSpaceMember)
+  .route("/", spaceRoutes)
+  .route("/pet", petRoutes)
+  .route("/vibe", vibeRoutes)
+  .route("/notes", noteRoutes)
+  .route("/quizzes", quizRoutes)
+  .route("/daily", dailyRoutes)
+  .route("/future", futureRoutes)
+  .route("/journal", journalRoutes)
+  .route("/media", mediaRoutes)
+  .route("/memories", memoryRoutes)
+  .route("/export", exportRoutes);
 
 /** Authenticated JSON API. Its type drives the mobile app's typed client. */
 export const v1 = new Hono<AppEnv>()
   .use(requireUser)
   .route("/me", meRoutes)
-  .route("/spaces", spaceRoutes)
+  .route("/spaces", createSpaceRoutes)
+  .route("/spaces/:sid", spaceScoped)
   .route("/invites", inviteRoutes)
   .route("/quiz-packs", quizPackRoutes)
   .route("/dev", devRoutes);

@@ -16,3 +16,10 @@ export type SpaceScope = {
 };
 
 export const makeSpaceScope = (s: Omit<SpaceScope, typeof scopeBrand>) => s as SpaceScope;
+
+import { forbidden } from "./errors";
+
+/** Throw SPACE_CLOSED unless the space accepts writes (closed spaces are read-only). */
+export function assertWritable(scope: SpaceScope) {
+  if (!scope.writable) throw forbidden("SPACE_CLOSED", "This space is closed.");
+}

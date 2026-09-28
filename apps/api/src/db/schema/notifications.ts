@@ -25,7 +25,8 @@ export const notificationPrefs = pgTable("notification_prefs", {
   quizzes: boolean().notNull().default(true),
   journal: boolean().notNull().default(true),
   future: boolean().notNull().default(true),
-  petGreeting: boolean().notNull().default(false),
+  /** Column keeps its original name; the product term is "pet updates". */
+  petUpdates: boolean("pet_greeting").notNull().default(false),
   quietStart: time(),
   quietEnd: time(),
 });

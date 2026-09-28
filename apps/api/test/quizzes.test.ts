@@ -1,5 +1,5 @@
 import { beforeAll, beforeEach, describe, expect, test } from "bun:test";
-import { syncQuizContent } from "../src/modules/quizzes/content-sync";
+import { syncQuizContent } from "../src/modules/quizzes";
 import { pairedCouple, resetDb } from "./helpers";
 
 beforeAll(async () => {

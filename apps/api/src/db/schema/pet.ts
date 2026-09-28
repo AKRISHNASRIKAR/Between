@@ -1,5 +1,17 @@
 import { sql } from "drizzle-orm";
-import { check, foreignKey, index, integer, jsonb, pgTable, smallint, text, unique, uuid } from "drizzle-orm/pg-core";
+import {
+  check,
+  foreignKey,
+  index,
+  integer,
+  jsonb,
+  pgTable,
+  primaryKey,
+  smallint,
+  text,
+  unique,
+  uuid,
+} from "drizzle-orm/pg-core";
 import { createdAt, id, ts } from "./_columns";
 import { users } from "./auth";
 import { spaces } from "./spaces";
@@ -23,6 +35,8 @@ export const pets = pgTable(
     lastPlayedAt: ts(),
     lastPettedAt: ts(),
     lastSharedActivityAt: ts(),
+    /** Pet updates are pushed at most once a day (ADR 0003 / CONTEXT "Pet update"). */
+    lastUpdatePushAt: ts(),
     appearance: jsonb().notNull().default({}),
     version: integer().notNull().default(0),
     createdAt: createdAt(),
@@ -47,5 +61,22 @@ export const petInteractions = pgTable(
     foreignKey({ columns: [t.petId, t.spaceId], foreignColumns: [pets.id, pets.spaceId] }).onDelete("cascade"),
     index().on(t.spaceId, t.userId, t.createdAt.desc()),
     check("pet_interactions_kind_ck", sql`${t.kind} in ('feed','pet','play')`),
+  ],
+);
+
+/** Good-news moments, recorded once per pet. */
+export const petMilestones = pgTable(
+  "pet_milestones",
+  {
+    petId: uuid().notNull(),
+    spaceId: uuid().notNull(),
+    kind: text().notNull(),
+    byUserId: uuid().references(() => users.id, { onDelete: "set null" }),
+    earnedAt: createdAt(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.petId, t.kind] }),
+    foreignKey({ columns: [t.petId, t.spaceId], foreignColumns: [pets.id, pets.spaceId] }).onDelete("cascade"),
+    index().on(t.spaceId, t.earnedAt.desc()),
   ],
 );

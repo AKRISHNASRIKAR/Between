@@ -134,4 +134,24 @@ describe("journal", () => {
     expect(list.items[0].blocks).toHaveLength(2);
     expect(list.items[0].blocks[1].media).toHaveLength(1);
   });
+
+  test("pagination follows page dates: backdated pages are neither skipped nor repeated", async () => {
+    const { a, spaceId } = await pairedCouple();
+    // Created in one order, dated in a shuffled order — 25 pages spans two result pages (20 each).
+    for (let i = 0; i < 25; i++) {
+      const day = String(((i * 7) % 25) + 1).padStart(2, "0");
+      await a.req("POST", `/spaces/${spaceId}/journal/pages`, {
+        id: crypto.randomUUID(),
+        pageDate: `2026-03-${day}`,
+        block: { id: crypto.randomUUID(), body: `page ${i}`, mediaIds: [] },
+      });
+    }
+    const first = (await a.req("GET", `/spaces/${spaceId}/journal/pages`)).json;
+    const second = (await a.req("GET", `/spaces/${spaceId}/journal/pages?cursor=${first.nextCursor}`)).json;
+    const all = [...first.items, ...second.items];
+    expect(new Set(all.map((p: { id: string }) => p.id)).size).toBe(25);
+    const dates = all.map((p: { pageDate: string }) => p.pageDate);
+    expect(dates).toEqual([...dates].sort().reverse());
+    expect(second.nextCursor).toBeNull();
+  });
 });

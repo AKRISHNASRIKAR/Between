@@ -3,7 +3,7 @@ import type { ServerWebSocket } from "bun";
 import { upgradeWebSocket } from "hono/bun";
 import { auth } from "../auth";
 import { db } from "../db/client";
-import { activeSpaceIdFor } from "../modules/spaces/service";
+import { membersRepo } from "../modules/members";
 import { realtime, topicFor } from "./hub";
 
 const AUTH_TIMEOUT_MS = 5_000;
@@ -37,7 +37,7 @@ export const realtimeHandler = upgradeWebSocket((c) => {
       clearTimeout(timer);
       const session = await auth.api.getSession({ headers: new Headers({ cookie: msg.token || upgradeCookie }) });
       if (!session) return ws.close(4401, "unauthenticated");
-      const spaceId = await activeSpaceIdFor(db, session.user.id);
+      const spaceId = await membersRepo.activeSpaceId(db, session.user.id);
       if (!spaceId) return ws.close(4404, "no space");
 
       conn = { userId: session.user.id, spaceId };

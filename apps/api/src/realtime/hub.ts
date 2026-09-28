@@ -44,3 +44,7 @@ export const realtime = {
     return n <= 0;
   },
 };
+
+/** Send an event to everyone connected to a space. Call only after the transaction commits. */
+export const publish = (spaceId: string, event: ServerEvent) => realtime.publish(spaceId, event);
+export const isOnline = (spaceId: string, userId: string) => realtime.isOnline(spaceId, userId);
