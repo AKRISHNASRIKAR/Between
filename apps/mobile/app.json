@@ -15,7 +15,7 @@
     "android": {
       "package": "app.lovenotes.mobile",
       "adaptiveIcon": {
-        "backgroundColor": "#FAF6EE",
+        "backgroundColor": "#FF7BAC",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
@@ -59,8 +59,11 @@
       [
         "expo-notifications",
         {
-          "color": "#F2A7C3",
-          "sounds": ["./assets/sounds/chime.wav"]
+          "color": "#FF7BAC",
+          "sounds": [
+            "./assets/sounds/chime.wav"
+          ],
+          "icon": "./assets/android-icon-monochrome.png"
         }
       ]
     ],
