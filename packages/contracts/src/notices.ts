@@ -30,6 +30,9 @@ export type NoticeCopy = {
   pref: NotificationKind;
 };
 
+/** The Daily question has its own screen; pack sessions open by id. */
+const quizUrl = (n: { sessionId: string; daily: boolean }) => (n.daily ? "/daily" : `/quiz/${n.sessionId}`);
+
 export function noticeCopy(n: Notice, petName: string): NoticeCopy {
   const pet = petName || "Your pet";
   switch (n.type) {
@@ -61,7 +64,7 @@ export function noticeCopy(n: Notice, petName: string): NoticeCopy {
       return {
         title: n.daily ? "Today's question" : "Your turn",
         body: `${n.from} has answered. ${pet} is dying to know yours.`,
-        url: `/quiz/${n.sessionId}`,
+        url: quizUrl(n),
         pillar: "know",
         pref: "quizzes",
       };
@@ -69,7 +72,7 @@ export function noticeCopy(n: Notice, petName: string): NoticeCopy {
       return {
         title: "Ready to reveal ✦",
         body: "You've both answered — come see how you match.",
-        url: `/quiz/${n.sessionId}`,
+        url: quizUrl(n),
         pillar: "know",
         pref: "quizzes",
       };

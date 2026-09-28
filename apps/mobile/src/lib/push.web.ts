@@ -10,3 +10,4 @@ export function useNotificationRouting(_ready: boolean) {}
 export function onForegroundPush(_fn: (p: ForegroundPush) => void) {
   return () => {};
 }
+export async function unregisterPush() {}

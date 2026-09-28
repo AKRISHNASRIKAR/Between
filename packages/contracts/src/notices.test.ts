@@ -29,4 +29,10 @@ describe("noticeCopy", () => {
   test("every milestone kind has copy", () => {
     for (const k of PetMilestoneKind.options) expect(MILESTONE_COPY[k].title).toBeTruthy();
   });
+  test("the Daily question opens its own screen; packs open by id", () => {
+    expect(noticeCopy({ type: "quiz.ready", sessionId: "s", daily: true }, "Mochi").url).toBe("/daily");
+    expect(noticeCopy({ type: "quiz.your_turn", sessionId: "s", from: "A", daily: false }, "Mochi").url).toBe(
+      "/quiz/s",
+    );
+  });
 });

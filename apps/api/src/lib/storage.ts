@@ -8,7 +8,7 @@ import { env } from "../env";
  * Object storage behind one small interface (SPEC §7.7).
  *  - "local" (default, dev): files on disk under apps/api/.data/media, served by the API via
  *    short-lived HMAC-signed URLs. No cloud account needed — works fully offline.
- *  - an S3/R2 adapter implements the same interface later (presigned PUT/GET).
+ *  - "s3" (production): any S3-compatible bucket, e.g. Cloudflare R2, via presigned PUT/GET.
  */
 export interface Storage {
   signedPutUrl(key: string, contentType: string, maxBytes: number): string;

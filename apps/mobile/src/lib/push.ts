@@ -34,6 +34,16 @@ export function onForegroundPush(fn: (p: ForegroundPush) => void) {
 
 const projectId = (Constants.expoConfig?.extra as { eas?: { projectId?: string } } | undefined)?.eas?.projectId;
 
+let registeredToken: string | null = null;
+
+/** Sign-out: stop this device receiving the previous person's pushes. Best effort. */
+export async function unregisterPush() {
+  const token = registeredToken;
+  registeredToken = null;
+  if (!token) return;
+  await unwrap(api.me["push-tokens"][":token"].$delete({ param: { token } })).catch(() => {});
+}
+
 /**
  * Ask for permission and register this device's Expo push token with the API.
  * Needs an EAS projectId (set when the app is linked to EAS). Until then it's a no-op —
@@ -47,6 +57,7 @@ export async function registerForPush(): Promise<"registered" | "denied" | "unav
   if (!projectId) return "unavailable";
   try {
     const { data: token } = await Notifications.getExpoPushTokenAsync({ projectId });
+    registeredToken = token;
     await unwrap(
       api.me["push-tokens"][":token"].$put({
         param: { token },
