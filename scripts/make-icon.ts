@@ -146,15 +146,15 @@ const splash = () => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 
  * Widgets can't run the app's SVG renderer, so they show these pictures instead.
  */
 const petArt = (kind: "awake" | "sleepy" | "egg") => {
-  // Centre the pet box's content (x 34–166, y 70–171; the egg y 44–176) in an 840 square.
+  // Centre the pet box's content (x 34–166, y 70–171; the egg y 44–176) in an 840 square, filling most of it.
   const body =
     kind === "egg"
-      ? `<g transform="translate(0 -42) scale(4.2)">
+      ? `<g transform="translate(-140 -196) scale(5.6)">
           <path d="${PET.egg.whole}" fill="${palette.sunken}" transform="translate(2.2 2.2)"/>
           <path d="${PET.egg.whole}" fill="${palette.paper}" stroke="${C.ink}" stroke-width="3" stroke-linejoin="round"/>
           ${PET.egg.speckles.map((d) => `<circle cx="${d.x}" cy="${d.y}" r="${d.r}" fill="${palette[d.c]}"/>`).join("")}
         </g>`
-      : `<g transform="translate(0 -84) scale(4.2)">${mochiBox({ sleepy: kind === "sleepy", feet: true })}</g>`;
+      : `<g transform="translate(-160 -276) scale(5.8)">${mochiBox({ sleepy: kind === "sleepy", feet: true })}</g>`;
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 840 840" width="840" height="840">${body}</svg>`;
 };
 
