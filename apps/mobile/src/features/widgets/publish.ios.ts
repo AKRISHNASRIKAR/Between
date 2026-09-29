@@ -12,7 +12,7 @@ const ART: Record<PetArt, number> = {
 };
 
 /** Bump when the pet art changes, so devices copy the new pictures instead of keeping the old ones. */
-const ART_VERSION = 2;
+const ART_VERSION = 3;
 
 /**
  * The widget extension can only read files in the shared App Group directory, so the pet

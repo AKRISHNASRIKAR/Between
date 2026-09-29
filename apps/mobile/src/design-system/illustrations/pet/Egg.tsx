@@ -13,7 +13,8 @@ import Animated, {
 import { Circle, Path } from "react-native-svg";
 import { haptics } from "../../haptics";
 import { dur, ease, spring } from "../../motion";
-import { type ColorToken, palette, stroke } from "../../tokens";
+import { type ColorToken, palette } from "../../tokens";
+import { SoftShape } from "../soft";
 import { Layer } from "./Layer";
 import { PET } from "./paths";
 
@@ -29,13 +30,11 @@ function Speckles() {
   );
 }
 
-/** Egg shell piece in the riso style: offset tint, paper fill, ink outline. */
-function Shell({ d }: { d: string }) {
+/** Egg shell piece: a smooth butter-cream shell with its shade crescent and speckles. */
+function Shell({ d, id }: { d: string; id: string }) {
   return (
     <>
-      <Path d={d} fill={palette["butter-base"]} transform="translate(3 3)" />
-      <Path d={d} fill={palette.paper} />
-      <Path d={d} fill="none" stroke={palette.ink} strokeWidth={stroke.illustration} strokeLinejoin="round" />
+      <SoftShape id={id} d={d} fill={palette["butter-soft"]} lift={7} gloss={{ cx: 82, cy: 78, rx: 12, ry: 6 }} />
       <Speckles />
     </>
   );
@@ -118,13 +117,13 @@ export function Egg({ size, ref }: { size: number; ref?: Ref<EggHandle> }) {
     <View style={{ width: size, height: size }} accessibilityLabel="An egg, waiting to hatch">
       <Animated.View style={[{ width: size, height: size }, whole]}>
         <Layer size={size} style={intact}>
-          <Shell d={PET.egg.whole} />
+          <Shell id="egg-whole" d={PET.egg.whole} />
         </Layer>
         <Layer size={size} style={bottom}>
-          <Shell d={PET.egg.bottom} />
+          <Shell id="egg-bottom" d={PET.egg.bottom} />
         </Layer>
         <Layer size={size} style={top}>
-          <Shell d={PET.egg.top} />
+          <Shell id="egg-top" d={PET.egg.top} />
         </Layer>
       </Animated.View>
     </View>

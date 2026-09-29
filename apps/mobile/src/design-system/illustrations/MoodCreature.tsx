@@ -1,13 +1,27 @@
 import { MOODS, type MoodId } from "@lovenotes/contracts";
-import { Circle, G, Line, Path, Rect, Svg } from "react-native-svg";
-import { family, palette, stroke } from "../tokens";
-import { polarPath, RisoPath } from "./riso";
+import type { ReactNode } from "react";
+import { Circle, Ellipse, G, Path, Rect, Svg } from "react-native-svg";
+import { family, palette } from "../tokens";
+import { circle, roundedPolygon, roundRect, SoftShape, shadeOf, starPoints } from "./soft";
 
 type Face = {
   eyes: [number, number][];
   eyeStyle?: "dot" | "closed-happy" | "closed" | "droopy";
-  mouth: string;
+  mouth?: string;
+  /** filled mouth (open smile) instead of a stroke */
+  mouthFilled?: boolean;
   brows?: string;
+  cheeks?: [number, number][];
+};
+
+type Shape = {
+  body: string;
+  gloss?: { cx: number; cy: number; rx: number; ry: number };
+  /** drawn behind the body (sun rays) */
+  under?: (fill: string) => ReactNode;
+  /** drawn on top of the body (bandage, wall, sweat drop) */
+  over?: (backdrop: string) => ReactNode;
+  face: Face;
 };
 
 function fillFor(mood: MoodId) {
@@ -17,222 +31,225 @@ function fillFor(mood: MoodId) {
   return def.tone === "soft" ? f.soft : f.base;
 }
 
-const ink = palette.ink;
-
-/** Shapes live in a 100×100 box. */
-const SHAPES: Record<MoodId, { body: string; extra?: (backdrop: string) => React.ReactNode; face: Face }> = {
+/** Shapes live in a 100×100 box. Smooth geometry only: circles, pills, rounded polygons. */
+const SHAPES: Record<MoodId, Shape> = {
   joyful: {
-    body: polarPath(50, 52, () => 27),
-    extra: () => (
-      <G stroke={ink} strokeWidth={stroke.illustration} strokeLinecap="round">
-        {Array.from({ length: 8 }, (_, i) => {
-          const a = (i / 8) * Math.PI * 2 - Math.PI / 2;
-          return (
-            <Line
-              key={a}
-              x1={50 + 33 * Math.cos(a)}
-              y1={52 + 33 * Math.sin(a)}
-              x2={50 + 42 * Math.cos(a)}
-              y2={52 + 42 * Math.sin(a)}
-            />
-          );
-        })}
+    body: circle(50, 54, 23),
+    gloss: { cx: 42, cy: 44, rx: 7, ry: 4 },
+    under: (fill) => (
+      <G fill={fill}>
+        {[0, 45, 90, 135, 180, 225, 270, 315].map((deg) => (
+          <Rect key={deg} x={47} y={14} width={6} height={11} rx={3} transform={`rotate(${deg} 50 54)`} />
+        ))}
       </G>
     ),
     face: {
       eyes: [
-        [42, 49],
-        [58, 49],
+        [43, 52],
+        [57, 52],
       ],
-      mouth: "M 41 58 Q 50 67 59 58",
+      mouth: "M 43 60 Q 50 66 57 60",
+      cheeks: [
+        [37, 59],
+        [63, 59],
+      ],
     },
   },
   excited: {
-    body: polarPath(50, 52, (t) => (Math.round((t / (Math.PI * 2)) * 16) % 2 === 0 ? 40 : 29), 16),
+    body: roundedPolygon(starPoints(50, 53, 39, 29, 10), 5),
+    gloss: { cx: 40, cy: 40, rx: 8, ry: 4.5 },
     face: {
       eyes: [
-        [43, 48],
-        [57, 48],
+        [43, 50],
+        [57, 50],
       ],
-      mouth: "M 42 56 Q 50 68 58 56 Z",
+      mouth: "M 42.5 57 Q 50 68 57.5 57 Z",
+      mouthFilled: true,
     },
   },
   grateful: {
-    body: "M 16 40 L 84 40 C 84 64 70 80 50 80 C 30 80 16 64 16 40 Z",
+    body: "M 21 40 H 79 Q 86 40 85 47 C 82 66 68 78 50 78 C 32 78 18 66 15 47 Q 14 40 21 40 Z",
+    gloss: { cx: 30, cy: 49, rx: 7, ry: 3.5 },
     face: {
       eyes: [
-        [40, 54],
-        [60, 54],
+        [40, 53],
+        [60, 53],
       ],
       eyeStyle: "closed-happy",
-      mouth: "M 44 63 Q 50 68 56 63",
+      mouth: "M 45 62 Q 50 66 55 62",
+      cheeks: [
+        [32, 60],
+        [68, 60],
+      ],
     },
   },
   connected: {
-    body: `${polarPath(39, 52, () => 23)} ${polarPath(61, 52, () => 23)}`,
+    body: `${circle(38, 54, 22)} ${circle(62, 54, 22)}`,
+    gloss: { cx: 29, cy: 44, rx: 6, ry: 3.5 },
     face: {
       eyes: [
-        [34, 49],
-        [66, 49],
+        [33, 52],
+        [67, 52],
       ],
-      mouth: "M 42 60 Q 50 66 58 60",
+      mouth: "M 44 61 Q 50 66 56 61",
     },
   },
   calm: {
-    body: "M 14 58 C 14 40 32 32 52 32 C 72 32 87 42 86 58 C 85 72 70 76 50 76 C 30 76 14 72 14 58 Z",
+    body: roundRect(14, 34, 72, 44, 22),
+    gloss: { cx: 30, cy: 42, rx: 8, ry: 3.5 },
     face: {
       eyes: [
-        [40, 54],
-        [60, 54],
+        [40, 55],
+        [60, 55],
       ],
       eyeStyle: "closed",
-      mouth: "M 45 63 Q 50 66 55 63",
+      mouth: "M 45.5 63 Q 50 66 54.5 63",
     },
   },
   tired: {
-    body: "M 16 66 C 16 40 30 28 50 28 C 70 28 84 40 84 66 C 84 74 79 76 76 70 C 74 80 66 80 64 72 C 60 82 52 80 52 72 C 48 80 40 80 38 72 C 34 78 26 78 24 70 C 20 76 16 74 16 66 Z",
+    body: "M 18 62 C 18 42 32 30 50 30 C 68 30 82 42 82 62 V 70 Q 82 76 76.5 76 Q 71 76 71 70 V 69 Q 71 65 67 65 Q 63 65 63 69 V 74 Q 63 80 57 80 Q 51 80 51 74 V 71 Q 51 67 47 67 Q 43 67 43 71 V 72 Q 43 77 37.5 77 Q 32 77 32 72 V 70 Q 32 66 28 66 Q 24 66 24 70 Q 24 74 21 74 Q 18 74 18 70 Z",
+    gloss: { cx: 34, cy: 40, rx: 7, ry: 3.5 },
     face: {
       eyes: [
-        [40, 52],
-        [60, 52],
+        [41, 53],
+        [59, 53],
       ],
       eyeStyle: "droopy",
-      mouth: "M 45 62 L 55 62",
+      mouth: "M 46 62 H 54",
     },
   },
   sensitive: {
-    body: "M 50 20 A 15 15 0 0 1 80 50 A 15 15 0 0 1 50 80 A 15 15 0 0 1 20 50 A 15 15 0 0 1 50 20 Z",
+    body: [circle(50, 36, 15), circle(64, 50, 15), circle(50, 64, 15), circle(36, 50, 15), circle(50, 50, 16)].join(
+      " ",
+    ),
+    gloss: { cx: 42, cy: 29, rx: 5, ry: 3 },
     face: {
       eyes: [
-        [43, 48],
-        [57, 48],
+        [44, 49],
+        [56, 49],
       ],
-      mouth: "M 45 58 Q 50 55 55 58",
+      mouth: "M 46 58 Q 50 55.5 54 58",
     },
   },
   confused: {
-    body: polarPath(50, 52, (t) => 30 + 2.6 * Math.sin(t * 9)),
-    face: {
-      eyes: [
-        [42, 50],
-        [58, 50],
-      ],
-      mouth: "M 42 62 Q 46 58 50 62 Q 54 66 58 62",
-      brows: "M 53 40 Q 58 36 63 39",
-    },
-  },
-  stressed: {
-    body: polarPath(
-      50,
-      52,
-      (t) => {
-        const sq = 30 / Math.max(Math.abs(Math.cos(t)), Math.abs(Math.sin(t)));
-        return Math.min(sq, 40) + (Math.round(t * 12) % 2 === 0 ? 3 : -2);
-      },
-      48,
-    ),
-    face: {
-      eyes: [
-        [42, 49],
-        [58, 49],
-      ],
-      mouth: "M 41 62 L 45 59 L 50 62 L 55 59 L 59 62",
-      brows: "M 36 42 L 46 44 M 64 42 L 54 44",
-    },
-  },
-  insecure: {
-    body: polarPath(50, 56, () => 20),
-    extra: (backdrop) => (
-      <G>
-        <Rect x={10} y={60} width={80} height={24} fill={backdrop} />
-        <Line x1={10} y1={60} x2={90} y2={60} stroke={ink} strokeWidth={stroke.illustration} strokeLinecap="round" />
-      </G>
-    ),
-    face: {
-      eyes: [
-        [44, 50],
-        [56, 50],
-      ],
-      mouth: "",
-    },
-  },
-  hurt: {
-    body: "M 22 54 C 20 34 36 24 52 26 C 70 28 82 40 80 58 C 78 74 64 80 48 78 C 32 76 23 68 22 54 Z",
-    extra: () => (
-      <G transform="rotate(-30 66 36)">
-        <Rect x={56} y={31} width={20} height={9} rx={3} fill={palette.paper} stroke={ink} strokeWidth={1.5} />
-        <Circle cx={63} cy={35.5} r={0.9} fill={ink} />
-        <Circle cx={69} cy={35.5} r={0.9} fill={ink} />
-      </G>
-    ),
+    body: circle(50, 54, 27),
+    gloss: { cx: 39, cy: 42, rx: 7, ry: 4 },
     face: {
       eyes: [
         [42, 52],
-        [58, 52],
+        [58, 51],
       ],
-      mouth: "M 44 64 Q 50 59 56 64",
+      mouth: "M 42 63 Q 46 59.5 50 63 Q 54 66.5 58 63",
+      brows: "M 53 42 Q 58 38.5 63 41",
+    },
+  },
+  stressed: {
+    body: roundRect(23, 27, 54, 54, 17),
+    gloss: { cx: 36, cy: 36, rx: 6, ry: 3.5 },
+    over: () => (
+      <Path d="M 79 24 C 83 30 85 33 85 36 A 6 6 0 0 1 73 36 C 73 33 75 30 79 24 Z" fill={palette["sky-base"]} />
+    ),
+    face: {
+      eyes: [
+        [42, 53],
+        [58, 53],
+      ],
+      mouth: "M 41 65 L 45.5 62 L 50 65 L 54.5 62 L 59 65",
+      brows: "M 36 45 L 46 47 M 64 45 L 54 47",
+    },
+  },
+  insecure: {
+    body: circle(50, 59, 19),
+    gloss: { cx: 43, cy: 50, rx: 5, ry: 3 },
+    over: (backdrop) => (
+      <G>
+        <Rect x={8} y={62} width={84} height={28} rx={6} fill={backdrop} />
+        <Rect x={8} y={60} width={84} height={4} rx={2} fill={palette["line-strong"]} />
+      </G>
+    ),
+    face: {
+      eyes: [
+        [44, 54],
+        [56, 54],
+      ],
+    },
+  },
+  hurt: {
+    body: roundRect(20, 28, 60, 52, 26),
+    gloss: { cx: 32, cy: 38, rx: 7, ry: 3.5 },
+    over: () => (
+      <G transform="rotate(-32 66 38)">
+        <Rect x={55} y={33} width={22} height={10} rx={5} fill={palette.paper} />
+        <Rect x={63} y={33} width={6} height={10} fill={palette["line"]} />
+      </G>
+    ),
+    face: {
+      eyes: [
+        [42, 55],
+        [58, 55],
+      ],
+      mouth: "M 45 66 Q 50 62 55 66",
     },
   },
   angry: {
-    body: "M 50 18 C 52 18 86 76 84 78 C 82 80 18 80 16 78 C 14 76 48 18 50 18 Z",
+    body: roundedPolygon(
+      [
+        [50, 18],
+        [87, 80],
+        [13, 80],
+      ],
+      12,
+    ),
+    gloss: { cx: 44, cy: 38, rx: 5, ry: 3 },
     face: {
       eyes: [
-        [43, 58],
-        [57, 58],
+        [43, 61],
+        [57, 61],
       ],
-      mouth: "M 44 70 Q 50 65 56 70",
-      brows: "M 36 49 L 46 54 M 64 49 L 54 54",
+      mouth: "M 45 71 Q 50 67.5 55 71",
+      brows: "M 37 52 L 46 56 M 63 52 L 54 56",
     },
   },
 };
 
-function Eyes({ face, color }: { face: Face; color: string }) {
+const eyePath = (x: number, y: number, style: Face["eyeStyle"]) => {
+  switch (style) {
+    case "closed-happy":
+      return `M ${x - 4} ${y + 1.5} Q ${x} ${y - 3.5} ${x + 4} ${y + 1.5}`;
+    case "closed":
+      return `M ${x - 4} ${y - 1} Q ${x} ${y + 3} ${x + 4} ${y - 1}`;
+    default:
+      return null;
+  }
+};
+
+function FaceView({ face, color }: { face: Face; color: string }) {
+  const stroke = { stroke: color, strokeWidth: 2.4, strokeLinecap: "round" as const, fill: "none" };
   return (
     <G>
+      {face.cheeks?.map(([x, y]) => (
+        <Ellipse key={`c${x}`} cx={x} cy={y} rx={4} ry={2.6} fill={palette["pink-base"]} opacity={0.55} />
+      ))}
       {face.eyes.map(([x, y]) => {
-        const i = `${x}-${y}`;
-        switch (face.eyeStyle) {
-          case "closed-happy":
-            return (
-              <Path
-                key={i}
-                d={`M ${x - 4} ${y + 1} Q ${x} ${y - 4} ${x + 4} ${y + 1}`}
-                stroke={color}
-                strokeWidth={2}
-                fill="none"
-                strokeLinecap="round"
-              />
-            );
-          case "closed":
-            return (
-              <Path
-                key={i}
-                d={`M ${x - 4} ${y - 1} Q ${x} ${y + 3} ${x + 4} ${y - 1}`}
-                stroke={color}
-                strokeWidth={2}
-                fill="none"
-                strokeLinecap="round"
-              />
-            );
-          case "droopy":
-            return (
-              <G key={i}>
-                <Circle cx={x} cy={y + 1} r={2.6} fill={color} />
-                <Line
-                  x1={x - 4.5}
-                  y1={y - 1}
-                  x2={x + 4.5}
-                  y2={y - 1}
-                  stroke={color}
-                  strokeWidth={2}
-                  strokeLinecap="round"
-                />
-              </G>
-            );
-          default:
-            return <Circle key={i} cx={x} cy={y} r={3} fill={color} />;
-        }
+        const d = eyePath(x, y, face.eyeStyle);
+        if (d) return <Path key={`e${x}`} d={d} {...stroke} />;
+        if (face.eyeStyle === "droopy")
+          return (
+            <G key={`e${x}`}>
+              <Ellipse cx={x} cy={y + 1} rx={2.8} ry={2.4} fill={color} />
+              <Path d={`M ${x - 4} ${y - 0.5} H ${x + 4}`} {...stroke} />
+            </G>
+          );
+        return <Ellipse key={`e${x}`} cx={x} cy={y} rx={2.9} ry={3.8} fill={color} />;
       })}
+      {face.brows ? <Path d={face.brows} {...stroke} /> : null}
+      {face.mouth ? (
+        face.mouthFilled ? (
+          <Path d={face.mouth} fill={color} stroke={color} strokeWidth={1.5} strokeLinejoin="round" />
+        ) : (
+          <Path d={face.mouth} {...stroke} strokeLinejoin="round" />
+        )
+      ) : null}
     </G>
   );
 }
@@ -250,29 +267,17 @@ export function MoodCreature({ mood, size = 96, silhouette, backdrop = palette.c
   const shape = SHAPES[mood];
   const fill = silhouette ? palette.line : fillFor(mood);
   const faceColor =
-    MOODS[mood].family === "teal" && MOODS[mood].tone === "base" && !silhouette ? palette["on-ink"] : ink;
+    MOODS[mood].family === "teal" && MOODS[mood].tone === "base" && !silhouette ? palette.paper : palette.ink;
   return (
     <Svg width={size} height={size} viewBox="0 0 100 100" accessibilityLabel={MOODS[mood].label}>
       {silhouette ? (
         <Path d={shape.body} fill={fill} />
       ) : (
         <>
-          <RisoPath d={shape.body} fill={fill} />
-          {shape.extra?.(backdrop)}
-          <Eyes face={shape.face} color={faceColor} />
-          {shape.face.brows ? (
-            <Path d={shape.face.brows} stroke={faceColor} strokeWidth={2} strokeLinecap="round" fill="none" />
-          ) : null}
-          {shape.face.mouth ? (
-            <Path
-              d={shape.face.mouth}
-              stroke={faceColor}
-              strokeWidth={2}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              fill={shape.face.mouth.trim().endsWith("Z") ? faceColor : "none"}
-            />
-          ) : null}
+          {shape.under?.(shadeOf(fill))}
+          <SoftShape id={`mood-${mood}`} d={shape.body} fill={fill} gloss={shape.gloss} />
+          {shape.over?.(backdrop)}
+          <FaceView face={shape.face} color={faceColor} />
         </>
       )}
     </Svg>
@@ -281,24 +286,26 @@ export function MoodCreature({ mood, size = 96, silhouette, backdrop = palette.c
 
 /** Sleeping silhouette used for the partner's "not shared" card. */
 export function SleepingCreature({ size = 96 }: { size?: number }) {
+  const tone = palette["ink-tertiary"];
   return (
     <Svg width={size} height={size} viewBox="0 0 100 100" accessibilityLabel="Not shared yet">
-      <Path d={SHAPES.calm.body} fill={palette.line} />
+      <SoftShape id="sleeping" d={SHAPES.calm.body} fill={palette.line} />
       <Path
-        d="M 36 54 Q 40 57 44 54 M 56 54 Q 60 57 64 54"
-        stroke={palette["ink-tertiary"]}
-        strokeWidth={2}
+        d="M 36 55 Q 40 58.5 44 55 M 56 55 Q 60 58.5 64 55"
+        stroke={tone}
+        strokeWidth={2.4}
         fill="none"
         strokeLinecap="round"
       />
       <Path
-        d="M 72 22 L 80 22 L 72 30 L 80 30"
-        stroke={palette["ink-tertiary"]}
-        strokeWidth={2}
+        d="M 71 18 H 80 L 71 28 H 80"
+        stroke={tone}
+        strokeWidth={2.4}
         fill="none"
         strokeLinecap="round"
         strokeLinejoin="round"
       />
+      <Circle cx={64} cy={31} r={1.8} fill={tone} />
     </Svg>
   );
 }

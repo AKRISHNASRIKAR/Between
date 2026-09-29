@@ -11,10 +11,10 @@ import Animated, {
   withSpring,
   withTiming,
 } from "react-native-reanimated";
-import { Circle, G, Path } from "react-native-svg";
+import { Circle, Ellipse, G, Path } from "react-native-svg";
 import { dur, ease, spring } from "../../motion";
-import { palette, stroke } from "../../tokens";
-import { RisoPath } from "../riso";
+import { palette } from "../../tokens";
+import { SoftShape, shadeOf } from "../soft";
 import { Layer } from "./Layer";
 import { PET } from "./paths";
 
@@ -23,6 +23,8 @@ export type PetReaction = { kind: "pet" | "feed" | "play" | "hello"; n: number }
 type Props = { mood: PetMood; size: number; reaction?: PetReaction | null; stroking?: boolean };
 
 const ink = palette.ink;
+const coat = palette["butter-base"];
+const ears = palette["orange-base"];
 const randBetween = (a: number, b: number) => a + Math.random() * (b - a);
 
 export function Mochi({ mood, size, reaction, stroking }: Props) {
@@ -171,34 +173,34 @@ export function Mochi({ mood, size, reaction, stroking }: Props) {
   return (
     <Animated.View style={[{ width: size, height: size }, whole]}>
       <Layer size={size} pivot={PET.tailPivot} style={tailStyle}>
-        <Path d={PET.tail} stroke={ink} strokeWidth={3} fill="none" strokeLinecap="round" />
+        <Path d={PET.tail} stroke={shadeOf(coat)} strokeWidth={8} fill="none" strokeLinecap="round" />
       </Layer>
       <Layer size={size}>
-        <RisoPath d={PET.footL} fill={palette["butter-base"]} />
-        <RisoPath d={PET.footR} fill={palette["butter-base"]} />
-        <RisoPath d={PET.body} fill={palette["butter-base"]} />
-        <Circle cx={PET.cheekL.x} cy={PET.cheekL.y} r={7} fill={palette["pink-base"]} opacity={0.55} />
-        <Circle cx={PET.cheekR.x} cy={PET.cheekR.y} r={7} fill={palette["pink-base"]} opacity={0.55} />
-        <Path d={PET.nose} fill={ink} stroke={ink} strokeWidth={1.5} strokeLinejoin="round" />
+        <Path d={PET.footL} fill={shadeOf(coat)} />
+        <Path d={PET.footR} fill={shadeOf(coat)} />
+        <SoftShape id="mochi-body" d={PET.body} fill={coat} lift={7} gloss={{ cx: 70, cy: 88, rx: 16, ry: 7 }} />
+        <Ellipse cx={PET.cheekL.x} cy={PET.cheekL.y} rx={8.5} ry={5.5} fill={palette["pink-base"]} opacity={0.6} />
+        <Ellipse cx={PET.cheekR.x} cy={PET.cheekR.y} rx={8.5} ry={5.5} fill={palette["pink-base"]} opacity={0.6} />
+        <Path d={PET.nose} fill={ink} />
         <Path
           d={mouth}
           stroke={ink}
-          strokeWidth={stroke.illustration}
+          strokeWidth={3.2}
           strokeLinecap="round"
           strokeLinejoin="round"
           fill={mood === "excited" ? ink : "none"}
         />
-        {mood === "peckish" ? <Path d={PET.tongue} fill={palette["pink-base"]} stroke={ink} strokeWidth={1.5} /> : null}
+        {mood === "peckish" ? <Path d={PET.tongue} fill={palette["pink-base"]} /> : null}
       </Layer>
       <Layer size={size} pivot={PET.earLPivot} style={earLStyle}>
-        <RisoPath d={PET.earL} fill={palette["orange-base"]} />
+        <SoftShape id="mochi-ear-l" d={PET.earL} fill={ears} lift={5} />
       </Layer>
       <Layer size={size} pivot={PET.earRPivot} style={earRStyle}>
-        <RisoPath d={PET.earR} fill={palette["orange-base"]} />
+        <SoftShape id="mochi-ear-r" d={PET.earR} fill={ears} lift={5} />
       </Layer>
       {sleepy ? (
         <Layer size={size}>
-          <G stroke={ink} strokeWidth={2.5} fill="none" strokeLinecap="round">
+          <G stroke={ink} strokeWidth={3.4} fill="none" strokeLinecap="round">
             <Path
               d={`M ${PET.eyeL.x - 6} ${PET.eyeL.y} Q ${PET.eyeL.x} ${PET.eyeL.y + 5} ${PET.eyeL.x + 6} ${PET.eyeL.y}`}
             />
@@ -210,13 +212,13 @@ export function Mochi({ mood, size, reaction, stroking }: Props) {
       ) : (
         <>
           <Layer size={size} style={eyesOpen}>
-            <Circle cx={PET.eyeL.x} cy={PET.eyeL.y} r={5.5} fill={ink} />
-            <Circle cx={PET.eyeR.x} cy={PET.eyeR.y} r={5.5} fill={ink} />
-            <Circle cx={PET.eyeL.x + 1.8} cy={PET.eyeL.y - 1.8} r={1.6} fill={palette.paper} />
-            <Circle cx={PET.eyeR.x + 1.8} cy={PET.eyeR.y - 1.8} r={1.6} fill={palette.paper} />
+            <Ellipse cx={PET.eyeL.x} cy={PET.eyeL.y} rx={6} ry={7.5} fill={ink} />
+            <Ellipse cx={PET.eyeR.x} cy={PET.eyeR.y} rx={6} ry={7.5} fill={ink} />
+            <Circle cx={PET.eyeL.x + 2} cy={PET.eyeL.y - 2.6} r={2.2} fill={palette.paper} />
+            <Circle cx={PET.eyeR.x + 2} cy={PET.eyeR.y - 2.6} r={2.2} fill={palette.paper} />
           </Layer>
           <Layer size={size} style={eyesHappy}>
-            <G stroke={ink} strokeWidth={2.5} fill="none" strokeLinecap="round">
+            <G stroke={ink} strokeWidth={3.4} fill="none" strokeLinecap="round">
               <Path
                 d={`M ${PET.eyeL.x - 6} ${PET.eyeL.y + 2} Q ${PET.eyeL.x} ${PET.eyeL.y - 5} ${PET.eyeL.x + 6} ${PET.eyeL.y + 2}`}
               />
@@ -247,8 +249,8 @@ function Zzz({ size }: { size: number }) {
     <Layer size={size} style={style}>
       <Path
         d="M 150 60 L 162 60 L 150 72 L 162 72"
-        stroke={ink}
-        strokeWidth={2.5}
+        stroke={palette["ink-tertiary"]}
+        strokeWidth={3.2}
         fill="none"
         strokeLinecap="round"
         strokeLinejoin="round"

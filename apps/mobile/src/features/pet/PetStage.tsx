@@ -19,6 +19,7 @@ import {
   HandHeart,
   haptics,
   layout,
+  lift,
   Pet,
   type PetReaction,
   PressableScale,
@@ -156,13 +157,12 @@ export function PetStage({ size: requested, onPressPet, compact }: Props) {
         <View
           style={{
             backgroundColor: palette.paper,
-            borderRadius: radius.md,
-            borderWidth: stroke.regular,
-            borderColor: palette.ink,
-            paddingHorizontal: 14,
-            paddingVertical: 8,
+            borderRadius: radius.lg,
+            paddingHorizontal: 16,
+            paddingVertical: 10,
             maxWidth: 280,
             zIndex: 1,
+            ...lift[1],
           }}
         >
           <Text variant="body-sm" align="center">
@@ -171,13 +171,11 @@ export function PetStage({ size: requested, onPressPet, compact }: Props) {
         </View>
         <View
           style={{
-            marginTop: -7,
-            width: 12,
-            height: 12,
+            marginTop: -8,
+            width: 14,
+            height: 14,
+            borderRadius: 3,
             backgroundColor: palette.paper,
-            borderRightWidth: stroke.regular,
-            borderBottomWidth: stroke.regular,
-            borderColor: palette.ink,
             transform: [{ rotate: "45deg" }],
             zIndex: 2,
           }}
