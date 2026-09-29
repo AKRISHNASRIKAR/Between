@@ -1,6 +1,7 @@
 import { forwardRef, useState } from "react";
 import { Platform, TextInput, type TextInputProps, View } from "react-native";
 import { Text } from "./Text";
+import { recipes } from "./theme/recipes";
 import { fonts, palette, radius, stroke, type as typeScale } from "./tokens";
 
 export type TextFieldProps = TextInputProps & {
@@ -16,7 +17,7 @@ export const TextField = forwardRef<TextInput, TextFieldProps>(function TextFiel
   ref,
 ) {
   const [focused, setFocused] = useState(false);
-  const borderColor = error ? palette["tomato-base"] : focused ? palette["teal-base"] : palette["line-strong"];
+  const look = recipes.input({ focused, error: !!error, editable });
   return (
     <View className="gap-2">
       <Text variant="label" color="ink-secondary">
@@ -28,7 +29,7 @@ export const TextField = forwardRef<TextInput, TextFieldProps>(function TextFiel
         multiline={multiline}
         accessibilityLabel={label}
         accessibilityHint={error ?? help}
-        placeholderTextColor={palette["ink-tertiary"]}
+        placeholderTextColor={look.placeholder}
         maxFontSizeMultiplier={typeScale.body.maxScale}
         onFocus={(e) => {
           setFocused(true);
@@ -43,11 +44,11 @@ export const TextField = forwardRef<TextInput, TextFieldProps>(function TextFiel
             minHeight: multiline ? 120 : 52,
             paddingHorizontal: 16,
             paddingVertical: multiline ? 14 : 0,
-            borderRadius: radius.sm,
-            borderWidth: stroke.regular,
-            borderColor,
-            backgroundColor: editable ? palette.paper : palette.sunken,
-            color: palette.ink,
+            borderRadius: look.radius,
+            borderWidth: look.borderWidth,
+            borderColor: look.border,
+            backgroundColor: look.bg,
+            color: look.text,
             fontFamily: fonts.ui400,
             fontSize: typeScale.body.fontSize,
             textAlignVertical: multiline ? "top" : "center",

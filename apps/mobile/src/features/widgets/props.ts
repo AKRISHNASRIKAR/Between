@@ -1,5 +1,5 @@
 import { PET_MOOD_WORD, type WidgetSnapshot, widgetFocus } from "@lovenotes/contracts";
-import { palette } from "@/design-system/tokens";
+import { art } from "@/design-system/tokens";
 import type { UsWidgetProps } from "./ios/UsWidget";
 
 /** Which picture of the pet to show. Widgets can't draw the app's animated SVG pet. */
@@ -7,14 +7,14 @@ export type PetArt = "awake" | "sleepy" | "egg";
 export const petArtFor = (s: WidgetSnapshot | null): PetArt =>
   !s || s.pet.stage === "egg" ? "egg" : s.pet.mood === "sleepy" ? "sleepy" : "awake";
 
-/** The widget palette, from design tokens (widget code itself can't import them). */
+/** The widget palette: the fixed light art palette (widgets don't follow the app's theme). */
 export const widgetColors = {
-  bg: palette["pink-soft"],
-  ink: palette.ink,
-  muted: palette["ink-tertiary"],
-  accent: palette["pink-deep"],
-  you: palette["teal-base"],
-  partner: palette["tomato-base"],
+  bg: art["pink-soft"],
+  ink: art.ink,
+  muted: art["ink-tertiary"],
+  accent: art["pink-deep"],
+  you: art["teal-base"],
+  partner: art["tomato-base"],
 };
 
 const SCHEME = "lovenotes://";

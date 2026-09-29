@@ -2,7 +2,8 @@ import { View } from "react-native";
 import { haptics } from "./haptics";
 import { PressableScale } from "./PressableScale";
 import { Text } from "./Text";
-import { lift, palette, radius } from "./tokens";
+import { recipes } from "./theme/recipes";
+import { lift, radius } from "./tokens";
 
 /** DESIGN §7.2 Segmented control: sunken track, paper thumb. */
 export function Segmented<T extends string>({
@@ -17,10 +18,16 @@ export function Segmented<T extends string>({
   return (
     <View
       accessibilityRole="tablist"
-      style={{ flexDirection: "row", backgroundColor: palette.sunken, borderRadius: radius.pill, padding: 4 }}
+      style={{
+        flexDirection: "row",
+        backgroundColor: recipes.segmented(false).track,
+        borderRadius: radius.pill,
+        padding: 4,
+      }}
     >
       {options.map((o) => {
         const on = o.value === value;
+        const look = recipes.segmented(on);
         return (
           <PressableScale
             key={o.value}
@@ -34,14 +41,14 @@ export function Segmented<T extends string>({
             style={{
               flex: 1,
               height: 40,
-              borderRadius: radius.pill,
+              borderRadius: look.radius,
               alignItems: "center",
               justifyContent: "center",
-              backgroundColor: on ? palette.paper : "transparent",
+              backgroundColor: look.thumb,
               ...(on ? lift[1] : null),
             }}
           >
-            <Text variant="button" color={on ? "ink" : "ink-tertiary"}>
+            <Text variant="button" color={look.fg}>
               {o.label}
             </Text>
           </PressableScale>

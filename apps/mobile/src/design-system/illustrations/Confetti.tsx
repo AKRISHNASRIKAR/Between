@@ -8,7 +8,7 @@ import Animated, {
   withDelay,
   withTiming,
 } from "react-native-reanimated";
-import { type ColorToken, palette } from "../tokens";
+import { art, type ColorToken } from "../tokens";
 
 type Piece = {
   x: number;
@@ -36,9 +36,9 @@ function ConfettiPiece({ p, height }: { p: Piece; height: number }) {
   const size = 9;
   const shapeStyle =
     p.shape === "circle"
-      ? { width: size, height: size, borderRadius: size / 2, backgroundColor: palette[p.color] }
+      ? { width: size, height: size, borderRadius: size / 2, backgroundColor: art[p.color] }
       : p.shape === "square"
-        ? { width: size, height: size, backgroundColor: palette[p.color] }
+        ? { width: size, height: size, backgroundColor: art[p.color] }
         : {
             width: 0,
             height: 0,
@@ -47,7 +47,7 @@ function ConfettiPiece({ p, height }: { p: Piece; height: number }) {
             borderBottomWidth: size,
             borderLeftColor: "transparent",
             borderRightColor: "transparent",
-            borderBottomColor: palette[p.color],
+            borderBottomColor: art[p.color],
           };
   return <Animated.View style={[{ position: "absolute", left: `${p.x}%`, top: 0 }, shapeStyle, style]} />;
 }

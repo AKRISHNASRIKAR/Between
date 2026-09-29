@@ -1,7 +1,7 @@
 import type { Paper } from "@lovenotes/contracts";
 import { Circle, Path, Rect, Svg } from "react-native-svg";
 import { shadeOf } from "../illustrations/soft";
-import { palette, paperFill, stroke } from "../tokens";
+import { art, palette, paperFill, stroke } from "../tokens";
 
 /**
  * Sealed envelope in the note's paper stock with a wax dot (DESIGN §7.3). 200×130 box.
@@ -47,9 +47,9 @@ export function EnvelopeFlap({ paper, width, sealed = true }: { paper: Paper; wi
       {sealed ? (
         <>
           {/* wax seal: a clean disc with a soft shade, and a lighter pressed centre */}
-          <Circle cx={100} cy={77.5} r={13} fill={shadeOf(palette["pink-base"])} />
-          <Circle cx={99} cy={76} r={13} fill={palette["pink-base"]} />
-          <Circle cx={99} cy={76} r={6.5} fill={palette["pink-soft"]} opacity={0.55} />
+          <Circle cx={100} cy={77.5} r={13} fill={shadeOf(art["pink-base"])} />
+          <Circle cx={99} cy={76} r={13} fill={art["pink-base"]} />
+          <Circle cx={99} cy={76} r={6.5} fill={art["pink-soft"]} opacity={0.55} />
         </>
       ) : null}
     </Svg>

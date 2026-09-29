@@ -9,14 +9,14 @@ import {
 } from "@expo-google-fonts/fraunces";
 import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
 import * as Linking from "expo-linking";
-import { router, Stack } from "expo-router";
+import { router, Stack, usePathname } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { useCallback, useEffect, useRef } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { DevFab } from "@/components/DevFab";
-import { palette, ToastProvider } from "@/design-system";
+import { palette, THEMES, ThemeProvider, ToastProvider } from "@/design-system";
 import { NoticeHost } from "@/features/notices/NoticeHost";
 import { type FlowState, flowState, restorablePath } from "@/features/space/flow";
 import { FlowContext } from "@/features/space/flow-context";
@@ -28,6 +28,9 @@ import { useNotificationRouting } from "@/lib/push";
 import { CACHE_BUSTER, persister, queryClient } from "@/lib/query";
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
+
+/** The screen on show, kept across a theme change (which remounts the navigator). */
+let lastPath: string | null = null;
 
 function RootNavigator() {
   const session = authClient.useSession();
@@ -65,6 +68,21 @@ function RootNavigator() {
   useEffect(() => {
     if (state === "ready") restore();
   }, [state, restore]);
+
+  // After a theme change the navigator remounts; put the person back where they were.
+  const pathname = usePathname();
+  const restoredOnce = useRef(false);
+  useEffect(() => {
+    if (state !== "ready") return;
+    if (!restoredOnce.current) {
+      restoredOnce.current = true;
+      if (lastPath && lastPath !== pathname) {
+        router.replace(lastPath as never);
+        return;
+      }
+    }
+    lastPath = pathname;
+  }, [state, pathname]);
 
   // Push: register once set up, and let taps on notifications open the right screen.
   useNotificationRouting(state === "ready");
@@ -137,15 +155,20 @@ export default function RootLayout() {
   if (!fontsLoaded && !fontError) return null;
 
   return (
-    <GestureHandlerRootView style={{ flex: 1, backgroundColor: palette.canvas }}>
-      <SafeAreaProvider>
-        <PersistQueryClientProvider client={queryClient} persistOptions={{ persister, buster: CACHE_BUSTER }}>
-          <ToastProvider>
-            <StatusBar style="dark" />
-            <RootNavigator />
-          </ToastProvider>
-        </PersistQueryClientProvider>
-      </SafeAreaProvider>
-    </GestureHandlerRootView>
+    <ThemeProvider>
+      {(theme) => (
+        <GestureHandlerRootView style={{ flex: 1, backgroundColor: palette.canvas }}>
+          <SafeAreaProvider>
+            <PersistQueryClientProvider client={queryClient} persistOptions={{ persister, buster: CACHE_BUSTER }}>
+              {/* Keyed by theme: a theme change re-renders every screen with the new palette. */}
+              <ToastProvider key={theme}>
+                <StatusBar style={THEMES[theme].mode === "dark" ? "light" : "dark"} />
+                <RootNavigator />
+              </ToastProvider>
+            </PersistQueryClientProvider>
+          </SafeAreaProvider>
+        </GestureHandlerRootView>
+      )}
+    </ThemeProvider>
   );
 }

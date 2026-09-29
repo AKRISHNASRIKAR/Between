@@ -1,60 +1,47 @@
 /**
- * Design tokens — mirrors DESIGN.md exactly. This is the ONLY file in the app with raw values.
- * Change DESIGN.md and this file in the same commit.
+ * Design tokens (DESIGN.md). Colours come from the active theme in ./theme/themes.ts — edit
+ * colours there, never here. Everything else (spacing, type, radius, motion) lives in this file.
  */
+import { type Family, flatten, type Palette, QUIZ_SWATCHES, THEMES, type ThemeName } from "./theme/themes";
 
-export const palette = {
-  canvas: "#FAF6EE",
-  paper: "#FFFDF8",
-  sunken: "#F2EBDF",
-  "paper-kraft": "#E9D8BC",
-  line: "#E5DCCC",
-  "line-strong": "#CBBFAA",
-  ink: "#1D1A17",
-  "ink-secondary": "#4D463F",
-  "ink-tertiary": "#6F665D",
-  "ink-disabled": "#A89E92",
-  "on-ink": "#FAF6EE",
-  transparent: "transparent",
+export type { Family, ThemeName };
 
-  // Accents (DESIGN §2.2) — drawn from the Love Notes swatch board
-  "sky-base": "#98C1E9", // attic window
-  "sky-soft": "#E7F5F9", // seafoam
-  "sky-deep": "#1D5A8C",
-  "butter-base": "#FED57D", // butter yellow
-  "butter-soft": "#FDF1D3",
-  "butter-deep": "#876029", // dry earth
-  "tomato-base": "#EF6F3C", // blood orange
-  "tomato-soft": "#FCE3D9",
-  "tomato-deep": "#C62A29", // cherry
-  "pink-base": "#F29CC3", // bubble gum
-  "pink-soft": "#FCEDED", // milkshake
-  "pink-deep": "#6D1F42", // grape juice
-  "purple-base": "#D3B6D3", // lilacs
-  "purple-soft": "#E6E3F7", // wisteria
-  "purple-deep": "#5E4394",
-  "orange-base": "#F0A351", // apricot jam
-  "orange-soft": "#FDE6CC",
-  "orange-deep": "#8A4700",
-  "green-base": "#5BA881", // clover
-  "green-soft": "#E4F1DC",
-  "green-deep": "#25533F", // forest
-  "teal-base": "#008471", // tropical rain
-  "teal-soft": "#D6EEE9",
-  "teal-deep": "#006B5C",
-} as const;
+/**
+ * Colours of the active theme. The same object is updated in place when the theme changes
+ * (`applyTheme`), so `palette.ink` always means "ink in the current theme". Read it while
+ * rendering, never into a module-level constant.
+ */
+export const palette: Palette = { ...flatten(THEMES.light) };
 
-export type ColorToken = keyof typeof palette;
+/**
+ * Illustration colours (moods, pet, egg, props, widget art). Fixed to the light palette in every
+ * theme: they're brand artwork, like stickers, and must look the same on any background.
+ */
+export const art: Palette = flatten(THEMES.light);
+
+let active: ThemeName = "light";
+/** Switch the whole palette to a theme. The ThemeProvider calls this; screens remount after. */
+export function applyTheme(name: ThemeName) {
+  Object.assign(palette, flatten(THEMES[name]));
+  active = name;
+}
+export const activeThemeName = () => active;
+export const activeThemeMode = () => THEMES[active].mode;
+
+export type ColorToken = keyof Palette;
 export const color = (t: ColorToken) => palette[t];
 
-export type Family = "sky" | "butter" | "tomato" | "pink" | "purple" | "orange" | "green" | "teal";
-export const family = (f: Family) => ({
-  base: palette[`${f}-base`],
-  soft: palette[`${f}-soft`],
-  deep: palette[`${f}-deep`],
+const steps = (p: Palette, f: Family) => ({
+  base: p[`${f}-base`],
+  soft: p[`${f}-soft`],
+  deep: p[`${f}-deep`],
   /** text/icons drawn on the base fill (DESIGN §2.2) */
-  onBase: f === "teal" ? palette.paper : palette.ink,
+  onBase: f === "teal" ? p["on-teal"] : p["on-accent"],
 });
+/** An accent family in the active theme. */
+export const family = (f: Family) => steps(palette, f);
+/** An accent family from the fixed illustration palette. */
+export const artFamily = (f: Family) => steps(art, f);
 
 /** Pillar → family (DESIGN §2.3). */
 export const pillar = {
@@ -66,24 +53,19 @@ export const pillar = {
   pet: "orange",
 } as const satisfies Record<string, Family>;
 
-/**
- * Quiz cards are the loudest thing in the app on purpose (DESIGN §2.6): saturated swatches with
- * a contrasting colour for their words, like a paint-chip card. Every text pair is ≥ 4.5:1.
- */
-export const quizTheme = {
-  about_me: { fill: "#008471", text: "#FFFDF8", accent: "#F4D242" }, // tropical rain · paper · pure sun
-  favorites: { fill: "#F4D242", text: "#6D1F42", accent: "#EF6F3C" }, // pure sun · grape juice · blood orange
-  personality: { fill: "#6D1F42", text: "#D3B6D3", accent: "#FF7BAC" }, // grape juice · lilacs · bubblegum
-  relationship: { fill: "#FF7BAC", text: "#6D1F42", accent: "#FFFDF8" }, // bubblegum · grape juice
-  chaos: { fill: "#C62A29", text: "#FCEDED", accent: "#F4D242" }, // cherry · milkshake · pure sun
-  daily: { fill: "#D6D35F", text: "#25533F", accent: "#008471" }, // limeade · forest · tropical rain
-} as const;
+/** Quiz paint-chip swatches (DESIGN §2.6): fixed across themes, defined in theme/themes.ts. */
+export const quizTheme = QUIZ_SWATCHES;
 export type QuizThemeKey = keyof typeof quizTheme;
 
 /** Identity markers — who wrote something. Never large fills. */
-export const identity = { you: palette["teal-base"], partner: palette["tomato-base"] } as const;
-
-export const scrim = "rgba(29, 26, 23, 0.4)";
+export const identity = {
+  get you() {
+    return palette["teal-base"];
+  },
+  get partner() {
+    return palette["tomato-base"];
+  },
+};
 
 /** Spacing scale (px). Tailwind keys: p-1 = 4 … p-20 = 80. */
 export const space = {
@@ -193,24 +175,28 @@ export type TypeVariant = keyof typeof type;
  */
 export const widgetType = { title: 17, name: 15, body: 13, dot: 10, eyebrow: 11, focus: 14 } as const;
 
-/** Elevation (DESIGN §6). Warm ink-tinted, rare. */
+/** Elevation (DESIGN §6). Warm, rare. Spread it (`...lift[1]`) while rendering. */
 export const lift = {
   0: { shadowOpacity: 0, elevation: 0 },
-  1: {
-    shadowColor: palette.ink,
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 2,
+  get 1() {
+    return {
+      shadowColor: palette.shadow,
+      shadowOpacity: activeThemeMode() === "dark" ? 0.35 : 0.08,
+      shadowRadius: 8,
+      shadowOffset: { width: 0, height: 2 },
+      elevation: 2,
+    };
   },
-  2: {
-    shadowColor: palette.ink,
-    shadowOpacity: 0.12,
-    shadowRadius: 24,
-    shadowOffset: { width: 0, height: 8 },
-    elevation: 6,
+  get 2() {
+    return {
+      shadowColor: palette.shadow,
+      shadowOpacity: activeThemeMode() === "dark" ? 0.45 : 0.12,
+      shadowRadius: 24,
+      shadowOffset: { width: 0, height: 8 },
+      elevation: 6,
+    };
   },
-} as const;
+};
 
 export const stroke = { hairline: 1, regular: 1.5, illustration: 2 } as const;
 export const opacity = { disabled: 0.4, dimmed: 0.6 } as const;
@@ -221,13 +207,21 @@ export function moodCardFill(fam: Family | "neutral", tone: "base" | "soft"): st
   return tone === "base" ? palette[`${fam}-soft`] : palette[`${fam}-base`];
 }
 
-/** Note paper stocks (DESIGN §7.3 NoteCard). */
+/** Note paper stocks (DESIGN §7.3 NoteCard), per theme. */
 export const paperFill = {
-  cream: palette.paper,
-  blush: palette["pink-soft"],
-  kraft: palette["paper-kraft"],
-  sky: palette["sky-soft"],
-} as const;
+  get cream() {
+    return palette["note-cream"];
+  },
+  get blush() {
+    return palette["note-blush"];
+  },
+  get kraft() {
+    return palette["note-kraft"];
+  },
+  get sky() {
+    return palette["note-sky"];
+  },
+};
 
 /** Stable small tilt (degrees) from an id, so a note always sits at the same angle. */
 export function seededTilt(id: string, max = 1.5): number {

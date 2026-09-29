@@ -18,6 +18,8 @@ export function DailyCard({
   const q = daily.questions[0];
   const state = daily.readyAt ? (daily.revealSeenAt ? "seen" : "ready") : daily.myCompletedAt ? "waiting" : "yours";
   const open = () => router.push(`/quiz/${daily.id}`);
+  // A fixed paint-chip swatch (DESIGN §2.6): its words use the swatch's own text colour in every theme.
+  const ink = quizColors("daily").text;
   return (
     <PressableScale
       accessibilityLabel={`Today's question: ${q ? withPartner(q.promptSelf, partnerName) : ""}`}
@@ -33,20 +35,20 @@ export function DailyCard({
       <View style={{ position: "absolute", top: -26, right: 16 }}>
         <CategoryCreature category="daily" size={56} onBase />
       </View>
-      <Text variant="label" color="green-deep">
+      <Text variant="label" style={{ color: ink }}>
         Today's question
       </Text>
-      <Text variant="display-m" color="green-deep">
+      <Text variant="display-m" style={{ color: ink }}>
         {q ? withPartner(q.promptSelf, partnerName) : ""}
       </Text>
       {state === "yours" ? (
-        <Text variant="body-sm" color="green-deep">
+        <Text variant="body-sm" style={{ color: ink }}>
           Your turn — answers stay hidden until you've both replied.
         </Text>
       ) : state === "waiting" ? (
         <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-          <Dots color="green-deep" />
-          <Text variant="body-sm" color="green-deep">
+          <Dots tint={ink} />
+          <Text variant="body-sm" style={{ color: ink }}>
             Waiting for {partnerName}
           </Text>
         </View>
@@ -55,7 +57,7 @@ export function DailyCard({
           <Button label="Reveal ✦" onPress={open} />
         </View>
       ) : (
-        <Text variant="body-sm" color="green-deep">
+        <Text variant="body-sm" style={{ color: ink }}>
           Revealed · tap to see your answers
         </Text>
       )}

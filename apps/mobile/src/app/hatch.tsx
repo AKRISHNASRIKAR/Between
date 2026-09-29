@@ -10,6 +10,7 @@ import {
   enter,
   haptics,
   Pet,
+  palette,
   pop,
   Screen,
   space as spacing,
@@ -97,7 +98,7 @@ export default function Hatch() {
     );
 
   return (
-    <View className="flex-1 bg-canvas">
+    <View style={{ flex: 1, backgroundColor: palette.canvas }}>
       <Screen footer={footer}>
         <View className="flex-1 gap-8 pt-10">
           <View className="items-center" style={{ minHeight: 220 }}>

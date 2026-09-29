@@ -12,9 +12,11 @@ import {
   palette,
   radius,
   Screen,
+  Segmented,
   SignOut,
   Skeleton,
   Text,
+  useTheme,
   useToast,
 } from "@/design-system";
 import { useDeleteAccount, useExport, useNotificationPrefs, useUpdatePrefs } from "@/features/settings/hooks";
@@ -58,6 +60,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 }
 
 export default function Settings() {
+  const theme = useTheme();
   const me = useMe();
   const space = me.data?.space;
   const partner = partnerOf(space, me.data?.profile.id);
@@ -87,6 +90,14 @@ export default function Settings() {
           <Row label="Space" value={space?.name} />
           <Row label="With" value={partner?.displayName} />
           <Row label="Pet" value={space?.pet.name ?? ""} />
+        </Section>
+        <Section title="Appearance">
+          <View style={{ paddingVertical: 12, gap: 10 }}>
+            <Segmented value={theme.preference} options={theme.options} onChange={theme.setPreference} />
+            <Text variant="caption" color="ink-tertiary">
+              System follows your phone: Light by day, Candlelit when it's dark.
+            </Text>
+          </View>
         </Section>
         <Section title="Notifications">
           {p ? (

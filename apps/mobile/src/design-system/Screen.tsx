@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { KeyboardAvoidingView, Platform, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { layout } from "./tokens";
+import { layout, palette } from "./tokens";
 
 type Props = {
   children: ReactNode;
@@ -26,8 +26,8 @@ export function Screen({ children, scroll = true, footer, bottomInset = true, he
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : undefined}
-      className="flex-1 bg-canvas"
-      style={{ paddingTop: insets.top }}
+      className="flex-1"
+      style={{ paddingTop: insets.top, backgroundColor: palette.canvas }}
     >
       {header}
       {scroll ? (

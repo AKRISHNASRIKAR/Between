@@ -26,7 +26,7 @@
 
 ## 2. Color
 
-All colors live in `tokens.ts` and are exposed to NativeWind as semantic classes. **Hex values never appear in components.** Contrast ratios were verified against WCAG 2.1 (AA: 4.5:1 for text, 3:1 for large text and UI).
+All colours are **roles** defined per theme in `design-system/theme/themes.ts`, the single place to change how the app looks. Components read the active theme through `palette` / `family()` (and component recipes, §7.0); **hex values never appear in components**, and Tailwind colour classes are not used (they can't follow a theme). `bun run lint` checks every theme's text/background pairs against WCAG 2.1 AA (4.5:1). The values below are the **Light** theme.
 
 ### 2.1 Foundation
 
@@ -112,8 +112,15 @@ Moods are expressive content, so they may use any family. Each mood is defined i
 | Hurt | pink / soft | Blob with a small plaster |
 | Angry | tomato / base | Triangle with furrowed brows |
 
-### 2.5 Dark mode
-The MVP ships **light only** (`userInterfaceStyle: "light"`). The cream foundation *is* the identity. Tokens are theme-ready: a "candlelit" dark theme (warm brown-black `#1A1613` canvas) is planned for V1, and it only changes token values.
+### 2.5 Themes: Light and Candlelit
+Two themes ship: **Light** (the cream foundation above) and **Candlelit**, a warm brown-black dark theme (canvas `#1A1613`, paper `#241F1B`, ink `#F4EDE1`). People choose in Settings → Appearance: *System* (follows the phone: Light by day, Candlelit in dark mode), *Light* or *Candlelit*; the choice is remembered on the device.
+
+Rules that keep every theme working:
+- **Accent fills stay bright** in every theme, so text on a `base` fill uses the `on-accent` role (dark in both themes; `on-teal` for teal). `soft` steps become dark tints and `deep` steps become light, so "deep text on soft" stays readable.
+- **Illustrations and widgets don't change** with the theme. Moods, the pet, props, the icon and widget art use the fixed `art` palette (the Light colours), like stickers.
+- **Quiz swatches (§2.6) are fixed** and use their own text colours, never theme tokens.
+- **Note papers** have per-theme stocks (`note-cream`, `note-blush`, `note-kraft`, `note-sky`).
+- To add a theme, add an entry to `THEMES`; it appears in Settings automatically, and the lint rejects it if any pair falls below AA.
 
 ### 2.6 Quiz swatches (the loud exception)
 
@@ -224,6 +231,9 @@ Shadows are rare and warm (tinted with `ink`, never grey-blue). There are only t
 ## 7. Components
 
 Every component lives in `src/design-system/`. Feature code composes these and never restyles them. Each component documents its states. **Every interactive component must implement every applicable state.**
+
+### 7.0 Component recipes
+Each shared component takes its look from a recipe in `theme/recipes.ts` (`recipes.button(variant, family, size)`, `recipes.chip(selected, family)`, `recipes.actionButton`, `recipes.input(state)`, `recipes.surface(kind)`, `recipes.segmented`, `recipes.toast`, `recipes.tabBar`). The tables below describe those recipes; change a recipe and every instance follows in every theme.
 
 ### 7.1 Global interaction states
 
@@ -474,7 +484,10 @@ No haptics on navigation, scrolling or passive realtime updates.
 
 ```
 apps/mobile/src/design-system/
-  tokens.ts          ← the ONLY place values live (mirrors this file)
+  theme/themes.ts    ← every colour role, per theme (the one place to change colours)
+  theme/recipes.ts   ← how each component looks (button, chip, input, surface, toast, tab bar…)
+  theme/ThemeProvider.tsx ← applies the chosen theme; useTheme()
+  tokens.ts          ← live palette + spacing, type, radius, motion values (mirrors this file)
   tailwind preset    ← generated from tokens.ts (NativeWind theme)
   motion.ts          ← durations, easings, springs
   haptics.ts
@@ -484,5 +497,7 @@ apps/mobile/src/design-system/
   illustrations/  MoodCreature  CategoryCreature  Pet/  Confetti  Stamp
 ```
 
-- A lint rule forbids hex literals, `fontSize:` and `fontFamily:` outside `design-system/`.
+- A lint rule forbids hex literals, literal `fontSize:`/`fontFamily:` values and Tailwind colour classes outside `design-system/`.
+- `scripts/check-theme-contrast.ts` fails the lint if any theme has an unreadable text pair.
+- Read `palette` while rendering, never into a module-level constant: a theme change re-renders every screen (the navigator is keyed by theme), but a captured constant would keep the old colour.
 - Changes to this file and to `tokens.ts` land in the **same commit**.

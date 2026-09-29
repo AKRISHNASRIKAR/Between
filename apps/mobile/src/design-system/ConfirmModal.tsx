@@ -3,7 +3,7 @@ import Animated, { FadeIn } from "react-native-reanimated";
 import { Button } from "./Button";
 import { pop } from "./motion";
 import { Text } from "./Text";
-import { lift, palette, radius, scrim } from "./tokens";
+import { lift, palette, radius } from "./tokens";
 
 type Props = {
   open: boolean;
@@ -22,7 +22,7 @@ export function ConfirmModal({ open, title, body, confirmLabel, destructive, loa
     <Modal transparent visible={open} onRequestClose={onCancel} animationType="none" statusBarTranslucent>
       <Animated.View
         entering={FadeIn.duration(180)}
-        style={{ flex: 1, backgroundColor: scrim, justifyContent: "center", padding: 20 }}
+        style={{ flex: 1, backgroundColor: palette.scrim, justifyContent: "center", padding: 20 }}
       >
         <Pressable accessibilityLabel="Cancel" style={{ position: "absolute", inset: 0 }} onPress={onCancel} />
         <Animated.View

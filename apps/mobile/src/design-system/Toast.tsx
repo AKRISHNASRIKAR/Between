@@ -8,7 +8,8 @@ import { haptics } from "./haptics";
 import { Check, WarningCircle } from "./Icon";
 import { dur, ease } from "./motion";
 import { Text } from "./Text";
-import { layout, palette, radius } from "./tokens";
+import { recipes } from "./theme/recipes";
+import { layout, radius } from "./tokens";
 
 type ToastInput = {
   message: string;
@@ -61,7 +62,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
                 marginHorizontal: layout.gutter,
                 maxWidth: layout.maxContentWidth,
                 alignSelf: "stretch",
-                backgroundColor: palette.ink,
+                backgroundColor: recipes.toast().bg,
                 borderRadius: radius.md,
                 paddingHorizontal: 16,
                 paddingVertical: 12,
@@ -70,9 +71,9 @@ export function ToastProvider({ children }: { children: ReactNode }) {
                 gap: 10,
               }}
             >
-              {toast.kind === "success" ? <Check size={18} color={palette["green-base"]} weight="bold" /> : null}
-              {toast.kind === "error" ? <WarningCircle size={18} color={palette["tomato-base"]} weight="bold" /> : null}
-              <Text variant="body-sm" color="on-ink" style={{ flex: 1 }}>
+              {toast.kind === "success" ? <Check size={18} color={recipes.toast().success} weight="bold" /> : null}
+              {toast.kind === "error" ? <WarningCircle size={18} color={recipes.toast().error} weight="bold" /> : null}
+              <Text variant="body-sm" color={recipes.toast().fg} style={{ flex: 1 }}>
                 {toast.message}
               </Text>
               {toast.action ? (

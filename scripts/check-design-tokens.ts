@@ -12,6 +12,11 @@ const rules: Array<[RegExp, string]> = [
   [/\bfontSize\s*:\s*\d/, "fontSize"],
   [/\bfontFamily\s*:\s*["'`]/, "fontFamily"],
   [/\b(?:text|bg|border)-\[#/, "arbitrary Tailwind color"],
+  // Tailwind colour classes are compiled once and can't follow the theme: use style + palette.
+  [
+    /className=[^>]*\b(?:bg|text|border)-(?:canvas|paper|sunken|ink|line|on-ink|[a-z]+-(?:base|soft|deep))\b/,
+    "Tailwind colour class (can't follow the theme)",
+  ],
 ];
 
 /** Spacing utilities must use the DESIGN.md scale — Tailwind silently ignores unknown keys. */

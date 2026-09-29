@@ -11,4 +11,6 @@ export const kv = {
   getItem: async (k: string) => safe(() => globalThis.localStorage.getItem(k), null),
   setItem: async (k: string, v: string) => safe(() => globalThis.localStorage.setItem(k, v), undefined),
   removeItem: async (k: string) => safe(() => globalThis.localStorage.removeItem(k), undefined),
+  getSync: (k: string) => safe(() => globalThis.localStorage.getItem(k), null),
+  setSync: (k: string, v: string) => safe(() => globalThis.localStorage.setItem(k, v), undefined),
 };

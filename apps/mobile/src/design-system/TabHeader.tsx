@@ -3,7 +3,8 @@ import { View } from "react-native";
 import type { IconProps } from "./Icon";
 import { PressableScale } from "./PressableScale";
 import { Text } from "./Text";
-import { type Family, family as fam } from "./tokens";
+import { recipes } from "./theme/recipes";
+import type { Family } from "./tokens";
 
 type Props = {
   title: string;
@@ -18,7 +19,7 @@ type Props = {
  * action. No eyebrow — the tab bar already says where you are.
  */
 export function TabHeader({ title, subtitle, action }: Props) {
-  const f = action ? fam(action.family) : null;
+  const look = action ? recipes.actionButton(action.family) : null;
   return (
     <View style={{ flexDirection: "row", alignItems: "center", gap: 12, minHeight: 48 }}>
       <View style={{ flex: 1, gap: 2 }}>
@@ -31,21 +32,21 @@ export function TabHeader({ title, subtitle, action }: Props) {
           </Text>
         ) : null}
       </View>
-      {action && f ? (
+      {action && look ? (
         <PressableScale
           accessibilityLabel={action.label}
           onPress={action.onPress}
           hitSlop={6}
           style={{
-            width: 48,
-            height: 48,
-            borderRadius: 24,
-            backgroundColor: f.base,
+            width: look.size,
+            height: look.size,
+            borderRadius: look.radius,
+            backgroundColor: look.bg,
             alignItems: "center",
             justifyContent: "center",
           }}
         >
-          <action.icon size={22} color={f.onBase} weight="bold" />
+          <action.icon size={22} color={look.fg} weight="bold" />
         </PressableScale>
       ) : null}
     </View>

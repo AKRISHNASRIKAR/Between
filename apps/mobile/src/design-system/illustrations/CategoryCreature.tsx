@@ -1,6 +1,6 @@
 import type { QuizCategory } from "@lovenotes/contracts";
 import { Circle, Ellipse, G, Path, Svg } from "react-native-svg";
-import { palette, quizTheme } from "../tokens";
+import { art, quizTheme } from "../tokens";
 import { circle, roundedPolygon, roundRect, SoftShape, starPoints } from "./soft";
 
 /** Quiz category → its paint-chip colours (DESIGN §2.6). */
@@ -36,7 +36,7 @@ export function CategoryCreature({
 }) {
   const t = quizTheme[category];
   // On its own card the creature takes the card's accent, with its face in the card's text colour.
-  const ink = onBase ? t.text : palette.ink;
+  const ink = onBase ? t.text : art.ink;
   const fill = onBase ? t.accent : t.fill;
   return (
     <Svg width={size} height={size} viewBox="0 0 100 100" accessibilityElementsHidden>

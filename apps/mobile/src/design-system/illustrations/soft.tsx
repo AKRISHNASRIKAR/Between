@@ -1,5 +1,5 @@
 import { Defs, Ellipse, G, Mask, Path } from "react-native-svg";
-import { palette } from "../tokens";
+import { art } from "../tokens";
 
 /**
  * Illustration signature (DESIGN §8): clean, rounded vector shapes. No outlines, no offset
@@ -21,7 +21,7 @@ export function mix(a: string, b: string, t: number): string {
 }
 
 /** The shade tone for a fill: the same hue, a little deeper and warmer. */
-export const shadeOf = (fill: string) => mix(fill, palette.ink, 0.13);
+export const shadeOf = (fill: string) => mix(fill, art.ink, 0.13);
 
 type Pt = [number, number];
 
@@ -119,7 +119,7 @@ export function SoftShape({
             cy={gloss.cy}
             rx={gloss.rx}
             ry={gloss.ry}
-            fill={palette.paper}
+            fill={art.paper}
             opacity={0.38}
             transform={`rotate(-24 ${gloss.cx} ${gloss.cy})`}
           />

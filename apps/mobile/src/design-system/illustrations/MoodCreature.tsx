@@ -1,7 +1,7 @@
 import { MOODS, type MoodId } from "@lovenotes/contracts";
 import type { ReactNode } from "react";
 import { Circle, Ellipse, G, Path, Rect, Svg } from "react-native-svg";
-import { family, palette } from "../tokens";
+import { art, artFamily, palette } from "../tokens";
 import { circle, roundedPolygon, roundRect, SoftShape, shadeOf, starPoints } from "./soft";
 
 type Face = {
@@ -26,8 +26,8 @@ type Shape = {
 
 function fillFor(mood: MoodId) {
   const def = MOODS[mood];
-  if (def.family === "neutral") return palette["line-strong"];
-  const f = family(def.family);
+  if (def.family === "neutral") return art["line-strong"];
+  const f = artFamily(def.family);
   return def.tone === "soft" ? f.soft : f.base;
 }
 
@@ -146,9 +146,7 @@ const SHAPES: Record<MoodId, Shape> = {
   stressed: {
     body: roundRect(23, 27, 54, 54, 17),
     gloss: { cx: 36, cy: 36, rx: 6, ry: 3.5 },
-    over: () => (
-      <Path d="M 79 24 C 83 30 85 33 85 36 A 6 6 0 0 1 73 36 C 73 33 75 30 79 24 Z" fill={palette["sky-base"]} />
-    ),
+    over: () => <Path d="M 79 24 C 83 30 85 33 85 36 A 6 6 0 0 1 73 36 C 73 33 75 30 79 24 Z" fill={art["sky-base"]} />,
     face: {
       eyes: [
         [42, 53],
@@ -164,7 +162,7 @@ const SHAPES: Record<MoodId, Shape> = {
     over: (backdrop) => (
       <G>
         <Rect x={8} y={62} width={84} height={28} rx={6} fill={backdrop} />
-        <Rect x={8} y={60} width={84} height={4} rx={2} fill={palette["line-strong"]} />
+        <Rect x={8} y={60} width={84} height={4} rx={2} fill={art["line-strong"]} />
       </G>
     ),
     face: {
@@ -179,8 +177,8 @@ const SHAPES: Record<MoodId, Shape> = {
     gloss: { cx: 32, cy: 38, rx: 7, ry: 3.5 },
     over: () => (
       <G transform="rotate(-32 66 38)">
-        <Rect x={55} y={33} width={22} height={10} rx={5} fill={palette.paper} />
-        <Rect x={63} y={33} width={6} height={10} fill={palette["line"]} />
+        <Rect x={55} y={33} width={22} height={10} rx={5} fill={art.paper} />
+        <Rect x={63} y={33} width={6} height={10} fill={art["line"]} />
       </G>
     ),
     face: {
@@ -228,7 +226,7 @@ function FaceView({ face, color }: { face: Face; color: string }) {
   return (
     <G>
       {face.cheeks?.map(([x, y]) => (
-        <Ellipse key={`c${x}`} cx={x} cy={y} rx={4} ry={2.6} fill={palette["pink-base"]} opacity={0.55} />
+        <Ellipse key={`c${x}`} cx={x} cy={y} rx={4} ry={2.6} fill={art["pink-base"]} opacity={0.55} />
       ))}
       {face.eyes.map(([x, y]) => {
         const d = eyePath(x, y, face.eyeStyle);
@@ -266,8 +264,7 @@ type Props = {
 export function MoodCreature({ mood, size = 96, silhouette, backdrop = palette.canvas }: Props) {
   const shape = SHAPES[mood];
   const fill = silhouette ? palette.line : fillFor(mood);
-  const faceColor =
-    MOODS[mood].family === "teal" && MOODS[mood].tone === "base" && !silhouette ? palette.paper : palette.ink;
+  const faceColor = MOODS[mood].family === "teal" && MOODS[mood].tone === "base" && !silhouette ? art.paper : art.ink;
   return (
     <Svg width={size} height={size} viewBox="0 0 100 100" accessibilityLabel={MOODS[mood].label}>
       {silhouette ? (
@@ -286,10 +283,10 @@ export function MoodCreature({ mood, size = 96, silhouette, backdrop = palette.c
 
 /** Sleeping silhouette used for the partner's "not shared" card. */
 export function SleepingCreature({ size = 96 }: { size?: number }) {
-  const tone = palette["ink-tertiary"];
+  const tone = art["ink-tertiary"];
   return (
     <Svg width={size} height={size} viewBox="0 0 100 100" accessibilityLabel="Not shared yet">
-      <SoftShape id="sleeping" d={SHAPES.calm.body} fill={palette.line} />
+      <SoftShape id="sleeping" d={SHAPES.calm.body} fill={art.line} />
       <Path
         d="M 36 55 Q 40 58.5 44 55 M 56 55 Q 60 58.5 64 55"
         stroke={tone}

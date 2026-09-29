@@ -31,4 +31,7 @@ export * from "./TabHeader";
 export * from "./Text";
 export * from "./TextField";
 export * from "./Toast";
+export * from "./theme/recipes";
+export * from "./theme/ThemeProvider";
+export { THEMES, type ThemeDefinition } from "./theme/themes";
 export * from "./tokens";

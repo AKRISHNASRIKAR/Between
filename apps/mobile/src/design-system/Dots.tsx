@@ -12,7 +12,7 @@ import Animated, {
 import { dur, ease } from "./motion";
 import { type ColorToken, palette } from "./tokens";
 
-function Dot({ index, color }: { index: number; color: ColorToken }) {
+function Dot({ index, fill }: { index: number; fill: string }) {
   const y = useSharedValue(0);
   const reduced = useReducedMotion();
   useEffect(() => {
@@ -29,15 +29,15 @@ function Dot({ index, color }: { index: number; color: ColorToken }) {
     );
   }, [index, reduced, y]);
   const style = useAnimatedStyle(() => ({ transform: [{ translateY: y.value }] }));
-  return <Animated.View style={[{ width: 6, height: 6, borderRadius: 3, backgroundColor: palette[color] }, style]} />;
+  return <Animated.View style={[{ width: 6, height: 6, borderRadius: 3, backgroundColor: fill }, style]} />;
 }
 
-/** Loading indicator (DESIGN §7.1): three bouncing dots. */
-export function Dots({ color = "ink" }: { color?: ColorToken }) {
+/** Loading indicator (DESIGN §7.1): three bouncing dots. `tint` takes a fixed colour (e.g. on a quiz swatch). */
+export function Dots({ color = "ink", tint }: { color?: ColorToken; tint?: string }) {
   return (
     <View accessibilityLabel="Loading" accessibilityRole="progressbar" className="flex-row items-center gap-1">
       {[0, 1, 2].map((i) => (
-        <Dot key={i} index={i} color={color} />
+        <Dot key={i} index={i} fill={tint ?? palette[color]} />
       ))}
     </View>
   );

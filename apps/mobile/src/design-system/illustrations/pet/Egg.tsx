@@ -13,7 +13,7 @@ import Animated, {
 import { Circle, Path } from "react-native-svg";
 import { haptics } from "../../haptics";
 import { dur, ease, spring } from "../../motion";
-import { type ColorToken, palette } from "../../tokens";
+import { art, type ColorToken } from "../../tokens";
 import { SoftShape } from "../soft";
 import { Layer } from "./Layer";
 import { PET } from "./paths";
@@ -24,7 +24,7 @@ function Speckles() {
   return (
     <>
       {PET.egg.speckles.map((s) => (
-        <Circle key={`${s.x}-${s.y}`} cx={s.x} cy={s.y} r={s.r} fill={palette[s.c as ColorToken]} />
+        <Circle key={`${s.x}-${s.y}`} cx={s.x} cy={s.y} r={s.r} fill={art[s.c as ColorToken]} />
       ))}
     </>
   );
@@ -34,7 +34,7 @@ function Speckles() {
 function Shell({ d, id }: { d: string; id: string }) {
   return (
     <>
-      <SoftShape id={id} d={d} fill={palette["butter-soft"]} lift={7} gloss={{ cx: 82, cy: 78, rx: 12, ry: 6 }} />
+      <SoftShape id={id} d={d} fill={art["butter-soft"]} lift={7} gloss={{ cx: 82, cy: 78, rx: 12, ry: 6 }} />
       <Speckles />
     </>
   );

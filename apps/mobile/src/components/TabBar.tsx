@@ -12,6 +12,7 @@ import {
   layout,
   palette,
   pillar,
+  recipes,
   SunHorizon,
   spring,
   Text,
@@ -49,9 +50,9 @@ export function TabBar({ state, navigation }: TabBarProps) {
       onLayout={(e: LayoutChangeEvent) => setWidth(e.nativeEvent.layout.width)}
       accessibilityRole="tablist"
       style={{
-        backgroundColor: palette.canvas,
+        backgroundColor: recipes.tabBar("sky", false).bg,
         borderTopWidth: 1,
-        borderTopColor: palette.line,
+        borderTopColor: recipes.tabBar("sky", false).border,
         paddingBottom: insets.bottom,
         height: layout.tabBarHeight + insets.bottom,
         flexDirection: "row",
@@ -61,7 +62,7 @@ export function TabBar({ state, navigation }: TabBarProps) {
         const tab = TABS[route.name as TabName];
         if (!tab) return null;
         const focused = state.index === i;
-        const color = focused ? palette[`${tab.family}-deep`] : palette["ink-tertiary"];
+        const color = recipes.tabBar(tab.family, focused).fg;
         return (
           <Pressable
             key={route.key}
@@ -95,7 +96,7 @@ export function TabBar({ state, navigation }: TabBarProps) {
               width: 6,
               height: 6,
               borderRadius: 3,
-              backgroundColor: palette[`${TABS[activeName]?.family ?? "sky"}-base`],
+              backgroundColor: recipes.tabBar(TABS[activeName]?.family ?? "sky", true).dot,
             },
             dot,
           ]}

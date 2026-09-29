@@ -1,6 +1,6 @@
 import type { QuizSession } from "@lovenotes/contracts";
 import { View } from "react-native";
-import { Dots, Pet, Text } from "@/design-system";
+import { Dots, Pet, palette, Text } from "@/design-system";
 
 /** You're done; your partner isn't yet. Their progress, never their answers. */
 export function QuizWaiting({ session, partnerName }: { session: QuizSession; partnerName: string }) {
@@ -19,8 +19,12 @@ export function QuizWaiting({ session, partnerName }: { session: QuizSession; pa
         {session.questions.map((q, i) => (
           <View
             key={q.id}
-            style={{ width: 22, height: 6, borderRadius: 3 }}
-            className={i < done ? "bg-purple-base" : "bg-sunken"}
+            style={{
+              width: 22,
+              height: 6,
+              borderRadius: 3,
+              backgroundColor: i < done ? palette["purple-base"] : palette.sunken,
+            }}
           />
         ))}
       </View>

@@ -34,6 +34,22 @@ loading → signed-out → needs-name → no-space → waiting (for partner) →
 
 Each group of screens sits in a `<Stack.Protected guard={state === …}>`, so a user can never land on a screen that doesn't fit their state. Deep links that arrive before the state is known (a cold start from a push or an invite link) are held and restored once `ready` (`restorablePath`).
 
+## Theme
+
+One system decides every colour and component look (DESIGN §2, §7.0):
+
+```
+design-system/theme/themes.ts      THEMES: every colour role for Light and Candlelit (edit here)
+design-system/theme/recipes.ts     recipes: button, chip, input, surface, segmented, toast, tab bar
+design-system/theme/ThemeProvider  preference (System / Light / Candlelit), useTheme()
+design-system/tokens.ts            palette (live), family(), art (fixed), spacing/type/radius
+```
+
+- `palette` is one object updated in place by `applyTheme()`, so existing `palette.x` reads follow the active theme. `family(f)` resolves an accent family in the active theme; `art` / `artFamily(f)` are the fixed light colours for illustrations and widgets.
+- `ThemeProvider` reads the saved preference synchronously (no flash of the wrong theme), follows the phone's appearance on *System*, and applies the theme before rendering. Everything below it is keyed by theme name, so a switch re-renders every screen; the navigator puts you back on the screen you were on. The query cache sits above the key and survives.
+- Guardrails in `bun run lint`: hex, literal font values and Tailwind colour classes are banned outside the design system, and every theme is checked for WCAG AA contrast.
+- `app.json` → `userInterfaceStyle: "automatic"` lets *System* see the phone's dark mode (native setting; needs a rebuild).
+
 ## Server state
 
 - **Typed client.** `lib/api.ts` is Hono's `hc<AppType>`. Paths, params, bodies and responses are typed from the API's own routes, so a server change that breaks the app fails `tsc`.

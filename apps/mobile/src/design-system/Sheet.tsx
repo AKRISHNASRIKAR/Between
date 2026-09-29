@@ -4,7 +4,7 @@ import { Gesture, GestureDetector, GestureHandlerRootView } from "react-native-g
 import Animated, { runOnJS, useAnimatedStyle, useSharedValue, withSpring, withTiming } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { dur, spring } from "./motion";
-import { lift, palette, radius, scrim } from "./tokens";
+import { lift, palette, radius } from "./tokens";
 
 type Props = { open: boolean; onClose: () => void; children: ReactNode; accessibilityLabel: string };
 
@@ -45,7 +45,7 @@ export function Sheet({ open, onClose, children, accessibilityLabel }: Props) {
   return (
     <Modal transparent visible statusBarTranslucent onRequestClose={onClose} animationType="none">
       <GestureHandlerRootView style={{ flex: 1 }}>
-        <Animated.View style={[{ position: "absolute", inset: 0, backgroundColor: scrim }, scrimStyle]}>
+        <Animated.View style={[{ position: "absolute", inset: 0, backgroundColor: palette.scrim }, scrimStyle]}>
           <Pressable accessibilityLabel="Close" style={{ flex: 1 }} onPress={onClose} />
         </Animated.View>
         <KeyboardAvoidingView
