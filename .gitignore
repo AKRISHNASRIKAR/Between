@@ -25,3 +25,6 @@ expo-env.d.ts
 
 # Deploy secrets
 deploy/.env.production
+
+# Gradle cache for local Android builds (outside android/, which prebuild regenerates)
+/apps/mobile/.gradle-home

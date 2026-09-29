@@ -99,7 +99,8 @@
             }
           ]
         }
-      ]
+      ],
+      "./plugins/with-workmanager-alignment.js"
     ],
     "experiments": {
       "typedRoutes": true
