@@ -2,7 +2,7 @@
  * Design tokens (DESIGN.md). Colours come from the active theme in ./theme/themes.ts — edit
  * colours there, never here. Everything else (spacing, type, radius, motion) lives in this file.
  */
-import { type Family, flatten, type Palette, QUIZ_SWATCHES, THEMES, type ThemeName } from "./theme/themes";
+import { ART_THEME, type Family, flatten, type Palette, QUIZ_SWATCHES, THEMES, type ThemeName } from "./theme/themes";
 
 export type { Family, ThemeName };
 
@@ -17,10 +17,10 @@ export const palette: Palette = { ...flatten(THEMES.light) };
  * Illustration colours (moods, pet, egg, props, widget art). Fixed to the light palette in every
  * theme: they're brand artwork, like stickers, and must look the same on any background.
  */
-export const art: Palette = flatten(THEMES.light);
+export const art: Palette = flatten(ART_THEME);
 
 let active: ThemeName = "light";
-/** Switch the whole palette to a theme. The ThemeProvider calls this; screens remount after. */
+/** Switch the whole palette; subscribed components redraw without remounting. */
 export function applyTheme(name: ThemeName) {
   Object.assign(palette, flatten(THEMES[name]));
   active = name;
@@ -60,10 +60,10 @@ export type QuizThemeKey = keyof typeof quizTheme;
 /** Identity markers — who wrote something. Never large fills. */
 export const identity = {
   get you() {
-    return palette["teal-base"];
+    return palette["identity-you"];
   },
   get partner() {
-    return palette["tomato-base"];
+    return palette["identity-partner"];
   },
 };
 

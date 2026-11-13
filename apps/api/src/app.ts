@@ -8,6 +8,7 @@ import { fileRoutes } from "./http/files.routes";
 import { requireSpaceMember } from "./http/require-space-member";
 import { requireUser } from "./http/require-user";
 import { AppError } from "./lib/errors";
+import { analyticsRoutes, observeEvents } from "./modules/analytics";
 import { devRoutes } from "./modules/dev";
 import { futureRoutes } from "./modules/future";
 import { journalRoutes, mediaRoutes, memoryRoutes } from "./modules/journal";
@@ -44,6 +45,8 @@ const spaceScoped = new Hono<AppEnv>()
 /** Authenticated JSON API. Its type drives the mobile app's typed client. */
 export const v1 = new Hono<AppEnv>()
   .use(requireUser)
+  .use(observeEvents)
+  .route("/analytics", analyticsRoutes)
   .route("/me", meRoutes)
   .route("/spaces", createSpaceRoutes)
   .route("/spaces/:sid", spaceScoped)

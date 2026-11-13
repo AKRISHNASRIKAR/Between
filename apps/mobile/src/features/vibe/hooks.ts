@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api, unwrap } from "@/lib/api";
 import { localDateString } from "@/lib/date";
 import { newId } from "@/lib/ids";
+import { rollbackOptimistic } from "@/lib/optimistic";
 
 export const vibeKeys = {
   all: (sid: string) => ["space", sid, "vibe"] as const,
@@ -27,6 +28,8 @@ export function useCheckin(spaceId: string | undefined, myId: string | undefined
   const date = localDateString();
   const key = vibeKeys.day(spaceId ?? "", date);
   return useMutation({
+    mutationKey: key,
+    scope: { id: key.join(":") },
     mutationFn: (input: CheckinInput) =>
       unwrap(
         api.spaces[":sid"].vibe[":date"].$put({
@@ -53,12 +56,15 @@ export function useCheckin(spaceId: string | undefined, myId: string | undefined
           updatedAt: now,
         },
       }));
-      return { prev };
+      return { prev, optimistic: qc.getQueryData<Vibe>(key) };
     },
-    onError: (_e, _i, ctx) => ctx?.prev && qc.setQueryData(key, ctx.prev),
-    onSuccess: (vibe) => {
-      qc.setQueryData(key, vibe);
+    onError: (_e, _i, ctx) => rollbackOptimistic(qc, key, ctx),
+    onSuccess: (vibe, _input, ctx) => {
+      if (qc.getQueryData(key) === ctx?.optimistic) qc.setQueryData(key, vibe);
       qc.invalidateQueries({ queryKey: ["space", spaceId ?? "", "vibe", "month"] });
+    },
+    onSettled: () => {
+      if (qc.isMutating({ mutationKey: key }) === 1) return qc.invalidateQueries({ queryKey: key });
     },
   });
 }

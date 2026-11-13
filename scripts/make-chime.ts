@@ -1,5 +1,5 @@
 /**
- * Generates apps/mobile/assets/sounds/chime.wav: the Love Notes notification sound.
+ * Generates apps/mobile/assets/sounds/chime.wav: the Between notification sound.
  * Two soft bell tones (E6 → B6) with gentle harmonics and a quick decay, ~0.9s, 16-bit mono.
  * Run: bun scripts/make-chime.ts
  */

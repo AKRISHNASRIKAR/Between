@@ -1,206 +1,372 @@
-import { type QuizAnswer, type QuizQuestion, type QuizSession, withPartner } from "@lovenotes/contracts";
-import { useEffect, useMemo, useState } from "react";
+import { AnswerInput, type QuizSession, withPartner } from "@lovenotes/contracts";
+import { useMemo, useRef, useState } from "react";
 import { View } from "react-native";
-import Animated, { SlideInRight, SlideOutLeft } from "react-native-reanimated";
+import { z } from "zod";
 import {
   ArrowLeft,
   Avatar,
   Button,
   CATEGORY_LABEL,
-  dur,
-  ease,
-  lift,
+  Check,
+  LockSimple,
+  layout,
   PressableScale,
   palette,
-  quizColors,
   radius,
+  space,
   Text,
   TextField,
-  useToast,
 } from "@/design-system";
+import { useThemeSubscription } from "@/design-system/theme/ThemeProvider";
 import { humanError } from "@/lib/errors";
+import { useDraft } from "@/lib/use-draft";
+import { answerLabel, questionAnswered, resumeQuestionIndex } from "./answer-view";
+import { ChoiceGrid } from "./ChoiceGrid";
 import { useAnswer, useCompleteQuiz } from "./hooks";
 import { OptionRow } from "./OptionRow";
 
-type Step = { q: QuizQuestion; part: "self" | "guess" };
+type Person = { id: string; name: string; avatar: string | null };
+type Props = { session: QuizSession; spaceId: string; me: Person; partner: Person; onStepChange?: () => void };
 
-function stepsOf(questions: QuizQuestion[]): Step[] {
-  return questions.flatMap((q) =>
-    q.kind === "choice"
-      ? [
-          { q, part: "self" as const },
-          { q, part: "guess" as const },
-        ]
-      : [{ q, part: "self" as const }],
+const QuizDraft = z.object({ picks: z.record(z.string(), AnswerInput) });
+type QuizDraft = z.infer<typeof QuizDraft>;
+const emptyQuizDraft = (): QuizDraft => ({ picks: {} });
+const validQuizDraft = (value: unknown): value is QuizDraft => QuizDraft.safeParse(value).success;
+
+export function QuizPlay(props: Props) {
+  const local = useDraft(
+    { userId: props.me.id, spaceId: props.spaceId, editor: `quiz:${props.session.id}` },
+    emptyQuizDraft,
+    validQuizDraft,
+  );
+  const save = useAnswer(props.spaceId, props.session.id);
+  const complete = useCompleteQuiz(props.spaceId, props.session.id);
+  return (
+    <QuizPlayContent
+      {...props}
+      key={`${props.me.id}:${props.spaceId}:${props.session.id}`}
+      initialDrafts={local.value.picks}
+      onDraftChange={(questionId, input) => local.update((old) => ({ picks: { ...old.picks, [questionId]: input } }))}
+      draftSaved={local.savedLocally}
+      onSave={async (questionId, input) => {
+        const response = await save.mutateAsync({ questionId, input });
+        local.update((old) => {
+          const pick = old.picks[questionId];
+          if (
+            !pick ||
+            pick.choice !== input.choice ||
+            pick.guess !== input.guess ||
+            pick.who !== input.who ||
+            (pick.text ?? "").trim() !== (input.text ?? "").trim()
+          )
+            return old;
+          const picks = { ...old.picks };
+          delete picks[questionId];
+          return { picks };
+        });
+        return response;
+      }}
+      onComplete={async () => {
+        const token = { id: local.id, revision: local.revision };
+        const response = await complete.mutateAsync();
+        local.acknowledge(token);
+        return response;
+      }}
+    />
   );
 }
 
-/** whoUserId is a real user id from the server, or "me"/"partner" while an answer is in flight. */
-function whoPicked(whoUserId: string | null | undefined, myId: string): "me" | "partner" | null {
-  if (!whoUserId) return null;
-  return whoUserId === "me" || whoUserId === myId ? "me" : "partner";
-}
-
-const isAnswered = (a: QuizAnswer | undefined, s: Step) =>
-  !!a &&
-  (s.q.kind === "choice"
-    ? s.part === "self"
-      ? !!a.choice
-      : !!a.guess
-    : s.q.kind === "who"
-      ? !!a.whoUserId
-      : !!a.text);
-
-/** One card per step. Choice questions are two steps: your pick, then your guess of theirs. */
-export function QuizPlay({
+/** Presentational flow is also used by the isolated, development-only quiz playground. */
+export function QuizPlayContent({
   session,
-  spaceId,
   me,
   partner,
-}: {
-  session: QuizSession;
-  spaceId: string;
-  me: { id: string; name: string; avatar: string | null };
-  partner: { name: string; avatar: string | null };
+  onSave,
+  onComplete,
+  onStepChange,
+  initialField = "choice",
+  initialDrafts = {},
+  onDraftChange,
+  draftSaved,
+}: Omit<Props, "spaceId"> & {
+  initialField?: "choice" | "guess";
+  initialDrafts?: Record<string, AnswerInput>;
+  onDraftChange?: (questionId: string, input: AnswerInput) => void;
+  draftSaved?: boolean;
+  onSave: (questionId: string, input: AnswerInput) => Promise<unknown>;
+  onComplete: () => Promise<unknown>;
 }) {
-  const steps = useMemo(() => stepsOf(session.questions), [session.questions]);
+  useThemeSubscription();
   const answers = useMemo(() => new Map(session.myAnswers.map((a) => [a.questionId, a])), [session.myAnswers]);
-  const firstOpen = steps.findIndex((s) => !isAnswered(answers.get(s.q.id), s));
-  const [index, setIndex] = useState(firstOpen === -1 ? steps.length : firstOpen);
-  const [draftText, setDraftText] = useState("");
-  const save = useAnswer(spaceId, session.id);
-  const complete = useCompleteQuiz(spaceId, session.id);
-  const toast = useToast();
-
-  const category = session.pack?.category ?? "daily";
-  const t = quizColors(category);
-  const step = steps[index];
-  const current = step ? answers.get(step.q.id) : undefined;
-
-  // biome-ignore lint/correctness/useExhaustiveDependencies: reset the draft whenever the question changes
-  useEffect(() => {
-    if (step?.q.kind === "open") setDraftText(current?.text ?? "");
-  }, [step?.q.id, step?.q.kind, current?.text]);
-
-  const next = () => setIndex((i) => Math.min(i + 1, steps.length));
-
-  const commit = (input: Parameters<typeof save.mutate>[0]["input"], advance = true) => {
-    if (!step) return;
-    save.mutate({ questionId: step.q.id, input }, { onError: (e) => toast({ kind: "error", message: humanError(e) }) });
-    if (advance) setTimeout(next, 220);
+  const [index, setIndex] = useState(() => resumeQuestionIndex(session.questions, session.myAnswers, initialDrafts));
+  const [drafts, setDrafts] = useState<Record<string, AnswerInput>>(initialDrafts);
+  const [field, setField] = useState<"choice" | "guess">(initialField);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const saving = useRef(false);
+  const returnToReview = useRef(false);
+  const q = session.questions[index];
+  const current = q ? answers.get(q.id) : undefined;
+  const draft = drafts[q?.id ?? ""] ?? {};
+  const choice = draft.choice ?? current?.choice ?? null;
+  const guess = draft.guess ?? current?.guess ?? null;
+  const who =
+    draft.who ??
+    (current?.whoUserId ? (current.whoUserId === me.id || current.whoUserId === "me" ? "me" : "partner") : undefined);
+  const text = draft.text ?? current?.text ?? "";
+  const updateDraft = (patch: AnswerInput) => {
+    if (!q) return;
+    setError(null);
+    const next: AnswerInput =
+      q.kind === "choice"
+        ? { choice: choice ?? undefined, guess: guess ?? undefined, ...patch }
+        : q.kind === "who"
+          ? { who, ...patch }
+          : { text, ...patch };
+    setDrafts((old) => ({ ...old, [q.id]: next }));
+    onDraftChange?.(q.id, next);
   };
-
-  if (!step) {
-    const allDone = steps.every((s) => isAnswered(answers.get(s.q.id), s));
-    return (
-      <View style={{ gap: 20 }}>
-        <Text variant="display-l">All answered.</Text>
-        <Text variant="body" color="ink-secondary">
-          Once you send them, your answers are locked — and stay hidden until {partner.name} finishes too.
-        </Text>
-        <Button
-          fullWidth
-          label="Send my answers"
-          loading={complete.isPending}
-          disabled={!allDone}
-          onPress={() =>
-            complete.mutate(undefined, { onError: (e) => toast({ kind: "error", message: humanError(e) }) })
-          }
-        />
-        <Button fullWidth variant="quiet" label="Go back and change something" onPress={() => setIndex(0)} />
-      </View>
-    );
-  }
-
-  const prompt =
-    step.part === "guess"
-      ? withPartner(step.q.promptGuess ?? "", partner.name)
-      : withPartner(step.q.promptSelf, partner.name);
-  const progress = (index + 1) / steps.length;
-
+  const people = [me, partner, { id: "me", name: me.name }, { id: "partner", name: partner.name }];
+  const moveTo = (next: number) => {
+    setIndex(next);
+    setField("choice");
+    setError(null);
+    onStepChange?.();
+  };
+  const submit = async (finish: boolean) => {
+    if (saving.current) return;
+    saving.current = true;
+    setBusy(true);
+    setError(null);
+    try {
+      if (finish) await onComplete();
+      else if (q) {
+        const input: AnswerInput =
+          q.kind === "choice"
+            ? { choice: choice ?? undefined, guess: guess ?? undefined }
+            : q.kind === "who"
+              ? { who }
+              : { text: text.trim() };
+        await onSave(q.id, input);
+        moveTo(returnToReview.current ? session.questions.length : index + 1);
+        returnToReview.current = false;
+      }
+    } catch (e) {
+      setError(humanError(e));
+    } finally {
+      saving.current = false;
+      setBusy(false);
+    }
+  };
+  const completed = session.questions.filter((question) => questionAnswered(question, answers.get(question.id))).length;
   return (
-    <View style={{ gap: 16 }}>
-      <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
-        {index > 0 ? (
-          <PressableScale
-            accessibilityLabel="Previous question"
-            onPress={() => setIndex((i) => Math.max(0, i - 1))}
-            hitSlop={10}
-          >
-            <ArrowLeft size={22} color={palette.ink} weight="bold" />
-          </PressableScale>
-        ) : null}
-        <View style={{ flex: 1, height: 6, borderRadius: 3, backgroundColor: palette.sunken, overflow: "hidden" }}>
-          <View style={{ width: `${progress * 100}%`, height: 6, backgroundColor: t.fill }} />
+    <View style={{ gap: space[6] }}>
+      <View style={{ gap: space[3] }}>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: space[3] }}>
+          <Text variant="label" color="action" style={{ flex: 1 }}>
+            {CATEGORY_LABEL[session.pack?.category ?? "daily"]}
+          </Text>
+          <Text variant="caption" color="ink-secondary">
+            {q ? `${index + 1} of ${session.questions.length}` : `${completed} of ${session.questions.length} saved`}
+          </Text>
         </View>
-        <Text variant="caption" color="ink-tertiary">
-          {index + 1}/{steps.length}
+        <View
+          accessibilityRole="progressbar"
+          accessibilityLabel="Questions saved"
+          accessibilityValue={{ min: 0, max: session.questions.length, now: completed }}
+          style={{ flexDirection: "row", gap: space[1] }}
+        >
+          {session.questions.map((question, i) => (
+            <View
+              key={question.id}
+              style={{
+                flex: 1,
+                height: space[1],
+                borderRadius: radius.pill,
+                backgroundColor: questionAnswered(question, answers.get(question.id))
+                  ? palette.action
+                  : i === index
+                    ? palette.highlight
+                    : palette.sunken,
+              }}
+            />
+          ))}
+        </View>
+        <Text variant="body-sm" color="ink-secondary">
+          {session.pack?.title ?? "Today's question"}
         </Text>
       </View>
-
-      <Animated.View
-        key={`${step.q.id}-${step.part}`}
-        entering={SlideInRight.duration(dur.base).easing(ease.out)}
-        exiting={SlideOutLeft.duration(dur.fast)}
-      >
-        <View style={{ backgroundColor: t.fill, borderRadius: radius.xl, padding: 20, gap: 16, ...lift[1] }}>
-          <Text variant="label" style={{ color: t.text }}>
-            {step.part === "guess" ? `Now guess ${partner.name}'s answer` : CATEGORY_LABEL[category]}
-          </Text>
-          <Text variant="display-m" style={{ color: t.text }} accessibilityRole="header">
-            {prompt}
-          </Text>
-
-          <View style={{ gap: 8 }}>
-            {step.q.kind === "choice"
-              ? (step.q.options ?? []).map((o) => (
-                  <OptionRow
-                    key={o.id}
-                    label={o.label}
-                    glyph={o.glyph}
-                    selected={(step.part === "self" ? current?.choice : current?.guess) === o.id}
-                    onPress={() =>
-                      commit(
-                        step.part === "self"
-                          ? { choice: o.id, ...(current?.guess ? { guess: current.guess } : {}) }
-                          : { choice: current?.choice ?? o.id, guess: o.id },
-                      )
-                    }
-                  />
-                ))
-              : null}
-            {step.q.kind === "who"
-              ? (
-                  [
-                    { who: "me" as const, label: `Me (${me.name})`, avatar: me.avatar, ring: "you" as const },
-                    { who: "partner" as const, label: partner.name, avatar: partner.avatar, ring: "partner" as const },
-                  ] as const
-                ).map((o) => (
-                  <OptionRow
-                    key={o.who}
-                    label={o.label}
-                    leading={<Avatar size={28} name={o.label} uri={o.avatar} who={o.ring} />}
-                    selected={whoPicked(current?.whoUserId, me.id) === o.who}
-                    onPress={() => commit({ who: o.who })}
-                  />
-                ))
-              : null}
-            {step.q.kind === "open" ? (
-              <View style={{ gap: 10 }}>
-                <TextField
-                  label="Your answer"
-                  multiline
-                  value={draftText}
-                  onChangeText={setDraftText}
-                  maxLength={280}
-                  placeholder="A few words…"
-                />
-                <Button label="Next" disabled={!draftText.trim()} onPress={() => commit({ text: draftText.trim() })} />
-              </View>
-            ) : null}
+      {!q ? (
+        <>
+          <View style={{ gap: space[3] }}>
+            <Text variant="display-l" accessibilityRole="header">
+              A final look.
+            </Text>
+            <Text variant="body" color="ink-secondary">
+              Your answers and your guesses, all in one place. Tap any question to change a pick before sending.
+            </Text>
           </View>
+          {session.questions.map((question, i) => (
+            <PressableScale
+              key={question.id}
+              disabled={busy}
+              accessibilityLabel={`Edit question ${i + 1}: ${withPartner(question.promptSelf, partner.name)}`}
+              onPress={() => {
+                returnToReview.current = true;
+                moveTo(i);
+              }}
+              style={{
+                padding: layout.cardPadding,
+                gap: space[3],
+                borderRadius: radius.lg,
+                borderCurve: "continuous",
+                backgroundColor: palette.paper,
+                borderWidth: 1,
+                borderColor: palette.line,
+              }}
+            >
+              <View style={{ flexDirection: "row", gap: space[3], alignItems: "center" }}>
+                <Text variant="caption" color="ink-secondary" style={{ flex: 1 }}>
+                  QUESTION {i + 1}
+                </Text>
+                <Text variant="body-sm-strong" color="action">
+                  Edit
+                </Text>
+              </View>
+              <Text variant="heading">{withPartner(question.promptSelf, partner.name)}</Text>
+              <View style={{ gap: space[2] }}>
+                <Text variant="body-sm">
+                  <Text variant="body-sm-strong">You: </Text>
+                  {answerLabel(question, answers.get(question.id), "choice", people)}
+                </Text>
+                {question.kind === "choice" ? (
+                  <Text variant="body-sm" color="ink-secondary">
+                    Your guess for {partner.name}: {answerLabel(question, answers.get(question.id), "guess", people)}
+                  </Text>
+                ) : null}
+              </View>
+            </PressableScale>
+          ))}
+        </>
+      ) : (
+        <>
+          <Text variant="display-m" accessibilityRole="header">
+            {withPartner(q.promptSelf, partner.name)}
+          </Text>
+          {q.kind === "choice" ? (
+            <ChoiceGrid
+              options={q.options ?? []}
+              choice={choice}
+              guess={guess}
+              field={field}
+              onFieldChange={setField}
+              partnerName={partner.name}
+              disabled={busy}
+              onPick={(key, value) => updateDraft({ [key]: value })}
+            />
+          ) : q.kind === "who" ? (
+            <View style={{ gap: space[3] }} accessibilityRole="radiogroup" accessibilityLabel="Choose one of you">
+              <Text variant="body" color="ink-secondary">
+                Who comes to mind?
+              </Text>
+              {[
+                { value: "me" as const, person: me, label: `You · ${me.name}`, ring: "you" as const },
+                { value: "partner" as const, person: partner, label: partner.name, ring: "partner" as const },
+              ].map((item) => (
+                <OptionRow
+                  key={item.value}
+                  label={item.label}
+                  leading={<Avatar size={28} name={item.person.name} uri={item.person.avatar} who={item.ring} />}
+                  selected={who === item.value}
+                  disabled={busy}
+                  onPress={() => updateDraft({ who: item.value })}
+                />
+              ))}
+            </View>
+          ) : (
+            <View style={{ gap: space[3] }}>
+              <TextField
+                label="In your own words"
+                multiline
+                editable={!busy}
+                value={text}
+                onChangeText={(value) => updateDraft({ text: value })}
+                maxLength={280}
+                placeholder="A thought, a memory, a little honesty…"
+              />
+              <Text variant="caption" color="ink-secondary">
+                {text.length}/280 · There is no right answer.
+              </Text>
+            </View>
+          )}
+        </>
+      )}
+      <View style={{ gap: space[3] }}>
+        {draftSaved === false ? (
+          <Text variant="caption" color="tomato-deep">
+            Your unsent picks could not be saved locally. Keep this screen open.
+          </Text>
+        ) : onDraftChange ? (
+          <Text variant="caption" color="ink-secondary">
+            Unsent picks are saved on this phone. Sending needs a connection.
+          </Text>
+        ) : null}
+        {error ? (
+          <Text variant="body-sm" color="tomato-deep" accessibilityRole="alert">
+            {error} Your picks are still here. Try again.
+          </Text>
+        ) : null}
+        {q?.kind === "choice" && (!choice || !guess) ? (
+          <Button
+            fullWidth
+            label={!choice ? "Choose your answer above" : `Choose your guess for ${partner.name}`}
+            disabled={!choice || busy}
+            onPress={() => setField("guess")}
+          />
+        ) : (
+          <Button
+            fullWidth
+            label={
+              !q
+                ? "Send my answers"
+                : returnToReview.current || index === session.questions.length - 1
+                  ? "Review my answers"
+                  : "Save & next question"
+            }
+            loading={busy}
+            disabled={
+              !q
+                ? completed !== session.questions.length || busy
+                : busy || (q.kind === "who" ? !who : q.kind === "open" ? !text.trim() : !choice || !guess)
+            }
+            onPress={() => void submit(!q)}
+          />
+        )}
+        {q && index > 0 ? (
+          <Button
+            variant="quiet"
+            icon={ArrowLeft}
+            label="Previous question"
+            disabled={busy}
+            onPress={() => {
+              returnToReview.current = false;
+              moveTo(index - 1);
+            }}
+          />
+        ) : null}
+        <View style={{ flexDirection: "row", alignItems: "flex-start", gap: space[2] }}>
+          {q ? (
+            <LockSimple size={16} color={palette["ink-secondary"]} />
+          ) : (
+            <Check size={16} color={palette["ink-secondary"]} />
+          )}
+          <Text variant="caption" color="ink-secondary" style={{ flex: 1 }}>
+            {!q
+              ? `Sending locks your answers. You'll see both sets once ${partner.name} has finished too.`
+              : `${partner.name} answers on their own phone. Both sets stay private until you’ve both sent them.`}
+          </Text>
         </View>
-      </Animated.View>
+      </View>
     </View>
   );
 }

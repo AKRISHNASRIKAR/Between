@@ -3,6 +3,7 @@ import type { Tx } from "../../db/client";
 import { activityEvents } from "../../db/schema";
 import { newId } from "../../lib/ids";
 import type { SpaceScope } from "../../lib/scope";
+import { recordSharedActivity } from "../analytics";
 
 /**
  * The shared-activity log: what happened in a space and who did it. It is the source for
@@ -10,6 +11,7 @@ import type { SpaceScope } from "../../lib/scope";
  */
 export const activityRepo = {
   async record(tx: Tx, scope: SpaceScope, kind: string, subjectId: string | undefined, bondDelta: number) {
+    await recordSharedActivity(tx, scope, kind, subjectId);
     await tx.insert(activityEvents).values({
       id: newId(),
       spaceId: scope.spaceId,

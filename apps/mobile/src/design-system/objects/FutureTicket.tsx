@@ -1,6 +1,5 @@
 import { View } from "react-native";
-import Animated from "react-native-reanimated";
-import { pop } from "../motion";
+import { useThemeSubscription } from "@/design-system/theme/ThemeProvider";
 import { Text } from "../Text";
 import { palette, radius } from "../tokens";
 
@@ -14,11 +13,12 @@ type Props = {
 
 /**
  * DESIGN §7.3 FutureTicket: paper ticket with notches and a perforation line.
- * Completed → green tint + a rotated "DONE" stamp that drops in.
+ * Completion stays in the personal theme and dates remain in normal text flow.
  */
 export function FutureTicket({ title, emoji, category, doneOn, right }: Props) {
+  useThemeSubscription();
   const done = !!doneOn;
-  const bg = done ? palette["green-soft"] : palette.paper;
+  const bg = done ? palette["action-soft"] : palette.paper;
   const notch = {
     position: "absolute" as const,
     top: "50%" as const,
@@ -32,7 +32,10 @@ export function FutureTicket({ title, emoji, category, doneOn, right }: Props) {
     <View
       style={{
         backgroundColor: bg,
-        borderRadius: radius.paper,
+        borderWidth: 1,
+        borderColor: palette.line,
+        borderRadius: radius.lg,
+        borderCurve: "continuous",
         flexDirection: "row",
         minHeight: 76,
         overflow: "hidden",
@@ -48,6 +51,11 @@ export function FutureTicket({ title, emoji, category, doneOn, right }: Props) {
         >
           {title}
         </Text>
+        {doneOn ? (
+          <Text variant="caption" color="action">
+            Made it happen · {doneOn}
+          </Text>
+        ) : null}
       </View>
       {/* perforation */}
       <View
@@ -63,25 +71,7 @@ export function FutureTicket({ title, emoji, category, doneOn, right }: Props) {
         {right ?? <Text variant="display-m">{emoji ?? "✦"}</Text>}
       </View>
       <View style={[notch, { top: -10 }]} />
-      <View style={[notch, { bottom: -10 }]} />
-      {done ? (
-        <Animated.View entering={pop()} pointerEvents="none" style={{ position: "absolute", right: 84, top: 10 }}>
-          <View
-            style={{
-              transform: [{ rotate: "-8deg" }],
-              borderWidth: 2,
-              borderColor: palette["green-deep"],
-              borderRadius: radius.sm,
-              paddingHorizontal: 8,
-              paddingVertical: 2,
-            }}
-          >
-            <Text variant="label" color="green-deep">
-              Done · {doneOn}
-            </Text>
-          </View>
-        </Animated.View>
-      ) : null}
+      <View style={[notch, { top: undefined, bottom: -10, marginTop: 0 }]} />
     </View>
   );
 }

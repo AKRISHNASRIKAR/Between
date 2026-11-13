@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { AppState } from "react-native";
 import type { FlowState } from "@/features/space/flow";
 import { api, unwrap } from "@/lib/api";
@@ -15,6 +15,9 @@ export const widgetKey = (sid: string) => ["space", sid, "widget"] as const;
  */
 export function useWidgetSync(state: FlowState, spaceId: string | undefined) {
   const qc = useQueryClient();
+  const publishing = useRef(Promise.resolve());
+  const generation = useRef(0);
+  const publishedKey = useRef<string | null>(null);
   const active = state === "ready" && !!spaceId;
   const snapshot = useQuery({
     queryKey: widgetKey(spaceId ?? ""),
@@ -25,8 +28,21 @@ export function useWidgetSync(state: FlowState, spaceId: string | undefined) {
 
   useEffect(() => {
     if (state === "loading") return;
-    if (!active) publishWidgets(null).catch(() => {});
-    else if (snapshot.data) publishWidgets(snapshot.data).catch(() => {});
+    const data = active ? (snapshot.data ?? null) : null;
+    const fingerprint = JSON.stringify(
+      data ? { ...data, generatedAt: Math.floor(Date.parse(data.generatedAt) / 3_600_000) } : null,
+    );
+    if (publishedKey.current === fingerprint) return;
+    const current = ++generation.current;
+    // Serialize native writes: an older image-copy operation must never overwrite a logout wipe.
+    publishing.current = publishing.current
+      .catch(() => {})
+      .then(async () => {
+        if (current !== generation.current) return;
+        await publishWidgets(data);
+        publishedKey.current = fingerprint;
+      })
+      .catch(() => {});
   }, [state, active, snapshot.data]);
 
   useEffect(() => {

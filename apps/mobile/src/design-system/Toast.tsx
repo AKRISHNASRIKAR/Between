@@ -3,6 +3,7 @@ import { View } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, { FadeInUp, FadeOutUp, runOnJS } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useThemeSubscription } from "@/design-system/theme/ThemeProvider";
 import { Button } from "./Button";
 import { haptics } from "./haptics";
 import { Check, WarningCircle } from "./Icon";
@@ -23,6 +24,7 @@ export const useToast = () => useContext(ToastCtx);
 
 /** Top toasts (DESIGN §7.2): ink fill, 3s auto-dismiss, swipe up to dismiss. */
 export function ToastProvider({ children }: { children: ReactNode }) {
+  useThemeSubscription();
   const [toast, setToast] = useState<ToastItem | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const insets = useSafeAreaInsets();

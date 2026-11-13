@@ -1,14 +1,23 @@
 import type { Me } from "@lovenotes/contracts";
 
 /** Where the user is in the journey. Drives the root navigator's route guards. */
-export type FlowState = "loading" | "signed-out" | "needs-name" | "no-space" | "waiting" | "naming" | "ready";
+export type FlowState =
+  | "loading"
+  | "signed-out"
+  | "needs-name"
+  | "no-space"
+  | "waiting"
+  | "pet-choice"
+  | "naming"
+  | "ready";
 
 function fromMe(me: Me): FlowState {
   if (!me.profile.displayName) return "needs-name";
   const space = me.space;
   if (!space) return "no-space";
   if (space.members.length < 2) return "waiting";
-  if (!space.pet.name) return "naming";
+  // The shared space is useful before a pet decision. Consent remains in Settings.
+  if (space.pet.status === "ACTIVE" && !space.pet.name) return "naming";
   return "ready";
 }
 
@@ -29,6 +38,7 @@ export const HOME_FOR: Record<Exclude<FlowState, "loading">, string> = {
   "needs-name": "/your-name",
   "no-space": "/start",
   waiting: "/waiting",
+  "pet-choice": "/pet-choice",
   naming: "/hatch",
   ready: "/today",
 };
@@ -46,6 +56,7 @@ export function restorablePath(path: string | null): string | null {
     "/join",
     "/waiting",
     "/hatch",
+    "/pet-choice",
     "/invite",
   ];
   return blocked.some((b) => path === b || path.startsWith(`${b}/`)) ? null : path;

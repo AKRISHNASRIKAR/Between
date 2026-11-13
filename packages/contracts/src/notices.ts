@@ -38,7 +38,7 @@ export function noticeCopy(n: Notice, petName: string): NoticeCopy {
   switch (n.type) {
     case "note.waiting":
       return {
-        title: `${pet} is holding something for you`,
+        title: petName ? `${pet} is holding something for you` : "A note for you",
         body: `A note from ${n.from} is waiting 💌`,
         url: `/notes/${n.noteId}`,
         pillar: "notes",
@@ -63,7 +63,7 @@ export function noticeCopy(n: Notice, petName: string): NoticeCopy {
     case "quiz.your_turn":
       return {
         title: n.daily ? "Today's question" : "Your turn",
-        body: `${n.from} has answered. ${pet} is dying to know yours.`,
+        body: `${n.from} has answered. Your turn whenever you like.`,
         url: quizUrl(n),
         pillar: "know",
         pref: "quizzes",

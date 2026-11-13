@@ -1,6 +1,6 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { Redirect } from "expo-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { View } from "react-native";
 import { BackButton } from "@/components/BackButton";
 import { Button, CodeField, Screen, Text } from "@/design-system";
@@ -17,6 +17,8 @@ export default function Verify() {
   const [verifying, setVerifying] = useState(false);
   const [cooldown, setCooldown] = useState(RESEND_AFTER_S);
   const [resending, setResending] = useState(false);
+  const [resent, setResent] = useState(false);
+  const requesting = useRef(false);
 
   useEffect(() => {
     if (cooldown <= 0) return;
@@ -25,28 +27,55 @@ export default function Verify() {
   }, [cooldown]);
 
   const verify = async (otp: string) => {
-    if (otp.length !== 6 || verifying) return;
+    if (otp.length !== 6 || requesting.current) return;
+    requesting.current = true;
     setVerifying(true);
     setError(null);
-    const { error: err } = await authClient.signIn.emailOtp({ email, otp });
-    setVerifying(false);
-    if (err) {
-      setCode("");
-      setError(
-        err.status === 429
-          ? "Too many tries. Wait a minute and try again."
-          : "That code didn't work. Check it and try again.",
-      );
-      return;
+    try {
+      const { error: err } = await authClient.signIn.emailOtp({ email, otp });
+      if (err) {
+        setCode("");
+        setError(
+          err.status === 429
+            ? "Too many tries. Wait a minute and try again."
+            : "That code didn't work. Check it and try again.",
+        );
+        return;
+      }
+      await qc.invalidateQueries();
+    } catch {
+      setError("Couldn't verify your code. Check your connection and try again.");
+    } finally {
+      requesting.current = false;
+      setVerifying(false);
     }
-    await qc.invalidateQueries();
   };
 
   const resend = async () => {
+    if (requesting.current || cooldown > 0) return;
+    requesting.current = true;
     setResending(true);
-    await authClient.emailOtp.sendVerificationOtp({ email, type: "sign-in" });
-    setResending(false);
-    setCooldown(RESEND_AFTER_S);
+    setResent(false);
+    setError(null);
+    try {
+      const { error: err } = await authClient.emailOtp.sendVerificationOtp({ email, type: "sign-in" });
+      if (err) {
+        setError(
+          err.status === 429
+            ? "Too many code requests. Wait a minute and try again."
+            : "Couldn't request a new code. Check your connection and try again.",
+        );
+        return;
+      }
+      setCode("");
+      setResent(true);
+      setCooldown(RESEND_AFTER_S);
+    } catch {
+      setError("Couldn't request a new code. Check your connection and try again.");
+    } finally {
+      requesting.current = false;
+      setResending(false);
+    }
   };
 
   if (!email) return <Redirect href="/sign-in" />;
@@ -58,7 +87,7 @@ export default function Verify() {
           fullWidth
           label="Continue"
           loading={verifying}
-          disabled={code.length !== 6}
+          disabled={code.length !== 6 || resending}
           onPress={() => verify(code)}
         />
       }
@@ -85,6 +114,11 @@ export default function Verify() {
           error={error}
           autoFocus
         />
+        {resent ? (
+          <Text variant="body-sm" color="action" accessibilityLiveRegion="polite">
+            A new code was requested. Check your email.
+          </Text>
+        ) : null}
         <View className="items-start">
           {cooldown > 0 ? (
             <Text variant="body-sm" color="ink-tertiary">

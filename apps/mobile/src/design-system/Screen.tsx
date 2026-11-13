@@ -1,7 +1,8 @@
 import type { ReactNode } from "react";
 import { KeyboardAvoidingView, Platform, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { layout, palette } from "./tokens";
+import { useThemeSubscription } from "@/design-system/theme/ThemeProvider";
+import { layout, palette, space } from "./tokens";
 
 type Props = {
   children: ReactNode;
@@ -15,9 +16,10 @@ type Props = {
 
 /** Every screen uses this: safe areas, gutter, max width, keyboard avoidance (DESIGN §4). */
 export function Screen({ children, scroll = true, footer, bottomInset = true, header }: Props) {
+  useThemeSubscription();
   const insets = useSafeAreaInsets();
   const pad = { paddingHorizontal: layout.gutter };
-  const bottom = bottomInset ? Math.max(insets.bottom, 16) : 16;
+  const bottom = bottomInset ? Math.max(insets.bottom, space[4]) : space[4];
   const body = (
     <View style={[{ width: "100%", maxWidth: layout.maxContentWidth, alignSelf: "center" }]} className="flex-1">
       {children}
@@ -32,7 +34,7 @@ export function Screen({ children, scroll = true, footer, bottomInset = true, he
       {header}
       {scroll ? (
         <ScrollView
-          contentContainerStyle={[pad, { flexGrow: 1, paddingBottom: footer ? 16 : bottom }]}
+          contentContainerStyle={[pad, { flexGrow: 1, paddingBottom: footer ? space[4] : bottom }]}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
@@ -47,9 +49,9 @@ export function Screen({ children, scroll = true, footer, bottomInset = true, he
             pad,
             {
               paddingBottom: bottom,
-              paddingTop: 12,
+              paddingTop: space[3],
               width: "100%",
-              maxWidth: layout.maxContentWidth + 40,
+              maxWidth: layout.maxContentWidth + layout.gutter * 2,
               alignSelf: "center",
             },
           ]}

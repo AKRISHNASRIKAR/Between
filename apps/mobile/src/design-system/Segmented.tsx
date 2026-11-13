@@ -1,4 +1,5 @@
 import { View } from "react-native";
+import { useThemeSubscription } from "@/design-system/theme/ThemeProvider";
 import { haptics } from "./haptics";
 import { PressableScale } from "./PressableScale";
 import { Text } from "./Text";
@@ -15,6 +16,7 @@ export function Segmented<T extends string>({
   options: Array<{ value: T; label: string }>;
   onChange: (v: T) => void;
 }) {
+  useThemeSubscription();
   return (
     <View
       accessibilityRole="tablist"

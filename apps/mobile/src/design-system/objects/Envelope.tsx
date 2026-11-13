@@ -1,5 +1,6 @@
 import type { Paper } from "@lovenotes/contracts";
 import { Circle, Path, Rect, Svg } from "react-native-svg";
+import { useThemeSubscription } from "@/design-system/theme/ThemeProvider";
 import { shadeOf } from "../illustrations/soft";
 import { art, palette, paperFill, stroke } from "../tokens";
 
@@ -9,6 +10,7 @@ import { art, palette, paperFill, stroke } from "../tokens";
  * envelopes reads as paper, not as a grid of outlines.
  */
 export function EnvelopeBody({ paper, width }: { paper: Paper; width: number }) {
+  useThemeSubscription();
   const h = (width * 130) / 200;
   return (
     <Svg width={width} height={h} viewBox="0 0 200 130">
@@ -34,6 +36,7 @@ export function EnvelopeBody({ paper, width }: { paper: Paper; width: number }) 
 
 /** The top flap on its own layer, so it can flip open around its top edge. */
 export function EnvelopeFlap({ paper, width, sealed = true }: { paper: Paper; width: number; sealed?: boolean }) {
+  useThemeSubscription();
   const h = (width * 130) / 200;
   return (
     <Svg width={width} height={h} viewBox="0 0 200 130">

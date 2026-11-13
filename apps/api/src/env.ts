@@ -9,7 +9,7 @@ const Env = z.object({
   PORT: z.coerce.number().int().default(3000),
   EMAIL_TRANSPORT: z.enum(["console", "resend"]).default("console"),
   RESEND_API_KEY: z.string().optional(),
-  EMAIL_FROM: z.string().default("Love Notes <hello@example.com>"),
+  EMAIL_FROM: z.string().default("Between <hello@example.com>"),
   PUSH_TRANSPORT: z.enum(["console", "expo"]).default("console"),
   /** local = files on disk (dev). s3 = any S3-compatible bucket, e.g. Cloudflare R2. */
   STORAGE_DRIVER: z.enum(["local", "s3"]).default("local"),

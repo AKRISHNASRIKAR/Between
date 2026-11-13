@@ -2,6 +2,7 @@ import { router } from "expo-router";
 import { useState } from "react";
 import { View } from "react-native";
 import { ArrowRight, PressableScale, palette, Skeleton, Text, useToast, VibeCard } from "@/design-system";
+import { useThemeSubscription } from "@/design-system/theme/ThemeProvider";
 import { partnerOf, useMe } from "@/features/space/hooks";
 import { humanError } from "@/lib/errors";
 import { CheckinSheet } from "./CheckinSheet";
@@ -9,6 +10,7 @@ import { useCheckin, useVibe } from "./hooks";
 
 /** Today's Vibe (SPEC §4.1): two tilted cards, yours and theirs, plus a gentle observation. */
 export function VibeSection() {
+  useThemeSubscription();
   const me = useMe();
   const space = me.data?.space;
   const myId = me.data?.profile.id;

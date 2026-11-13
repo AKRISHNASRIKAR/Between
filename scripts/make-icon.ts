@@ -1,5 +1,5 @@
 /**
- * Generates the Love Notes app icon family from one drawing: Mochi peeking over a sealed
+ * Generates the Between app icon family from one drawing: Mochi peeking over a sealed
  * love note, in the swatch-board palette and the app's clean illustration style (no outlines,
  * a shade crescent for depth). Mochi reuses the in-app pet paths, so the icon's
  * pet is the same one people meet in the app.
@@ -110,7 +110,7 @@ const mark = (mono = false) => `${mochi(mono)}${note(mono)}`;
 /** The full-bleed App Store icon (iOS masks the corners itself). */
 export const iconSvg =
   () => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
-  <title>Love Notes</title>
+  <title>Between</title>
   <rect width="1024" height="1024" fill="${C.bg}"/>
   <circle cx="820" cy="190" r="26" fill="${C.paper}" opacity="0.55"/>
   <circle cx="190" cy="300" r="16" fill="${C.paper}" opacity="0.45"/>

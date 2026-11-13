@@ -15,6 +15,7 @@ import {
   Skeleton,
   Text,
 } from "@/design-system";
+import { useThemeSubscription } from "@/design-system/theme/ThemeProvider";
 import { partnerOf, useMe } from "@/features/space/hooks";
 import { useVibeMonth } from "@/features/vibe/hooks";
 import { monthLabel, monthString, shiftMonth } from "@/lib/date";
@@ -31,6 +32,7 @@ function daysOf(month: string) {
 
 /** "Our vibes" — a month of moods as a visual memory, not a chart (SPEC §4.1). */
 export default function Vibes() {
+  useThemeSubscription();
   const me = useMe();
   const space = me.data?.space;
   const partner = partnerOf(space, me.data?.profile.id);

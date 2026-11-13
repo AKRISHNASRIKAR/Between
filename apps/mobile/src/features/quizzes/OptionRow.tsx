@@ -1,24 +1,29 @@
 import { View } from "react-native";
 import { Check, haptics, PressableScale, palette, radius, stroke, Text } from "@/design-system";
+import { useThemeSubscription } from "@/design-system/theme/ThemeProvider";
 
-/** A quiz option: paper row, 56 high, teal ring when selected (DESIGN §7.3 QuizCard). */
+/** A quiz option: paper row with a theme-colored selected ring. */
 export function OptionRow({
   label,
   glyph,
   selected,
+  disabled,
   onPress,
   leading,
 }: {
   label: string;
   glyph?: string;
   selected?: boolean;
+  disabled?: boolean;
   onPress: () => void;
   leading?: React.ReactNode;
 }) {
+  useThemeSubscription();
   return (
     <PressableScale
+      disabled={disabled}
       accessibilityRole="radio"
-      accessibilityState={{ selected: !!selected }}
+      accessibilityState={{ checked: !!selected, selected: !!selected, disabled: !!disabled }}
       accessibilityLabel={label}
       onPress={() => {
         haptics.tick();
@@ -27,9 +32,10 @@ export function OptionRow({
       style={{
         minHeight: 56,
         borderRadius: radius.md,
-        backgroundColor: palette.paper,
+        borderCurve: "continuous",
+        backgroundColor: selected ? palette["action-soft"] : palette.paper,
         borderWidth: 2,
-        borderColor: selected ? palette["teal-base"] : "transparent",
+        borderColor: selected ? palette.action : palette.line,
         paddingHorizontal: 16,
         paddingVertical: 10,
         flexDirection: "row",
@@ -48,13 +54,13 @@ export function OptionRow({
           height: 22,
           borderRadius: 11,
           borderWidth: stroke.regular,
-          borderColor: selected ? palette["teal-base"] : palette["line-strong"],
-          backgroundColor: selected ? palette["teal-base"] : "transparent",
+          borderColor: selected ? palette.action : palette["line-strong"],
+          backgroundColor: selected ? palette.action : "transparent",
           alignItems: "center",
           justifyContent: "center",
         }}
       >
-        {selected ? <Check size={13} color={palette["on-ink"]} weight="bold" /> : null}
+        {selected ? <Check size={13} color={palette["on-action"]} weight="bold" /> : null}
       </View>
     </PressableScale>
   );

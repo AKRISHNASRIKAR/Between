@@ -4,8 +4,9 @@ import { listFuture } from "../future";
 import { listPages, purgeStaleUploads } from "../journal";
 import { membersRepo } from "../members";
 import { listNotes } from "../notes";
-import { listSessions } from "../quizzes";
+import { exportSessions } from "../quizzes";
 import { purgeExpiredSpaces, spaceView } from "../spaces";
+import { runStorageDeletions } from "../storage-jobs";
 import { exportVibes } from "../vibes";
 
 type Paged<T> = (cursor?: string) => Promise<{ items: T[]; nextCursor: string | null }>;
@@ -33,7 +34,7 @@ export async function exportSpace(scope: SpaceScope) {
   return {
     format: "love-notes-export/1",
     exportedAt: new Date().toISOString(),
-    note: "Photo links expire after an hour — download them soon after exporting.",
+    note: "This JSON contains temporary preview links. Use the downloadable TAR archive to keep the actual photo files.",
     space: { name: space.name, togetherSince: space.togetherSince, createdAt: space.createdAt },
     members: members.map((m) => ({ id: m.id, name: m.name })),
     notes: await everyPage((c) => listNotes(scope, "all", c, 100)),
@@ -46,7 +47,7 @@ export async function exportSpace(scope: SpaceScope) {
       note: v.note,
       visibility: v.visibility,
     })),
-    quizzes: await listSessions(scope),
+    quizzes: await exportSessions(scope),
   };
 }
 
@@ -55,5 +56,6 @@ export async function runCleanup(now = new Date()) {
   return {
     spacesPurged: await purgeExpiredSpaces(now),
     uploadsRemoved: await purgeStaleUploads(now),
+    storageObjectsDeleted: await runStorageDeletions(now),
   };
 }

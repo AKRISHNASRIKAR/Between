@@ -17,6 +17,9 @@ import { createWidget, type WidgetEnvironment } from "expo-widgets";
  * palette still comes from design tokens.
  */
 export type UsWidgetProps = {
+  hasPet: boolean;
+  freshnessLine: string;
+  memoryLine: string | null;
   petName: string;
   /** file:// URL of the pet picture in the shared widgets directory */
   petImage: string;
@@ -39,8 +42,8 @@ const UsWidget = (p: UsWidgetProps, env: WidgetEnvironment) => {
   if (!p?.colors) {
     return (
       <VStack>
-        <Text modifiers={[font({ design: "serif", weight: "semibold", size: 16 })]}>Love Notes</Text>
-        <Text modifiers={[font({ size: 12 })]}>Open the app to wake your pet</Text>
+        <Text modifiers={[font({ design: "serif", weight: "semibold", size: 16 })]}>Between</Text>
+        <Text modifiers={[font({ size: 12 })]}>Open your little corner for two</Text>
       </VStack>
     );
   }
@@ -59,9 +62,8 @@ const UsWidget = (p: UsWidgetProps, env: WidgetEnvironment) => {
     );
   }
 
-  const pet = (size: number) => (
-    <Image uiImage={p.petImage} modifiers={[resizable(), frame({ width: size, height: size })]} />
-  );
+  const pet = (size: number) =>
+    p.hasPet ? <Image uiImage={p.petImage} modifiers={[resizable(), frame({ width: size, height: size })]} /> : null;
   const vibeRow = (dot: string, who: string, vibe: string | null) => (
     <HStack spacing={6}>
       <Text modifiers={[font({ size: 10 }), foregroundStyle(dot)]}>●</Text>
@@ -72,6 +74,48 @@ const UsWidget = (p: UsWidgetProps, env: WidgetEnvironment) => {
       </Text>
     </HStack>
   );
+
+  if (env.widgetFamily === "systemLarge") {
+    return (
+      <VStack alignment="leading" spacing={14} modifiers={base}>
+        <HStack spacing={12}>
+          {pet(90)}
+          <VStack alignment="leading" spacing={4}>
+            <Text modifiers={[font({ size: 23, design: "serif", weight: "semibold" }), foregroundStyle(c.ink)]}>
+              {p.petName}
+            </Text>
+            <Text modifiers={[font({ size: 13 }), foregroundStyle(c.muted)]}>{p.petLine}</Text>
+          </VStack>
+        </HStack>
+        <Text modifiers={[font({ size: 18, weight: "semibold" }), foregroundStyle(c.accent)]}>{p.focusLine}</Text>
+        <Spacer />
+        <Text modifiers={[font({ size: 11, weight: "bold" }), foregroundStyle(c.muted)]}>TODAY'S VIBES</Text>
+        {vibeRow(c.you, "You", p.youVibe)}
+        {p.partnerName ? vibeRow(c.partner, p.partnerName, p.partnerVibe) : null}
+        {p.memoryLine ? <Text modifiers={[font({ size: 13 }), foregroundStyle(c.muted)]}>{p.memoryLine}</Text> : null}
+        <Text modifiers={[font({ size: 10 }), foregroundStyle(c.muted)]}>{p.freshnessLine}</Text>
+      </VStack>
+    );
+  }
+
+  if (!p.hasPet) {
+    return (
+      <VStack alignment="leading" spacing={env.widgetFamily === "systemMedium" ? 8 : 4} modifiers={base}>
+        <Text modifiers={[font({ size: 19, design: "serif", weight: "semibold" }), foregroundStyle(c.ink)]}>
+          Between
+        </Text>
+        {env.widgetFamily === "systemMedium" ? (
+          <Text modifiers={[font({ size: 11, weight: "bold" }), foregroundStyle(c.muted)]}>TODAY'S VIBES</Text>
+        ) : null}
+        {vibeRow(c.you, "You", p.youVibe)}
+        {p.partnerName ? vibeRow(c.partner, p.partnerName, p.partnerVibe) : null}
+        <Spacer />
+        <Text modifiers={[font({ size: 13, weight: "semibold" }), foregroundStyle(c.accent), minimumScaleFactor(0.75)]}>
+          {p.focusLine}
+        </Text>
+      </VStack>
+    );
+  }
 
   if (env.widgetFamily === "systemMedium") {
     return (

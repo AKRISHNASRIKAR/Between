@@ -1,4 +1,12 @@
-import { Easing, FadeIn, FadeInDown, FadeOut, type WithSpringConfig, ZoomIn } from "react-native-reanimated";
+import {
+  Easing,
+  FadeIn,
+  FadeInDown,
+  FadeOut,
+  ReduceMotion,
+  type WithSpringConfig,
+  ZoomIn,
+} from "react-native-reanimated";
 
 /** Motion tokens (DESIGN §10.1). */
 export const dur = { instant: 100, fast: 180, base: 260, slow: 420, reveal: 700 } as const;
@@ -22,12 +30,17 @@ export const stagger = 40;
 
 /** Content arriving on screen; `i` staggers siblings (capped so long lists don't crawl in). */
 export const enter = (i = 0) =>
-  FadeInDown.duration(dur.base)
+  FadeInDown.reduceMotion(ReduceMotion.System)
+    .duration(dur.base)
     .delay(Math.min(i, 6) * stagger)
     .easing(ease.out)
     .withInitialValues({ opacity: 0, transform: [{ translateY: 8 }] });
 /** Replacing content in place (speech bubble lines, step changes). */
-export const fadeIn = FadeIn.duration(dur.base).easing(ease.out);
-export const fadeOut = FadeOut.duration(dur.fast);
+export const fadeIn = FadeIn.reduceMotion(ReduceMotion.System).duration(dur.base).easing(ease.out);
+export const fadeOut = FadeOut.reduceMotion(ReduceMotion.System).duration(dur.fast);
 /** A reward landing (stamp, reveal score) — a soft pop, not a bounce. */
-export const pop = (delay = 0) => ZoomIn.delay(delay).springify().damping(16).stiffness(220);
+export const pop = (delay = 0) =>
+  ZoomIn.reduceMotion(ReduceMotion.System).delay(delay).springify().damping(16).stiffness(220);
+
+/** Choreography shared by quiz answer cards and verdict. */
+export const revealTiming = { you: 120, guess: 280, partner: 480, verdict: 700 } as const;

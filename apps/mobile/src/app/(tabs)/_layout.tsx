@@ -1,8 +1,10 @@
 import { Tabs } from "expo-router";
 import { TabBar } from "@/components/TabBar";
 import { palette } from "@/design-system";
+import { useThemeSubscription } from "@/design-system/theme/ThemeProvider";
 
 export default function TabsLayout() {
+  useThemeSubscription();
   return (
     <Tabs
       tabBar={(props) => <TabBar {...props} />}

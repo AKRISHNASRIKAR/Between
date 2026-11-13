@@ -49,3 +49,29 @@ describe("scoreQuiz", () => {
     expect(r.label).toBe("opposites");
   });
 });
+
+test("shared result is symmetric; personal prediction counts swap with the viewer", () => {
+  const questions = [
+    { id: "1", kind: "choice" as const },
+    { id: "2", kind: "choice" as const },
+    { id: "3", kind: "who" as const },
+  ];
+  const a = [
+    { questionId: "1", choice: "tea", guess: "coffee", whoUserId: null },
+    { questionId: "2", choice: "blue", guess: "red", whoUserId: null },
+    { questionId: "3", choice: null, guess: null, whoUserId: "a" },
+  ];
+  const b = [
+    { questionId: "1", choice: "coffee", guess: "tea", whoUserId: null },
+    { questionId: "2", choice: "blue", guess: "blue", whoUserId: null },
+    { questionId: "3", choice: null, guess: null, whoUserId: "a" },
+  ];
+  const fromA = scoreQuiz(questions, a, b, false);
+  const fromB = scoreQuiz(questions, b, a, false);
+  expect(fromA.label).toBe(fromB.label);
+  expect(fromA.agreed).toBe(fromB.agreed);
+  expect(fromA.scored).toBe(fromB.scored);
+  expect(fromA.myCorrectGuesses).toBe(fromB.theirCorrectGuesses);
+  expect(fromA.theirCorrectGuesses).toBe(fromB.myCorrectGuesses);
+  expect(fromA.myCorrectGuesses).not.toBe(fromA.theirCorrectGuesses);
+});

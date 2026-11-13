@@ -2,6 +2,7 @@ import type { AnswerInput, QuizSession } from "@lovenotes/contracts";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api, unwrap } from "@/lib/api";
 import { newId } from "@/lib/ids";
+import { rollbackOptimistic } from "@/lib/optimistic";
 
 export const quizKeys = {
   packs: ["quiz-packs"] as const,
@@ -60,6 +61,8 @@ export function useAnswer(spaceId: string | undefined, sessionId: string) {
   const qc = useQueryClient();
   const key = quizKeys.session(spaceId ?? "", sessionId);
   return useMutation({
+    mutationKey: key,
+    scope: { id: key.join(":") },
     mutationFn: ({ questionId, input }: { questionId: string; input: AnswerInput }) =>
       unwrap(
         api.spaces[":sid"].quizzes[":qid"].answers[":questionId"].$put({
@@ -67,7 +70,9 @@ export function useAnswer(spaceId: string | undefined, sessionId: string) {
           json: input,
         }),
       ),
-    onMutate: ({ questionId, input }) => {
+    onMutate: async ({ questionId, input }) => {
+      await qc.cancelQueries({ queryKey: key });
+      const prev = qc.getQueryData<QuizSession>(key);
       qc.setQueryData<QuizSession>(key, (s) => {
         if (!s) return s;
         const rest = s.myAnswers.filter((a) => a.questionId !== questionId);
@@ -85,8 +90,15 @@ export function useAnswer(spaceId: string | undefined, sessionId: string) {
           ],
         };
       });
+      return { prev, optimistic: qc.getQueryData<QuizSession>(key) };
     },
-    onSuccess: (s) => qc.setQueryData(key, s),
+    onError: (_error, _input, ctx) => rollbackOptimistic(qc, key, ctx),
+    onSuccess: (s, _input, ctx) => {
+      if (qc.getQueryData(key) === ctx?.optimistic) qc.setQueryData(key, s);
+    },
+    onSettled: () => {
+      if (qc.isMutating({ mutationKey: key }) === 1) return qc.invalidateQueries({ queryKey: key });
+    },
   });
 }
 

@@ -10,7 +10,6 @@ import {
   Envelope,
   haptics,
   layout,
-  palette,
   pillar,
   recipes,
   SunHorizon,
@@ -18,6 +17,7 @@ import {
   Text,
   Ticket,
 } from "@/design-system";
+import { useThemeSubscription } from "@/design-system/theme/ThemeProvider";
 
 const TABS = {
   today: { label: "Today", Icon: SunHorizon, family: pillar.today },
@@ -32,6 +32,7 @@ export type TabBarProps = Parameters<NonNullable<ComponentProps<typeof Tabs>["ta
 
 /** DESIGN §7.2 Tabs: canvas bar with a hairline, bold→fill icons in the pillar colour, and a dot that slides to the active tab. */
 export function TabBar({ state, navigation }: TabBarProps) {
+  useThemeSubscription();
   const insets = useSafeAreaInsets();
   const [width, setWidth] = useState(0);
   const count = state.routes.length;

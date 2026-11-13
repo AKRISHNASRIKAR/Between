@@ -1,9 +1,11 @@
 import { forwardRef } from "react";
 import { Platform, TextInput, type TextInputProps } from "react-native";
+import { useThemeSubscription } from "@/design-system/theme/ThemeProvider";
 import { palette, type as typeScale } from "./tokens";
 
 /** Borderless handwriting input for writing on paper (notes). */
 export const PaperInput = forwardRef<TextInput, TextInputProps>(function PaperInput({ style, ...rest }, ref) {
+  useThemeSubscription();
   const t = typeScale["hand-l"];
   return (
     <TextInput

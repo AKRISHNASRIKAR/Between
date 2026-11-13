@@ -1,6 +1,7 @@
-import type { ReactNode } from "react";
+import { type ReactNode, useEffect } from "react";
 import { Pressable, type PressableProps, type StyleProp, type ViewStyle } from "react-native";
-import Animated, { useAnimatedStyle, useSharedValue, withSpring } from "react-native-reanimated";
+import Animated, { cancelAnimation, useAnimatedStyle, useSharedValue, withSpring } from "react-native-reanimated";
+import { useReducedMotion } from "@/lib/preferences";
 import { scale, spring } from "./motion";
 import { opacity } from "./tokens";
 
@@ -24,7 +25,15 @@ export function PressableScale({
   children,
   ...rest
 }: PressableScaleProps) {
+  const reduced = useReducedMotion();
   const s = useSharedValue(1);
+  useEffect(() => {
+    if (disabled) {
+      cancelAnimation(s);
+      s.value = 1;
+    }
+    return () => cancelAnimation(s);
+  }, [disabled, s]);
   const animated = useAnimatedStyle(() => ({ transform: [{ scale: s.value }] }));
   return (
     <AnimatedPressable
@@ -32,11 +41,11 @@ export function PressableScale({
       accessibilityState={{ disabled: !!disabled }}
       disabled={disabled}
       onPressIn={(e) => {
-        s.value = withSpring(pressedScale, spring.snappy);
+        s.value = reduced ? 1 : withSpring(pressedScale, spring.snappy);
         onPressIn?.(e);
       }}
       onPressOut={(e) => {
-        s.value = withSpring(1, spring.snappy);
+        s.value = reduced ? 1 : withSpring(1, spring.snappy);
         onPressOut?.(e);
       }}
       style={[animated, disabled ? { opacity: opacity.disabled } : null, style]}

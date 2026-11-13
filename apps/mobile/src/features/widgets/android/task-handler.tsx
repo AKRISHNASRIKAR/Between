@@ -1,5 +1,7 @@
 import type { WidgetTaskHandlerProps } from "react-native-android-widget";
+import { trackWidget } from "@/lib/analytics";
 import { api, unwrap } from "@/lib/api";
+import { ApiError } from "@/lib/errors";
 import { loadSnapshot, saveSnapshot } from "./snapshot-store";
 import { UsWidget } from "./UsWidget";
 
@@ -10,11 +12,18 @@ import { UsWidget } from "./UsWidget";
 async function fresh() {
   try {
     const me = await unwrap(api.me.$get());
-    if (!me.space) return null;
+    if (!me.space) {
+      await saveSnapshot(null);
+      return null;
+    }
     const s = await unwrap(api.spaces[":sid"].widget.$get({ param: { sid: me.space.id } }));
     await saveSnapshot(s);
     return s;
-  } catch {
+  } catch (error) {
+    if (error instanceof ApiError && [401, 403, 404].includes(error.status)) {
+      await saveSnapshot(null);
+      return null;
+    }
     return undefined; // offline or signed out: fall back to what we had
   }
 }
@@ -22,6 +31,7 @@ async function fresh() {
 /** Runs headless whenever Android asks the widget to draw (added, periodic update, resized). */
 export async function widgetTaskHandler(props: WidgetTaskHandlerProps) {
   if (props.widgetInfo.widgetName !== "Us") return;
+  if (props.widgetAction === "WIDGET_ADDED") trackWidget("widget_added");
   switch (props.widgetAction) {
     case "WIDGET_ADDED":
     case "WIDGET_UPDATE":

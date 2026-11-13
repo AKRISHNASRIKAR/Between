@@ -20,8 +20,10 @@ export function RealtimeProvider({ active, children }: { active: boolean; childr
   const [state, setState] = useState<RealtimeState>({ online: [], lastInteraction: null });
 
   useEffect(() => {
-    if (!active) return;
-    realtime.start();
+    if (!active) {
+      setState({ online: [], lastInteraction: null });
+      return;
+    }
     const offEvents = realtime.subscribe((e: ServerEvent) => {
       // Anything but presence can change what the home-screen widget shows.
       if (e.t !== "presence" && e.t !== "hello" && e.t !== "notice") {
@@ -85,7 +87,12 @@ export function RealtimeProvider({ active, children }: { active: boolean; childr
           break;
       }
     });
-    const offReconnect = realtime.onReconnect(() => qc.invalidateQueries());
+    const offReconnect = realtime.onReconnect(() => {
+      qc.invalidateQueries({ queryKey: keys.me });
+      const sid = qc.getQueryData<Me>(keys.me)?.space?.id;
+      if (sid) qc.invalidateQueries({ queryKey: keys.space(sid) });
+    });
+    realtime.start();
     return () => {
       offEvents();
       offReconnect();

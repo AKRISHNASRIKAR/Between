@@ -3,7 +3,7 @@
 > **This file is the single source of truth for how Love Notes looks and moves.**
 > Screens never invent their own colors, type, spacing, radii, shadows, or motion. If something is missing, add it here first, then to `apps/mobile/src/design-system/tokens.ts`, and only then use it.
 >
-> Status: **v1.0 draft (2026-09-28).** This version is derived from the written brief. When the visual references arrive, I'll refine the values; the token *names* stay stable.
+> Status: **v2 color and landing pass (2026-10-30).** Ink & butter is the default. Rosewater, Evergreen and Apricot are personal alternatives; every palette supports System, Light and Dark. Runtime theme values and roles live in `apps/mobile/src/design-system/theme/themes.ts`. The historic accent swatches below remain artwork references, not the action-color system.
 
 ---
 
@@ -15,7 +15,7 @@
 | **Tactile** | Content is made of *objects*: paper notes, tickets, photos with tape, mood creatures. Objects have weight, press down, flip, and unfold. |
 | **Personal** | Handwriting appears only where a *person* speaks. The software itself never uses handwriting. |
 | **Warm** | A cream foundation and warm near-black. Never pure white `#FFF` or pure black `#000`. |
-| **Restrained** | One primary action per screen. At most **two accent families visible at once**, not counting mood and illustration content. |
+| **Restrained** | One primary action per screen. One theme action color, quiet paper surfaces, and a small supporting highlight; mood and illustration colors remain expressive content. |
 | **Slightly weird** | Tiny rotations and one asymmetric element per screen. Illustrations themselves stay clean and crisp (§8). Weirdness is placed deliberately and never random. |
 
 **The heart test:** remove every heart glyph from a screen. If it no longer looks like Love Notes, the design is leaning on clichés. Hearts are allowed only as a reaction glyph.
@@ -28,7 +28,15 @@
 
 All colours are **roles** defined per theme in `design-system/theme/themes.ts`, the single place to change how the app looks. Components read the active theme through `palette` / `family()` (and component recipes, §7.0); **hex values never appear in components**, and Tailwind colour classes are not used (they can't follow a theme). `bun run lint` checks every theme's text/background pairs against WCAG 2.1 AA (4.5:1). The values below are the **Light** theme.
 
-### 2.1 Foundation
+### 2.0 Current action and identity roles
+
+Ink & butter: canvas `#FCF9F2`, paper `#FFFEFA`, ink `#202B3B`, action `#244B82`, highlight `#F2CD70`. Primary actions, selected navigation, focused fields and selection controls use `action` / `on-action` or `action-soft` / `on-action-soft`; `ink` is text, not the primary-button role. `highlight` always pairs with `highlight-ink`.
+
+The four palette choices are Ink & butter, Rosewater (rose pink), Evergreen (green/citron), and Apricot (terracotta/gold). Brightness is a separate System/Light/Dark preference. Settings shows real palette previews. Existing raw Light/Candlelit choices migrate without changing their selected brightness. Preferences are local to each phone and survive restart; switching colors must not remount screens or discard drafts.
+
+Authorship uses `identity-you` and `identity-partner` plus a name/avatar. Those roles are independent of error/destructive tomato. The illustration palette remains fixed through `ART_THEME`. Personal theme choices affect UI, not mood identities or pet artwork.
+
+### 2.1 Foundation (original artwork reference)
 
 | Token | Hex | Use | Contrast |
 |---|---|---|---|
@@ -112,19 +120,17 @@ Moods are expressive content, so they may use any family. Each mood is defined i
 | Hurt | pink / soft | Blob with a small plaster |
 | Angry | tomato / base | Triangle with furrowed brows |
 
-### 2.5 Themes: Light and Candlelit
-Two themes ship: **Light** (the cream foundation above) and **Candlelit**, a warm brown-black dark theme (canvas `#1A1613`, paper `#241F1B`, ink `#F4EDE1`). People choose in Settings → Appearance: *System* (follows the phone: Light by day, Candlelit in dark mode), *Light* or *Candlelit*; the choice is remembered on the device.
+### 2.5 Personal themes
 
-Rules that keep every theme working:
-- **Accent fills stay bright** in every theme, so text on a `base` fill uses the `on-accent` role (dark in both themes; `on-teal` for teal). `soft` steps become dark tints and `deep` steps become light, so "deep text on soft" stays readable.
-- **Illustrations and widgets don't change** with the theme. Moods, the pet, props, the icon and widget art use the fixed `art` palette (the Light colours), like stickers.
-- **Quiz swatches (§2.6) are fixed** and use their own text colours, never theme tokens.
-- **Note papers** have per-theme stocks (`note-cream`, `note-blush`, `note-kraft`, `note-sky`).
-- To add a theme, add an entry to `THEMES`; it appears in Settings automatically, and the lint rejects it if any pair falls below AA.
+Four palettes each have light and dark definitions in `THEMES`: Ink & butter (`light`, `candlelit`), Rosewater (`rose`, `roseDark`), Evergreen (`garden`, `gardenDark`), Apricot (`sunroom`, `sunroomDark`). `COLOR_THEMES` is the user-visible registry.
 
-### 2.6 Quiz swatches (the loud exception)
+People select colors independently from System/Light/Dark in Settings → Appearance. System follows the phone while keeping the chosen palette. Dark mode uses lighter actions with dark labels, rather than applying a dark light-mode action onto a dark surface. Text, feedback, notes and surfaces use semantic roles; no component invents hex values.
 
-Quiz cards are the one place the app gets loud on purpose. Each category is a saturated **paint chip** with its words in a contrasting colour from the same board (`quizTheme` in `tokens.ts`). The category creature is drawn in the accent, outlined in the text colour. Every text pair is ≥ 4.5:1.
+`bun run lint` checks text pairs, action labels, selected states, identity colors, and non-text control/focus borders. New theme variants must pass the same checks. Actual native previews still need long-text, narrow-width and accessibility testing.
+
+### 2.6 Quiz artwork swatches
+
+Quiz artwork keeps its expressive category colors. Cards and reports now use themed paper surfaces and action colors; large saturated summary surfaces are no longer the default. Each category is a saturated **paint chip** with its words in a contrasting colour from the same board (`quizTheme` in `tokens.ts`). The category creature is drawn in the accent, outlined in the text colour. Every text pair is ≥ 4.5:1.
 
 | Category | Fill | Text | Accent (creature) | Contrast |
 |---|---|---|---|---|

@@ -1,4 +1,4 @@
-# Love Notes
+# Between
 
 A private little world for exactly two people: check in on how you feel, learn about each other, leave notes, keep a shared journal, plan what's next — and look after a small pet together.
 
@@ -44,6 +44,10 @@ bun run dev:api
 ```bash
 bun run dev:mobile   # then press i for the iOS simulator
 ```
+
+For the installed iPhone 17 development build, run `bun run iphone`. This checks local database migrations, starts missing API/Metro processes, launches Between, and opens Xcode’s Device Hub (or Simulator on older Xcode). It refuses to reuse unrelated services on the required ports.
+
+For UI testing, choose **Test with a mock couple** on Welcome or **Settings → Mock couple scenarios**. Choose Empty, Active, or Returning. Each creates fresh local Sam/Alex accounts and sample content; it does not erase another space. These tools require a development build and a localhost API. See [the completed product pass](docs/PRODUCT-PASS-2026-11-02.md).
 
 Sign in with any email; the code is `000000` (the dev build fills it in for you). Create a space, then open the **Dev** button → *Create partner* to pair with a simulated partner and make them write notes, share vibes, answer quizzes and look after the pet.
 

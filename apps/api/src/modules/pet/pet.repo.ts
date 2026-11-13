@@ -1,7 +1,7 @@
 import type { PetInteractionKind, PetMilestoneKind } from "@lovenotes/contracts";
 import { and, count, desc, eq, gt, sql } from "drizzle-orm";
 import type { Tx } from "../../db/client";
-import { petInteractions, petMilestones, pets } from "../../db/schema";
+import { activityEvents, analyticsEvents, petInteractions, petMilestones, pets } from "../../db/schema";
 import { newId } from "../../lib/ids";
 import type { SpaceScope } from "../../lib/scope";
 import type { CareMoment } from "./wellbeing";
@@ -12,6 +12,13 @@ const LAST_FIELD = { feed: "lastFedAt", pet: "lastPettedAt", play: "lastPlayedAt
 
 /** All pet SQL. Every read/write is keyed by the caller's SpaceScope (ADR 0002). */
 export const petRepo = {
+  async recordEvent(tx: Tx, scope: SpaceScope, name: string, petId: string, id?: string) {
+    await tx
+      .insert(analyticsEvents)
+      .values({ userId: scope.userId, spaceId: scope.spaceId, name, entityId: id ?? petId, ...(id ? { id } : {}) })
+      .onConflictDoNothing();
+  },
+
   /** Space creation only (before anyone has a scope). */
   async createForSpace(tx: Tx, spaceId: string) {
     await tx.insert(pets).values({ id: newId(), spaceId });
@@ -26,7 +33,7 @@ export const petRepo = {
   async update(tx: Tx, scope: SpaceScope, patch: Partial<typeof pets.$inferInsert>): Promise<PetRow | null> {
     const [row] = await tx
       .update(pets)
-      .set({ ...patch, version: sql`${pets.version} + 1` })
+      .set({ ...patch, lastStateUpdateAt: new Date(), version: sql`${pets.version} + 1` })
       .where(eq(pets.spaceId, scope.spaceId))
       .returning();
     return row ?? null;
@@ -36,8 +43,14 @@ export const petRepo = {
   async hatch(tx: Tx, scope: SpaceScope, now: Date): Promise<PetRow | null> {
     const [row] = await tx
       .update(pets)
-      .set({ stage: "baby", hatchedAt: now, lastSharedActivityAt: now, version: sql`${pets.version} + 1` })
-      .where(and(eq(pets.spaceId, scope.spaceId), eq(pets.stage, "egg")))
+      .set({
+        stage: "baby",
+        hatchedAt: now,
+        lastSharedActivityAt: now,
+        lastStateUpdateAt: new Date(),
+        version: sql`${pets.version} + 1`,
+      })
+      .where(and(eq(pets.spaceId, scope.spaceId), eq(pets.stage, "egg"), eq(pets.status, "ACTIVE")))
       .returning();
     return row ?? null;
   },
@@ -46,10 +59,68 @@ export const petRepo = {
   async addBond(tx: Tx, scope: SpaceScope, delta: number, now: Date): Promise<PetRow | null> {
     const [row] = await tx
       .update(pets)
-      .set({ bond: sql`${pets.bond} + ${delta}`, lastSharedActivityAt: now, version: sql`${pets.version} + 1` })
-      .where(and(eq(pets.spaceId, scope.spaceId), sql`${pets.stage} <> 'egg'`))
+      .set({
+        bond: sql`${pets.bond} + ${delta}`,
+        lastSharedActivityAt: now,
+        lastStateUpdateAt: new Date(),
+        version: sql`${pets.version} + 1`,
+      })
+      .where(and(eq(pets.spaceId, scope.spaceId), sql`${pets.stage} <> 'egg'`, eq(pets.status, "ACTIVE")))
       .returning();
     return row ?? null;
+  },
+
+  async careById(tx: Tx, id: string) {
+    const [row] = await tx.select().from(petInteractions).where(eq(petInteractions.id, id));
+    return row ?? null;
+  },
+
+  async latestCare(tx: Tx, scope: SpaceScope, kind: PetInteractionKind) {
+    const [row] = await tx
+      .select()
+      .from(petInteractions)
+      .where(
+        and(
+          eq(petInteractions.spaceId, scope.spaceId),
+          eq(petInteractions.userId, scope.userId),
+          eq(petInteractions.kind, kind),
+        ),
+      )
+      .orderBy(desc(petInteractions.createdAt))
+      .limit(1);
+    return row ?? null;
+  },
+
+  async partnerContributed(tx: Tx, scope: SpaceScope, source: string, since: Date) {
+    if (!scope.partnerId) return false;
+    const [row] = await tx
+      .select({ n: count() })
+      .from(activityEvents)
+      .where(
+        and(
+          eq(activityEvents.spaceId, scope.spaceId),
+          eq(activityEvents.actorId, scope.partnerId),
+          eq(activityEvents.kind, source),
+          gt(activityEvents.createdAt, since),
+        ),
+      );
+    return (row?.n ?? 0) > 0;
+  },
+
+  async futureAlreadyRewarded(tx: Tx, scope: SpaceScope, subjectId: string) {
+    const [row] = await tx
+      .select({ id: activityEvents.id })
+      .from(activityEvents)
+      .where(
+        and(
+          eq(activityEvents.spaceId, scope.spaceId),
+          eq(activityEvents.kind, "future.completed"),
+          eq(activityEvents.subjectId, subjectId),
+          gt(activityEvents.bondDelta, 0),
+        ),
+      )
+      .limit(1);
+    return !!row;
   },
 
   async countCareSince(tx: Tx, scope: SpaceScope, kind: PetInteractionKind, since: Date): Promise<number> {
@@ -79,13 +150,18 @@ export const petRepo = {
   ) {
     const inserted = await tx
       .insert(petInteractions)
-      .values({ id, spaceId: scope.spaceId, petId: pet.id, userId: scope.userId, kind, bondDelta })
+      .values({ id, spaceId: scope.spaceId, petId: pet.id, userId: scope.userId, kind, bondDelta, createdAt: now })
       .onConflictDoNothing()
       .returning({ id: petInteractions.id });
     if (!inserted.length) return null;
     const [row] = await tx
       .update(pets)
-      .set({ [LAST_FIELD[kind]]: now, bond: sql`${pets.bond} + ${bondDelta}`, version: sql`${pets.version} + 1` })
+      .set({
+        [LAST_FIELD[kind]]: now,
+        bond: sql`${pets.bond} + ${bondDelta}`,
+        lastStateUpdateAt: new Date(),
+        version: sql`${pets.version} + 1`,
+      })
       .where(eq(pets.id, pet.id))
       .returning();
     return row ?? null;
@@ -96,7 +172,7 @@ export const petRepo = {
       .select({ kind: petInteractions.kind, at: petInteractions.createdAt, byUserId: petInteractions.userId })
       .from(petInteractions)
       .where(eq(petInteractions.spaceId, scope.spaceId))
-      .orderBy(desc(petInteractions.createdAt))
+      .orderBy(desc(petInteractions.createdAt), desc(petInteractions.id))
       .limit(limit);
     return rows;
   },

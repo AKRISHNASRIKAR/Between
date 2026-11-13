@@ -17,6 +17,3 @@ export const queryClient = new QueryClient({
 
 /** Cache persisted to SQLite so every screen opens instantly from cache (SPEC §12). */
 export const persister = createAsyncStoragePersister({ storage: kv, key: "lovenotes-query-cache", throttleTime: 1000 });
-
-/** Bump when cached shapes change so stale caches are discarded. */
-export const CACHE_BUSTER = "v1";

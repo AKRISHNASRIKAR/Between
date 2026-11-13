@@ -1,4 +1,5 @@
 import type { NotificationPrefs } from "@lovenotes/contracts";
+import Constants from "expo-constants";
 import { router } from "expo-router";
 import { useState } from "react";
 import { View } from "react-native";
@@ -12,26 +13,37 @@ import {
   palette,
   radius,
   Screen,
-  Segmented,
   SignOut,
   Skeleton,
   Text,
-  useTheme,
   useToast,
 } from "@/design-system";
-import { useDeleteAccount, useExport, useNotificationPrefs, useUpdatePrefs } from "@/features/settings/hooks";
+import { useThemeSubscription } from "@/design-system/theme/ThemeProvider";
+import { PetDecision } from "@/features/pet/PetDecision";
+import { PetNamingSettings } from "@/features/pet/PetNamingSettings";
+import { AppearancePicker } from "@/features/settings/AppearancePicker";
+import {
+  useDeleteAccount,
+  useExport,
+  useNotificationPrefs,
+  useSignOut,
+  useUpdatePrefs,
+} from "@/features/settings/hooks";
 import { ToggleRow } from "@/features/settings/ToggleRow";
 import { partnerOf, useLeaveSpace, useMe } from "@/features/space/hooks";
 import { humanError } from "@/lib/errors";
-import { signOut } from "@/lib/session";
+import { setPreferences, usePreferences } from "@/lib/preferences";
 
 function Row({ label, value, onPress }: { label: string; value?: string; onPress?: () => void }) {
+  useThemeSubscription();
   const body = (
     <View className="flex-row items-center justify-between py-4" style={{ minHeight: 56 }}>
-      <Text variant="body">{label}</Text>
-      <View className="flex-row items-center gap-2">
+      <Text variant="body" style={{ flexShrink: 1 }}>
+        {label}
+      </Text>
+      <View className="flex-row items-center gap-2" style={{ flexShrink: 1, maxWidth: "70%" }}>
         {value ? (
-          <Text variant="body" color="ink-tertiary" numberOfLines={1}>
+          <Text variant="body" color="ink-secondary" style={{ flexShrink: 1 }}>
             {value}
           </Text>
         ) : null}
@@ -49,18 +61,31 @@ function Row({ label, value, onPress }: { label: string; value?: string; onPress
 }
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  useThemeSubscription();
   return (
     <View className="gap-2">
-      <Text variant="label" color="ink-tertiary">
+      <Text variant="label" color="action">
         {title}
       </Text>
-      <View style={{ backgroundColor: palette.paper, borderRadius: radius.lg, paddingHorizontal: 20 }}>{children}</View>
+      <View
+        style={{
+          backgroundColor: palette.paper,
+          borderWidth: 1,
+          borderColor: palette.line,
+          borderRadius: radius.lg,
+          borderCurve: "continuous",
+          paddingHorizontal: 20,
+        }}
+      >
+        {children}
+      </View>
     </View>
   );
 }
 
 export default function Settings() {
-  const theme = useTheme();
+  useThemeSubscription();
+  const personal = usePreferences();
   const me = useMe();
   const space = me.data?.space;
   const partner = partnerOf(space, me.data?.profile.id);
@@ -72,6 +97,7 @@ export default function Settings() {
   const updatePrefs = useUpdatePrefs();
   const exportData = useExport(space?.id);
   const deleteAccount = useDeleteAccount();
+  const logout = useSignOut();
   const p = prefs.data;
   const setPref = (patch: Partial<NotificationPrefs>) =>
     updatePrefs.mutate(patch, { onError: (e) => toast({ kind: "error", message: humanError(e) }) });
@@ -81,7 +107,12 @@ export default function Settings() {
     <Screen>
       <View className="gap-8 pt-2">
         <BackButton />
-        <Text variant="display-l">Settings</Text>
+        <View style={{ gap: 8 }}>
+          <Text variant="display-l">Settings</Text>
+          <Text variant="body" color="ink-secondary">
+            Make this little space feel like yours.
+          </Text>
+        </View>
         <Section title="You">
           <Row label="Name" value={me.data?.profile.displayName ?? ""} />
           <Row label="Email" value={me.data?.profile.email ?? ""} />
@@ -89,15 +120,22 @@ export default function Settings() {
         <Section title="Your space">
           <Row label="Space" value={space?.name} />
           <Row label="With" value={partner?.displayName} />
-          <Row label="Pet" value={space?.pet.name ?? ""} />
+        </Section>
+        <Section title="Shared pet">
+          <PetDecision />
+          <PetNamingSettings />
         </Section>
         <Section title="Appearance">
-          <View style={{ paddingVertical: 12, gap: 10 }}>
-            <Segmented value={theme.preference} options={theme.options} onChange={theme.setPreference} />
-            <Text variant="caption" color="ink-tertiary">
-              System follows your phone: Light by day, Candlelit when it's dark.
-            </Text>
-          </View>
+          <AppearancePicker />
+        </Section>
+        <Section title="Touch & motion">
+          <ToggleRow label="Haptics" value={personal.haptics} onChange={(haptics) => setPreferences({ haptics })} />
+          <ToggleRow
+            label="Reduce motion"
+            hint="Your phone's reduced motion setting is always respected"
+            value={personal.reducedMotion}
+            onChange={(reducedMotion) => setPreferences({ reducedMotion })}
+          />
         </Section>
         <Section title="Notifications">
           {p ? (
@@ -122,12 +160,14 @@ export default function Settings() {
                 value={p.future}
                 onChange={(v) => setPref({ future: v })}
               />
-              <ToggleRow
-                label="Pet updates"
-                hint={`Good news from ${space?.pet.name ?? "your pet"} — at most one a day`}
-                value={p.petUpdates}
-                onChange={(v) => setPref({ petUpdates: v })}
-              />
+              {space?.pet.status === "ACTIVE" ? (
+                <ToggleRow
+                  label="Pet updates"
+                  hint={`Good news from ${space?.pet.name ?? "your pet"} — at most one a day`}
+                  value={p.petUpdates}
+                  onChange={(v) => setPref({ petUpdates: v })}
+                />
+              ) : null}
               <View style={{ paddingVertical: 12, gap: 10 }}>
                 <Text variant="body">Quiet hours</Text>
                 <View className="flex-row flex-wrap gap-2">
@@ -150,9 +190,17 @@ export default function Settings() {
               </View>
             </>
           ) : prefs.isError ? (
-            <Text variant="body-sm" color="tomato-deep" style={{ paddingVertical: 16 }}>
-              {humanError(prefs.error)}
-            </Text>
+            <View style={{ paddingVertical: 16, gap: 12 }}>
+              <Text variant="body-sm" color="tomato-deep">
+                {humanError(prefs.error)}
+              </Text>
+              <Button
+                variant="quiet"
+                label="Retry notifications"
+                loading={prefs.isFetching}
+                onPress={() => prefs.refetch()}
+              />
+            </View>
           ) : (
             <View style={{ paddingVertical: 16 }}>
               <Skeleton height={20} width="60%" radius="sm" />
@@ -160,22 +208,38 @@ export default function Settings() {
           )}
         </Section>
         <Section title="Your data">
+          {me.data?.retainedSpaces?.length ? (
+            <Row label="Closed spaces" onPress={() => router.push("/closed-spaces")} />
+          ) : null}
           <Row
-            label={exportData.isPending ? "Preparing export…" : "Export everything"}
+            label={exportData.isPending ? "Preparing export…" : "Export our space"}
             onPress={() =>
               exportData.mutate(undefined, { onError: (e) => toast({ kind: "error", message: humanError(e) }) })
             }
           />
           <Row label="Delete my account" onPress={() => setConfirmDelete(true)} />
         </Section>
+        <Section title="About">
+          <Row label="Between" value={Constants.expoConfig?.version ?? "Development"} />
+        </Section>
         {__DEV__ ? (
           <Section title="Developer">
+            <Row label="Preview introduction" onPress={() => router.push("/dev/onboarding")} />
+            <Row label="Mock couple scenarios" onPress={() => router.push("/dev/testing")} />
             <Row label="Simulated partner" onPress={() => router.push("/dev/partner")} />
+            <Row label="Quiz playground" onPress={() => router.push("/dev/quizzes")} />
             <Row label="Design system gallery" onPress={() => router.push("/dev/gallery")} />
           </Section>
         ) : null}
         <View className="gap-3">
-          <Button fullWidth variant="secondary" icon={SignOut} label="Sign out" onPress={signOut} />
+          <Button
+            fullWidth
+            variant="secondary"
+            icon={SignOut}
+            label="Sign out"
+            loading={logout.isPending}
+            onPress={() => logout.mutate()}
+          />
           <Button fullWidth variant="destructive" label="Leave this space" onPress={() => setConfirmLeave(true)} />
           <Text variant="caption" color="ink-tertiary" align="center">
             Leaving closes the space for both of you. You'll each have 30 days to read and export it, then it's deleted.

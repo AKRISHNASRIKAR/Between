@@ -96,6 +96,7 @@ export const media = pgTable(
     thumbKey: text().notNull(),
     mime: text().notNull(),
     bytes: integer().notNull(),
+    thumbBytes: integer().notNull().default(0),
     width: integer().notNull(),
     height: integer().notNull(),
     caption: text(),

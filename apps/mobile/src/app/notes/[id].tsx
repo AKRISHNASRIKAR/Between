@@ -28,6 +28,7 @@ import {
   Trash,
   useToast,
 } from "@/design-system";
+import { useThemeSubscription } from "@/design-system/theme/ThemeProvider";
 import { useDeleteNote, useNote, useOpenNote, useReactNote } from "@/features/notes/hooks";
 import { partnerOf, useMe } from "@/features/space/hooks";
 import { humanError } from "@/lib/errors";
@@ -36,6 +37,7 @@ const ENVELOPE_W = 280;
 
 /** Opening a note: swipe up (or tap) the envelope, the flap flips, the paper slides out and unfolds. */
 export default function NoteScreen() {
+  useThemeSubscription();
   const { id } = useLocalSearchParams<{ id: string }>();
   const me = useMe();
   const space = me.data?.space;

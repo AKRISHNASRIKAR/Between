@@ -22,6 +22,7 @@ export const Space = z.object({
   status: SpaceStatus,
   createdAt: IsoDateTime,
   members: z.array(Member),
+  petSetupComplete: z.boolean().optional(),
   pet: Pet,
 });
 export type Space = z.infer<typeof Space>;
@@ -34,6 +35,7 @@ export const CreateSpaceInput = z.object({
 export type CreateSpaceInput = z.infer<typeof CreateSpaceInput>;
 
 export const UpdateSpaceInput = z.object({
+  petSetupComplete: z.literal(true).optional(),
   name: z.string().trim().min(LIMITS.spaceName.min).max(LIMITS.spaceName.max).optional(),
   togetherSince: LocalDate.nullable().optional(),
   timezone: Timezone.optional(),

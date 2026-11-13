@@ -1,4 +1,5 @@
 import { View } from "react-native";
+import { useThemeSubscription } from "@/design-system/theme/ThemeProvider";
 import { haptics } from "./haptics";
 import { Check } from "./Icon";
 import { PressableScale } from "./PressableScale";
@@ -10,6 +11,7 @@ type Props = { label: string; selected?: boolean; family?: Family; onPress?: () 
 
 /** DESIGN §7.2 Chip: quiet until chosen. Selection = tint + deep text + check, never colour alone. */
 export function Chip({ label, selected, family = "teal", onPress, disabled }: Props) {
+  useThemeSubscription();
   const look = recipes.chip(!!selected, family);
   return (
     <PressableScale

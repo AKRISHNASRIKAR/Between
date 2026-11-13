@@ -4,7 +4,7 @@ import { notFound } from "../../lib/errors";
 import { withTx } from "../../lib/tx";
 import type { AuthedUser } from "../../types";
 import { removeUploadsBy } from "../journal";
-import { activeScope } from "../members";
+import { activeScope, membersRepo } from "../members";
 import { leaveSpace, spaceView } from "../spaces";
 import { usersRepo } from "./me.repo";
 
@@ -22,6 +22,9 @@ export async function getMe(user: AuthedUser): Promise<Me> {
         timezone: u.timezone,
       },
       space: scope ? await spaceView(tx, scope) : null,
+      retainedSpaces: (await membersRepo.retainedSpaces(tx, u.id)).flatMap((s) =>
+        s.purgeAfter ? [{ id: s.id, name: s.name, purgeAfter: s.purgeAfter.toISOString() }] : [],
+      ),
     };
   });
 }

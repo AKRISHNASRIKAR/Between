@@ -29,8 +29,7 @@ async function render(uri: string, w: number, h: number, maxEdge: number, compre
   return ref.saveAsync({ format: SaveFormat.JPEG, compress });
 }
 
-async function putFile(url: string, uri: string) {
-  const blob = await (await fetch(uri)).blob();
+async function putFile(url: string, blob: Blob) {
   const res = await fetch(url, { method: "PUT", headers: { "Content-Type": "image/jpeg" }, body: blob });
   if (!res.ok) throw new ApiError("NETWORK", res.status, "upload failed");
   return blob.size;
@@ -40,14 +39,19 @@ async function putFile(url: string, uri: string) {
  * Upload pipeline (SPEC §7.7): resize (2048 main / 480 thumb, JPEG, EXIF stripped) →
  * reserve (signed PUT URLs) → upload both directly → server verifies → ready.
  */
-export async function uploadPhoto(spaceId: string, photo: PickedPhoto, caption?: string | null): Promise<Media> {
+export async function uploadPhoto(
+  spaceId: string,
+  photo: PickedPhoto,
+  caption?: string | null,
+  mediaId?: string,
+): Promise<Media> {
   const main = await render(photo.uri, photo.width, photo.height, 2048, 0.8);
   const thumb = await render(photo.uri, photo.width, photo.height, 480, 0.7);
   const [mainBlob, thumbBlob] = await Promise.all([
     fetch(main.uri).then((r) => r.blob()),
     fetch(thumb.uri).then((r) => r.blob()),
   ]);
-  const id = newId();
+  const id = mediaId ?? newId();
   const intent = await unwrap(
     api.spaces[":sid"].media.uploads.$post({
       param: { sid: spaceId },
@@ -62,6 +66,6 @@ export async function uploadPhoto(spaceId: string, photo: PickedPhoto, caption?:
       },
     }),
   );
-  await Promise.all([putFile(intent.uploadUrl, main.uri), putFile(intent.thumbUploadUrl, thumb.uri)]);
+  await Promise.all([putFile(intent.uploadUrl, mainBlob), putFile(intent.thumbUploadUrl, thumbBlob)]);
   return unwrap(api.spaces[":sid"].media[":mid"].complete.$post({ param: { sid: spaceId, mid: id } }));
 }

@@ -3,7 +3,16 @@ import type { Me } from "@lovenotes/contracts";
 import { flowState, restorablePath } from "./flow";
 
 const member = (id: string) => ({ id, displayName: id, avatarUrl: null, role: "member" as const, joinedAt: "" });
-const me = (over: { name?: string | null; members?: number; petName?: string | null; noSpace?: boolean } = {}): Me => ({
+const me = (
+  over: {
+    name?: string | null;
+    members?: number;
+    petName?: string | null;
+    noSpace?: boolean;
+    petStatus?: "NONE" | "PENDING" | "ACTIVE" | "PAUSED";
+    petSetupComplete?: boolean;
+  } = {},
+): Me => ({
   profile: {
     id: "a",
     email: "a@x.dev",
@@ -20,8 +29,14 @@ const me = (over: { name?: string | null; members?: number; petName?: string | n
         timezone: "UTC",
         status: "active",
         createdAt: "",
+        petSetupComplete: over.petSetupComplete,
         members: Array.from({ length: over.members ?? 2 }, (_, i) => member(`m${i}`)),
         pet: {
+          status: over.petStatus ?? "ACTIVE",
+          decisionId: null,
+          decisionById: null,
+          proposedEnabled: null,
+          bond: 0,
           id: "p",
           species: "dog",
           name: over.petName === undefined ? "Mochi" : over.petName,
@@ -59,6 +74,16 @@ describe("flowState", () => {
     expect(flowState(true, false, me({ petName: null }))).toBe("naming");
     expect(flowState(true, false, me())).toBe("ready");
   });
+  test("a paired space opens before an optional pet decision, without opting into one", () => {
+    for (const petStatus of ["NONE", "PENDING", "PAUSED"] as const) {
+      expect(flowState(true, false, me({ petStatus, petName: null, petSetupComplete: false }))).toBe("ready");
+      expect(flowState(true, false, me({ petStatus, petName: null, petSetupComplete: true }))).toBe("ready");
+    }
+  });
+  test("active pet still needs a mutually agreed name", () => {
+    expect(flowState(true, false, me({ petStatus: "ACTIVE", petName: null, petSetupComplete: true }))).toBe("naming");
+    expect(flowState(true, false, me({ petStatus: "ACTIVE", petSetupComplete: false }))).toBe("ready");
+  });
 });
 
 describe("restorablePath", () => {
@@ -67,6 +92,7 @@ describe("restorablePath", () => {
     expect(restorablePath("/settings")).toBe("/settings");
     expect(restorablePath("/today")).toBeNull();
     expect(restorablePath("/hatch")).toBeNull();
+    expect(restorablePath("/pet-choice")).toBeNull();
     expect(restorablePath("/invite/ABCD")).toBeNull();
     expect(restorablePath(null)).toBeNull();
   });

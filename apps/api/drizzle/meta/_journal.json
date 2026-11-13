@@ -71,6 +71,34 @@
       "when": 1790580589024,
       "tag": "0009_pet_milestones",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1791360000000,
+      "tag": "0010_optional_pet",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1791360100000,
+      "tag": "0011_product_events",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1791360200000,
+      "tag": "0012_pet_decision_identity",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1793610000000,
+      "tag": "0013_storage_safety",
+      "breakpoints": true
     }
   ]
 }

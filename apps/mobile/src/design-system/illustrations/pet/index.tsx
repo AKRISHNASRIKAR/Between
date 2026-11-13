@@ -1,5 +1,7 @@
 import type { PetMood, PetStage } from "@lovenotes/contracts";
-import type { Ref } from "react";
+import { useFocusEffect } from "expo-router";
+import { type Ref, useCallback, useState } from "react";
+import { AppState } from "react-native";
 import { Egg, type EggHandle } from "./Egg";
 import { Mochi, type PetReaction } from "./Mochi";
 
@@ -18,7 +20,25 @@ type Props = {
  * The swappable pet renderer. Features only ever use this component — the placeholder SVG art
  * can be replaced (Rive, illustrator art) without touching feature code. See SPEC D8.
  */
+export function usePetActive() {
+  const [focused, setFocused] = useState(false);
+  const [foreground, setForeground] = useState(AppState.currentState === "active");
+  useFocusEffect(
+    useCallback(() => {
+      setFocused(true);
+      setForeground(AppState.currentState === "active");
+      const subscription = AppState.addEventListener("change", (state) => setForeground(state === "active"));
+      return () => {
+        setFocused(false);
+        subscription.remove();
+      };
+    }, []),
+  );
+  return focused && foreground;
+}
+
 export function Pet({ stage, mood, size = 200, reaction, stroking, eggRef }: Props) {
-  if (stage === "egg") return <Egg size={size} ref={eggRef} />;
-  return <Mochi mood={mood} size={size} reaction={reaction} stroking={stroking} />;
+  const active = usePetActive();
+  if (stage === "egg") return <Egg size={size} ref={eggRef} active={active} />;
+  return <Mochi mood={mood} size={size} reaction={reaction} stroking={stroking} active={active} />;
 }

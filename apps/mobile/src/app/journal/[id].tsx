@@ -1,6 +1,5 @@
 import { LIMITS } from "@lovenotes/contracts";
 import { useLocalSearchParams } from "expo-router";
-import { useState } from "react";
 import { Alert, useWindowDimensions, View } from "react-native";
 import { BackButton } from "@/components/BackButton";
 import {
@@ -19,13 +18,18 @@ import {
   TextField,
   useToast,
 } from "@/design-system";
+import { useThemeSubscription } from "@/design-system/theme/ThemeProvider";
 import { useAddBlock, useDeleteBlock, useLovePage, usePage } from "@/features/journal/hooks";
 import { PhotoTray, usePhotoUploads } from "@/features/journal/PhotoPicker";
 import { partnerOf, useMe } from "@/features/space/hooks";
+import { emptyJournal, rebaseJournalPhotos, validJournal } from "@/lib/composer-drafts";
+import { blockAcknowledges } from "@/lib/draft-ack";
 import { humanError } from "@/lib/errors";
+import { useDraft } from "@/lib/use-draft";
 
 /** A shared journal page: each person's blocks, marked by identity color (DESIGN §7.3 JournalPage). */
 export default function PageScreen() {
+  useThemeSubscription();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { width } = useWindowDimensions();
   const me = useMe();
@@ -36,9 +40,20 @@ export default function PageScreen() {
   const addBlock = useAddBlock(space?.id, id);
   const love = useLovePage(space?.id, id, myId);
   const del = useDeleteBlock(space?.id);
-  const uploads = usePhotoUploads(space?.id);
+  const draft = useDraft(
+    myId && space?.id ? { userId: myId, spaceId: space.id, editor: `journal:add:${id}` } : null,
+    emptyJournal,
+    validJournal,
+  );
+  const uploads = usePhotoUploads(
+    space?.id,
+    draft.value.photos,
+    (photos) => draft.update((old) => ({ ...old, photos })),
+    me.data?.profile.id,
+  );
   const toast = useToast();
-  const [body, setBody] = useState("");
+  const { body } = draft.value;
+  const setBody = (body: string) => draft.update((old) => ({ ...old, body }));
   const contentW = Math.min(width, layout.maxContentWidth + layout.gutter * 2) - layout.gutter * 2;
 
   if (page.isPending)
@@ -68,24 +83,38 @@ export default function PageScreen() {
     day: "numeric",
   });
 
-  const post = () =>
-    addBlock.mutate(
-      { body: body.trim() || null, mediaIds: uploads.mediaIds },
-      {
-        onSuccess: () => {
-          setBody("");
-          uploads.reset();
-        },
-        onError: (e) => toast({ kind: "error", message: humanError(e) }),
+  const post = () => {
+    const token = { id: draft.id, revision: draft.revision };
+    const submitted = { id: draft.id, body: body.trim() || null, mediaIds: uploads.mediaIds };
+    addBlock.mutate(submitted, {
+      onSuccess: (saved) => {
+        if (
+          !blockAcknowledges(
+            saved.blocks.find((block) => block.id === submitted.id),
+            submitted,
+          )
+        ) {
+          draft.rebase(token, rebaseJournalPhotos);
+          toast({
+            kind: "error",
+            message:
+              "An earlier version is already on this page. Newer writing is kept here; retry retained photos before adding it.",
+          });
+          return;
+        }
+        if (!draft.acknowledge(token, rebaseJournalPhotos))
+          toast({ kind: "error", message: "Your part was saved. Newer edits are kept as a new draft." });
       },
-    );
+      onError: (e) => toast({ kind: "error", message: humanError(e) }),
+    });
+  };
 
   return (
     <Screen>
       <View style={{ gap: 20, paddingTop: 8, paddingBottom: 24 }}>
         <BackButton />
         <View style={{ gap: 4 }}>
-          <Text variant="label" color="butter-deep">
+          <Text variant="label" color="action">
             {dateLabel}
           </Text>
           {p.title ? <Text variant="display-l">{p.title}</Text> : null}
@@ -173,6 +202,7 @@ export default function PageScreen() {
           <TextField
             label="Write something"
             multiline
+            editable={!addBlock.isPending}
             value={body}
             onChangeText={setBody}
             placeholder={
@@ -182,11 +212,18 @@ export default function PageScreen() {
             }
             maxLength={LIMITS.journalBlockBody.max}
           />
-          <PhotoTray uploads={uploads} />
+          <PhotoTray uploads={uploads} disabled={addBlock.isPending} />
+          {body || uploads.items.length ? (
+            <Text variant="caption" color={draft.savedLocally ? "ink-secondary" : "tomato-deep"}>
+              {draft.savedLocally
+                ? "Draft saved on this phone"
+                : "Could not save the local draft. Keep this page open."}
+            </Text>
+          ) : null}
           <Button
             label="Add to page"
             loading={addBlock.isPending}
-            disabled={(!body.trim() && !uploads.mediaIds.length) || uploads.uploading}
+            disabled={(!body.trim() && !uploads.mediaIds.length) || uploads.uploading || uploads.hasFailures}
             onPress={post}
           />
         </View>

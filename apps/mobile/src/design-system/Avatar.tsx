@@ -1,5 +1,6 @@
 import { Image } from "expo-image";
 import { View } from "react-native";
+import { useThemeSubscription } from "@/design-system/theme/ThemeProvider";
 import { Text } from "./Text";
 import { identity, palette } from "./tokens";
 
@@ -13,6 +14,7 @@ type Props = {
 
 /** DESIGN §7.2 Avatar with identity ring and presence dot. */
 export function Avatar({ name, uri, size = 40, who, online }: Props) {
+  useThemeSubscription();
   const initial = (name?.trim()[0] ?? "·").toUpperCase();
   const ring = who ? identity[who] : "transparent";
   return (

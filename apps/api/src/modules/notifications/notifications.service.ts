@@ -1,5 +1,8 @@
 import { type Notice, type NotificationPrefs, noticeCopy } from "@lovenotes/contracts";
+import { db } from "../../db/client";
+import { makeSpaceScope } from "../../lib/scope";
 import { isOnline, publish } from "../../realtime/hub";
+import { petRepo } from "../pet";
 import { notificationsRepo } from "./notifications.repo";
 import { deliver } from "./push-transport";
 import { inQuietHours } from "./quiet-hours";
@@ -48,16 +51,26 @@ type NotifyInput = {
  */
 export async function notify({ spaceId, to, notice, petName, allowPush = true }: NotifyInput): Promise<void> {
   try {
-    const copy = noticeCopy(notice, petName);
+    const petScope = makeSpaceScope({ spaceId, userId: to, partnerId: null, writable: true, timezone: "UTC" });
+    const currentPet = await petRepo.get(db, petScope);
+    if (notice.type === "pet.milestone" && currentPet?.status !== "ACTIVE") return;
+    const hasPet = currentPet?.status === "ACTIVE";
+    const copy = noticeCopy(notice, hasPet ? petName : "");
+    if (!hasPet && notice.type === "note.waiting") copy.title = "Something from your person";
+    if (!hasPet && notice.type === "quiz.your_turn")
+      copy.body = `${notice.from} has answered. Your turn when you're ready.`;
     const prefs = await getPrefs(to);
     if (!prefs[copy.pref]) return;
     if (isOnline(spaceId, to)) {
-      publish(spaceId, { t: "notice", to, notice, petName });
+      if (notice.type === "pet.milestone" && (await petRepo.get(db, petScope))?.status !== "ACTIVE") return;
+      publish(spaceId, { t: "notice", to, notice, petName: hasPet ? petName : "" });
       return;
     }
     if (!allowPush) return;
     if (inQuietHours(prefs, await notificationsRepo.timezone(to))) return;
     const tokens = (await notificationsRepo.tokens(to)).map((t) => t.token);
+    // Announcements run after commit. A pause may have happened during preference/token reads.
+    if (notice.type === "pet.milestone" && (await petRepo.get(db, petScope))?.status !== "ACTIVE") return;
     await deliver(tokens, to, { title: copy.title, body: copy.body, url: copy.url, pillar: copy.pillar });
   } catch (err) {
     console.error("notify failed", err);

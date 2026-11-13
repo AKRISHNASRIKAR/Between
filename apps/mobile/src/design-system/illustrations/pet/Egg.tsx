@@ -1,16 +1,17 @@
 import { type Ref, useEffect, useImperativeHandle, useRef } from "react";
 import { View } from "react-native";
 import Animated, {
+  cancelAnimation,
   runOnJS,
   useAnimatedStyle,
-  useReducedMotion,
   useSharedValue,
   withDelay,
   withSequence,
   withSpring,
   withTiming,
 } from "react-native-reanimated";
-import { Circle, Path } from "react-native-svg";
+import { Circle } from "react-native-svg";
+import { useReducedMotion } from "@/lib/preferences";
 import { haptics } from "../../haptics";
 import { dur, ease, spring } from "../../motion";
 import { art, type ColorToken } from "../../tokens";
@@ -44,7 +45,7 @@ function Shell({ d, id }: { d: string; id: string }) {
  * The egg: wobbles every 4–7s. `hatch()` plays the sequence (DESIGN §9): shake, the crack
  * appears (the whole shell swaps for two halves), then the halves split apart.
  */
-export function Egg({ size, ref }: { size: number; ref?: Ref<EggHandle> }) {
+export function Egg({ size, ref, active = true }: { size: number; ref?: Ref<EggHandle>; active?: boolean }) {
   const reduced = useReducedMotion();
   const wobble = useSharedValue(0);
   const crack = useSharedValue(0);
@@ -52,6 +53,10 @@ export function Egg({ size, ref }: { size: number; ref?: Ref<EggHandle> }) {
   const hatching = useRef(false);
 
   useEffect(() => {
+    if (!active || reduced) {
+      wobble.value = 0;
+      return;
+    }
     let alive = true;
     let t: ReturnType<typeof setTimeout>;
     const loop = () => {
@@ -75,18 +80,36 @@ export function Egg({ size, ref }: { size: number; ref?: Ref<EggHandle> }) {
     return () => {
       alive = false;
       clearTimeout(t);
+      cancelAnimation(wobble);
     };
-  }, [reduced, wobble]);
+  }, [reduced, wobble, active]);
+
+  useEffect(
+    () => () => {
+      cancelAnimation(wobble);
+      cancelAnimation(crack);
+      cancelAnimation(split);
+    },
+    [wobble, crack, split],
+  );
 
   useImperativeHandle(ref, () => ({
     hatch(onDone) {
+      if (hatching.current) return;
       hatching.current = true;
       haptics.tap();
+      if (reduced) {
+        wobble.value = 0;
+        crack.value = 1;
+        split.value = 1;
+        onDone();
+        return;
+      }
       const shake = [-8, 8, -8, 8, -5, 0].map((x) => withTiming(x, { duration: 90 }));
-      wobble.value = reduced ? 0 : withSequence(...shake, withDelay(200, withSequence(...shake)));
-      crack.value = withDelay(reduced ? 0 : 900, withTiming(1, { duration: dur.fast }));
+      wobble.value = withSequence(...shake, withDelay(200, withSequence(...shake)));
+      crack.value = withDelay(900, withTiming(1, { duration: dur.fast }));
       split.value = withDelay(
-        reduced ? 200 : 1500,
+        1500,
         withTiming(1, { duration: dur.slow, easing: ease.out }, (finished) => {
           if (finished) runOnJS(onDone)();
         }),

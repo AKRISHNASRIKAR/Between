@@ -1,9 +1,10 @@
 import type { QuizCategory } from "@lovenotes/contracts";
 import type { ReactNode } from "react";
 import { View } from "react-native";
-import { CATEGORY_LABEL, CategoryCreature, quizColors } from "../illustrations/CategoryCreature";
+import { CategoryCreature, quizVisual } from "../illustrations/registry";
 import { Text } from "../Text";
-import { radius } from "../tokens";
+import { useThemeSubscription } from "../theme/ThemeProvider";
+import { palette, radius } from "../tokens";
 
 type Props = {
   category: QuizCategory;
@@ -15,14 +16,17 @@ type Props = {
   size?: "tile" | "hero";
 };
 
-/** DESIGN §7.3 QuizCard: a paint-chip swatch — saturated fill, words in a contrasting colour. */
+/** Quiz categories keep their artwork; paper surfaces and action color follow the personal theme. */
 export function QuizCard({ category, title, subtitle, meta, footer, size = "tile" }: Props) {
-  const t = quizColors(category);
+  const visual = quizVisual(category);
+  useThemeSubscription();
   const hero = size === "hero";
   return (
     <View
       style={{
-        backgroundColor: t.fill,
+        backgroundColor: palette.paper,
+        borderWidth: 1,
+        borderColor: palette.line,
         borderRadius: hero ? radius.xl : radius.lg,
         padding: hero ? 24 : 16,
         gap: 10,
@@ -31,23 +35,23 @@ export function QuizCard({ category, title, subtitle, meta, footer, size = "tile
       }}
     >
       <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" }}>
-        <Text variant="label" style={{ color: t.text }}>
-          {CATEGORY_LABEL[category]}
+        <Text variant="label" color="action">
+          {visual.label}
         </Text>
-        <CategoryCreature category={category} size={hero ? 64 : 48} onBase />
+        <CategoryCreature category={category} size={hero ? 64 : 48} />
       </View>
       <View style={{ gap: 4 }}>
-        <Text variant={hero ? "display-m" : "heading"} style={{ color: t.text }}>
+        <Text variant={hero ? "display-m" : "heading"} color="ink">
           {title}
         </Text>
         {subtitle ? (
-          <Text variant="body-sm" style={{ color: t.text }} numberOfLines={2}>
+          <Text variant="body-sm" color="ink" numberOfLines={2}>
             {subtitle}
           </Text>
         ) : null}
       </View>
       {meta ? (
-        <Text variant="caption" style={{ color: t.text }}>
+        <Text variant="caption" color="ink">
           {meta}
         </Text>
       ) : null}

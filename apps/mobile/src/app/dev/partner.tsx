@@ -5,11 +5,13 @@ import { useState } from "react";
 import { View } from "react-native";
 import { BackButton } from "@/components/BackButton";
 import { Avatar, Button, Chip, palette, radius, Screen, Text, useToast } from "@/design-system";
+import { useThemeSubscription } from "@/design-system/theme/ThemeProvider";
 import { useCreateDevPartner, useDevPartner, useDevPartnerAct } from "@/features/dev/hooks";
 import { useMe } from "@/features/space/hooks";
 import { humanError } from "@/lib/errors";
 
 function Group({ title, hint, children }: { title: string; hint?: string; children: ReactNode }) {
+  useThemeSubscription();
   return (
     <View style={{ gap: 10, backgroundColor: palette.paper, borderRadius: radius.lg, padding: 16 }}>
       <Text variant="label" color="purple-deep">
@@ -30,6 +32,7 @@ function Group({ title, hint, children }: { title: string; hint?: string; childr
  * Actions go through the real API services, so events, bond and push logs behave exactly as live.
  */
 export default function DevPartner() {
+  useThemeSubscription();
   const me = useMe();
   const status = useDevPartner();
   const create = useCreateDevPartner();

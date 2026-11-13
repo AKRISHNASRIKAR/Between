@@ -121,6 +121,13 @@ export const sessionsRepo = {
       .orderBy(desc(quizSessions.createdAt))
       .limit(limit);
   },
+  async exportSessions(tx: Tx, scope: SpaceScope) {
+    return tx
+      .select()
+      .from(quizSessions)
+      .where(eq(quizSessions.spaceId, scope.spaceId))
+      .orderBy(desc(quizSessions.createdAt), desc(quizSessions.id));
+  },
   /** Returns null when a session with this id (or this space's daily for the date) already exists. */
   async insert(
     tx: Tx,

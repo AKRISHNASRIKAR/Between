@@ -42,7 +42,21 @@ export const PetWellbeing = z.object({
 });
 export type PetWellbeing = z.infer<typeof PetWellbeing>;
 
+export const PetStatus = z.enum(["NONE", "PENDING", "ACTIVE", "PAUSED"]);
+export const PetDecisionInput = z.discriminatedUnion("action", [
+  z.object({ action: z.literal("propose"), enabled: z.boolean() }),
+  z.object({ action: z.literal("accept"), decisionId: z.uuid() }),
+  z.object({ action: z.literal("decline"), decisionId: z.uuid() }),
+]);
+
 export const Pet = z.object({
+  version: z.number().int().nonnegative().optional(),
+  status: PetStatus.default("ACTIVE"),
+  decisionById: z.uuid().nullable().default(null),
+  decisionId: z.uuid().nullable().default(null),
+  proposedEnabled: z.boolean().nullable().default(null),
+  lastStateUpdateAt: IsoDateTime.optional(),
+  bond: z.number().nonnegative().default(0),
   id: z.uuid(),
   species: SpeciesId,
   name: z.string().nullable(),
@@ -61,7 +75,7 @@ export type PetInteractionInput = z.infer<typeof PetInteractionInput>;
 
 export const PetNameInput = z.discriminatedUnion("action", [
   z.object({ action: z.literal("propose"), name: z.string().trim().min(1).max(24) }),
-  z.object({ action: z.literal("accept") }),
+  z.object({ action: z.literal("accept"), name: z.string().trim().min(1).max(24) }),
 ]);
 export type PetNameInput = z.infer<typeof PetNameInput>;
 

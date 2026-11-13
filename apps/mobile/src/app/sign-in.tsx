@@ -1,6 +1,6 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { router } from "expo-router";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { View } from "react-native";
 import { z } from "zod";
 import { BackButton } from "@/components/BackButton";
@@ -16,28 +16,33 @@ export default function SignIn() {
   const [error, setError] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
   const qc = useQueryClient();
+  const submitting = useRef(false);
+  const [showCodeScreen, setShowCodeScreen] = useState(false);
 
   const submit = async () => {
+    if (submitting.current) return;
     const parsed = Email.safeParse(email.trim().toLowerCase());
     if (!parsed.success) return setError("That doesn't look like an email address.");
+    submitting.current = true;
     setError(null);
     setSending(true);
-    const { error: err } = await authClient.emailOtp.sendVerificationOtp({ email: parsed.data, type: "sign-in" });
-    if (err) {
+    try {
+      const { error: err } = await authClient.emailOtp.sendVerificationOtp({ email: parsed.data, type: "sign-in" });
+      if (err) return setError("Couldn't send a code right now. Check your connection and try again.");
+      if (DEV_SKIP_EMAIL_CODE && !showCodeScreen) {
+        const { error: signInErr } = await authClient.signIn.emailOtp({ email: parsed.data, otp: DEV_FIXED_OTP });
+        if (signInErr) return setError("Dev sign-in failed. Is DEV_FIXED_OTP=000000 set in apps/api/.env?");
+        await qc.invalidateQueries();
+        return;
+      }
+      signInDraft.set(parsed.data);
+      router.push("/verify");
+    } catch {
+      setError("Couldn't connect. Your email is still here — check your connection and try again.");
+    } finally {
+      submitting.current = false;
       setSending(false);
-      return setError("Couldn't send a code right now. Check your connection and try again.");
     }
-    if (DEV_SKIP_EMAIL_CODE) {
-      // Development: the API issues a fixed code, so sign straight in without the email step.
-      const { error: signInErr } = await authClient.signIn.emailOtp({ email: parsed.data, otp: DEV_FIXED_OTP });
-      setSending(false);
-      if (signInErr) return setError("Dev sign-in failed. Is DEV_FIXED_OTP=000000 set in apps/api/.env?");
-      await qc.invalidateQueries();
-      return;
-    }
-    setSending(false);
-    signInDraft.set(parsed.data);
-    router.push("/verify");
   };
 
   return (
@@ -50,6 +55,15 @@ export default function SignIn() {
             We'll send you a 6-digit code. No passwords to remember.
           </Text>
         </View>
+        {__DEV__ ? (
+          <Button
+            variant="quiet"
+            size="md"
+            label={showCodeScreen ? "Dev: verification screen on" : "Dev: test the email-code screen"}
+            disabled={sending}
+            onPress={() => setShowCodeScreen((value) => !value)}
+          />
+        ) : null}
         <TextField
           label="Email"
           value={email}

@@ -2,4 +2,4 @@
 
 export { journalRoutes, mediaRoutes, memoryRoutes } from "./journal.routes";
 export { addBlock, createPage, findPageByDate, listPages } from "./journal.service";
-export { completeUpload, createUpload, purgeStaleUploads, removeUploadsBy } from "./media.service";
+export { archiveMedia, completeUpload, createUpload, purgeStaleUploads, removeUploadsBy } from "./media.service";

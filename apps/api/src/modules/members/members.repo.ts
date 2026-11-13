@@ -1,4 +1,4 @@
-import { and, asc, eq, gt, isNull, ne, or } from "drizzle-orm";
+import { and, asc, desc, eq, gt, isNull, ne, or } from "drizzle-orm";
 import type { Tx } from "../../db/client";
 import { spaceMembers, spaces, users } from "../../db/schema";
 import { makeSpaceScope, type SpaceScope } from "../../lib/scope";
@@ -18,6 +18,15 @@ export type MemberRow = {
  * module that needs names; the spaces module owns joining and leaving.
  */
 export const membersRepo = {
+  /** Only the caller's closed memberships within the retention window. */
+  async retainedSpaces(tx: Tx, userId: string, now = new Date()) {
+    return tx
+      .select({ id: spaces.id, name: spaces.name, purgeAfter: spaces.purgeAfter })
+      .from(spaceMembers)
+      .innerJoin(spaces, eq(spaces.id, spaceMembers.spaceId))
+      .where(and(eq(spaceMembers.userId, userId), eq(spaces.status, "closed"), gt(spaces.purgeAfter, now)))
+      .orderBy(desc(spaces.closedAt));
+  },
   async of(tx: Tx, scope: SpaceScope): Promise<MemberRow[]> {
     return tx
       .select({

@@ -1,11 +1,14 @@
-import { PetInteractionInput, PetNameInput } from "@lovenotes/contracts";
+import { PetDecisionInput, PetInteractionInput, PetNameInput } from "@lovenotes/contracts";
 import { Hono } from "hono";
 import { validate } from "../../lib/validate";
 import type { AppEnv } from "../../types";
-import { care, getPet, nameStep, timeline } from "./pet.service";
+import { care, decidePet, getPet, nameStep, timeline } from "./pet.service";
 
 /** Mounted under /v1/spaces/:sid/pet. */
 export const petRoutes = new Hono<AppEnv>()
+  .post("/decision", validate("json", PetDecisionInput), async (c) =>
+    c.json(await decidePet(c.get("scope"), c.req.valid("json"))),
+  )
   .get("/", async (c) => c.json(await getPet(c.get("scope"))))
   .get("/timeline", async (c) => c.json(await timeline(c.get("scope"))))
   .post("/interactions", validate("json", PetInteractionInput), async (c) =>

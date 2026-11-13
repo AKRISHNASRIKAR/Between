@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useWindowDimensions, View } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, {
+  cancelAnimation,
   useAnimatedStyle,
   useSharedValue,
   withDelay,
@@ -26,15 +27,17 @@ import {
   palette,
   radius,
   spring,
-  stroke,
   TennisBall,
   Text,
   useToast,
 } from "@/design-system";
+import { usePetActive } from "@/design-system/illustrations/pet";
+import { useThemeSubscription } from "@/design-system/theme/ThemeProvider";
 import { useWaitingNotes } from "@/features/notes/NoteWaiting";
 import { partnerOf, useMe, usePetInteract } from "@/features/space/hooks";
 import { useRealtime } from "@/features/space/realtime-sync";
 import { humanError } from "@/lib/errors";
+import { useReducedMotion } from "@/lib/preferences";
 
 type Props = { size: number; onPressPet?: () => void; compact?: boolean };
 
@@ -42,6 +45,7 @@ const dayOfYear = () => Math.floor((Date.now() - new Date(new Date().getFullYear
 
 /** The pet on its rug, with speech bubble and the three interactions (DESIGN §7.3 PetCard). */
 export function PetStage({ size: requested, onPressPet, compact }: Props) {
+  useThemeSubscription();
   // Never wider than the screen: the stage is 1.5× the pet to leave room for props.
   const { width } = useWindowDimensions();
   const stageWidth = Math.min(requested * 1.5, width - layout.gutter * 2);
@@ -61,6 +65,10 @@ export function PetStage({ size: requested, onPressPet, compact }: Props) {
   const [prop, setProp] = useState<"bowl" | "ball" | null>(null);
   const [partnerAction, setPartnerAction] = useState<"feed" | "pet" | "play" | null>(null);
   const counter = useRef(0);
+  const reduced = useReducedMotion();
+  const focused = usePetActive();
+  const active = focused && pet?.status === "ACTIVE";
+  const handledInteraction = useRef<typeof lastInteraction>(null);
 
   const bowlX = useSharedValue(-120);
   const ballX = useSharedValue(-140);
@@ -71,12 +79,38 @@ export function PetStage({ size: requested, onPressPet, compact }: Props) {
     setReaction({ kind, n: counter.current });
   }, []);
 
+  const partnerTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const propTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
-  useEffect(() => () => clearTimeout(propTimer.current), []);
+  useEffect(
+    () => () => {
+      clearTimeout(propTimer.current);
+      clearTimeout(partnerTimer.current);
+      cancelAnimation(bowlX);
+      cancelAnimation(ballX);
+      cancelAnimation(ballY);
+    },
+    [bowlX, ballX, ballY],
+  );
+
+  useEffect(() => {
+    if (active && !reduced) return;
+    clearTimeout(propTimer.current);
+    clearTimeout(partnerTimer.current);
+    cancelAnimation(bowlX);
+    cancelAnimation(ballX);
+    cancelAnimation(ballY);
+    bowlX.value = -120;
+    ballX.value = -140;
+    ballY.value = 0;
+    setProp(null);
+    setPartnerAction(null);
+    setStroking(false);
+  }, [active, reduced, bowlX, ballX, ballY]);
 
   const playProp = useCallback(
     (kind: "feed" | "play") => {
       clearTimeout(propTimer.current);
+      if (!active || reduced) return;
       // Props leave the stage once their little scene is over.
       propTimer.current = setTimeout(() => setProp(null), kind === "feed" ? 2000 : 1000);
       if (kind === "feed") {
@@ -92,18 +126,20 @@ export function PetStage({ size: requested, onPressPet, compact }: Props) {
         ballY.value = withSequence(withTiming(-size * 0.35, { duration: 450 }), withTiming(0, { duration: 450 }));
       }
     },
-    [size, bowlX, ballX, ballY],
+    [size, active, reduced, bowlX, ballX, ballY],
   );
 
   // Partner interactions arrive in realtime → the pet reacts here too.
   useEffect(() => {
-    if (!lastInteraction || lastInteraction.userId === myId) return;
+    if (!lastInteraction || lastInteraction.userId === myId || handledInteraction.current === lastInteraction) return;
+    handledInteraction.current = lastInteraction;
+    if (!active) return;
     react(lastInteraction.kind === "pet" ? "pet" : lastInteraction.kind);
     if (lastInteraction.kind !== "pet") playProp(lastInteraction.kind);
     setPartnerAction(lastInteraction.kind);
-    const t = setTimeout(() => setPartnerAction(null), 6000);
-    return () => clearTimeout(t);
-  }, [lastInteraction, myId, react, playProp]);
+    clearTimeout(partnerTimer.current);
+    partnerTimer.current = setTimeout(() => setPartnerAction(null), 6000);
+  }, [lastInteraction, myId, active, react, playProp]);
 
   const doInteract = (kind: "feed" | "pet" | "play") => {
     haptics.tap();
@@ -139,7 +175,7 @@ export function PetStage({ size: requested, onPressPet, compact }: Props) {
   const bowlStyle = useAnimatedStyle(() => ({ transform: [{ translateX: bowlX.value }] }));
   const ballStyle = useAnimatedStyle(() => ({ transform: [{ translateX: ballX.value }, { translateY: ballY.value }] }));
 
-  if (!pet) return null;
+  if (pet?.status !== "ACTIVE") return null;
   const line = petLine({
     mood: pet.mood,
     localHour: new Date().getHours(),
@@ -246,6 +282,7 @@ export function PetStage({ size: requested, onPressPet, compact }: Props) {
 }
 
 function PetAction({ label, icon, onPress }: { label: string; icon: React.ReactNode; onPress: () => void }) {
+  useThemeSubscription();
   return (
     <View className="items-center gap-1">
       <PressableScale

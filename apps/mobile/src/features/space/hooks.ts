@@ -15,7 +15,7 @@ export function setCachedSpace(qc: ReturnType<typeof useQueryClient>, update: (s
 }
 
 export function setCachedPet(qc: ReturnType<typeof useQueryClient>, pet: Pet) {
-  setCachedSpace(qc, (s) => ({ ...s, pet }));
+  setCachedSpace(qc, (s) => ((pet.version ?? 0) < (s.pet.version ?? 0) ? s : { ...s, pet }));
 }
 
 export function useUpdateMe() {
@@ -29,6 +29,7 @@ export function useUpdateMe() {
 export function useCreateSpace() {
   const qc = useQueryClient();
   return useMutation({
+    mutationKey: ["pairing"],
     mutationFn: (input: Omit<CreateSpaceInput, "timezone">) =>
       unwrap(api.spaces.$post({ json: { ...input, timezone: deviceTimezone() } })),
     onSuccess: (space) => qc.setQueryData<Me>(keys.me, (me) => (me ? { ...me, space } : me)),
@@ -55,6 +56,7 @@ export function useInvitePreview(code: string | null) {
 export function useAcceptInvite() {
   const qc = useQueryClient();
   return useMutation({
+    mutationKey: ["pairing"],
     mutationFn: (code: string) => unwrap(api.invites[":code"].accept.$post({ param: { code } })),
     onSuccess: (space) => qc.setQueryData<Me>(keys.me, (me) => (me ? { ...me, space } : me)),
   });
@@ -72,7 +74,7 @@ export function usePetInteract(spaceId: string | undefined) {
 export function usePetName(spaceId: string | undefined) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (input: { action: "propose"; name: string } | { action: "accept" }) =>
+    mutationFn: (input: { action: "propose"; name: string } | { action: "accept"; name: string }) =>
       unwrap(api.spaces[":sid"].pet.name.$post({ param: { sid: spaceId ?? "" }, json: input })),
     onSuccess: (pet) => setCachedPet(qc, pet),
   });

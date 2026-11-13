@@ -242,3 +242,13 @@ export async function markRevealSeen(scope: SpaceScope, sessionId: string): Prom
     if (s.readyAt) await sessionsRepo.markRevealSeen(tx, scope, s.id);
   });
 }
+
+/** Full authorized history, including Daily; unlike the UI list this has no fifty-pack cap. */
+export async function exportSessions(scope: SpaceScope): Promise<QuizSession[]> {
+  return withTx(async (tx) => {
+    const sessions = await sessionsRepo.exportSessions(tx, scope);
+    const out: QuizSession[] = [];
+    for (const session of sessions) out.push(await view(tx, scope, session));
+    return out;
+  });
+}

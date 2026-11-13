@@ -15,6 +15,7 @@ export async function spaceView(tx: Tx, scope: SpaceScope): Promise<Space> {
   ]);
   if (!space || !pet) throw notFound("SPACE_NOT_FOUND");
   return {
+    petSetupComplete: space.petSetupComplete || pet.status === "ACTIVE" || pet.status === "PAUSED",
     id: space.id,
     name: space.name,
     togetherSince: space.togetherSince,

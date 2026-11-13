@@ -2,7 +2,8 @@ import { LIMITS } from "@lovenotes/contracts";
 import { useState } from "react";
 import { View } from "react-native";
 import { BackButton } from "@/components/BackButton";
-import { Button, Pet, Screen, Text, TextField } from "@/design-system";
+import { Button, Screen, Text, TextField } from "@/design-system";
+import { WelcomeKeepsake } from "@/design-system/objects/WelcomeKeepsake";
 import { useCreateSpace } from "@/features/space/hooks";
 import { humanError } from "@/lib/errors";
 
@@ -23,12 +24,12 @@ export default function Create() {
       <View className="gap-8 pt-2">
         <BackButton />
         <View className="items-center">
-          <Pet stage="egg" mood="content" size={140} />
+          <WelcomeKeepsake width={220} />
         </View>
         <View className="gap-3">
           <Text variant="display-l">Name your little corner</Text>
           <Text variant="body" color="ink-secondary">
-            Optional — you can change it later.
+            Optional. Give this little space a name that feels like you.
           </Text>
         </View>
         <TextField

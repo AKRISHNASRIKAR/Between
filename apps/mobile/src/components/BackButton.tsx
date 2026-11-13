@@ -1,8 +1,10 @@
 import { router } from "expo-router";
 import { ArrowLeft, PressableScale, palette } from "@/design-system";
+import { useThemeSubscription } from "@/design-system/theme/ThemeProvider";
 
 /** Round back affordance used on pushed screens (DESIGN §7.2 Navigation header). */
 export function BackButton({ onPress, label = "Back" }: { onPress?: () => void; label?: string }) {
+  useThemeSubscription();
   return (
     <PressableScale
       accessibilityLabel={label}

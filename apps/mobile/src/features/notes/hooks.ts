@@ -56,9 +56,11 @@ export function useSendNote(spaceId: string | undefined, myId: string | undefine
   const qc = useQueryClient();
   const sid = spaceId ?? "";
   return useMutation({
+    mutationKey: [...noteKeys.all(sid), "send"],
     mutationFn: (input: { id: string; body: string; paper: Paper }) =>
       unwrap(api.spaces[":sid"].notes.$post({ param: { sid }, json: input })),
     onMutate: async (input) => {
+      await qc.cancelQueries({ queryKey: noteKeys.all(sid) });
       const now = new Date().toISOString();
       const optimistic: Note = {
         ...input,
@@ -76,8 +78,21 @@ export function useSendNote(spaceId: string | undefined, myId: string | undefine
             : data,
         );
       }
+      return { optimistic };
     },
-    onSettled: () => qc.invalidateQueries({ queryKey: noteKeys.all(sid) }),
+    onError: (_error, _input, ctx) => {
+      if (!ctx) return;
+      // Remove only this draft, preserving other in-flight sends and realtime edits.
+      qc.setQueriesData<InfiniteData<NotePage>>({ queryKey: [...noteKeys.all(sid), "list"] }, (data) =>
+        data
+          ? { ...data, pages: data.pages.map((p) => ({ ...p, items: p.items.filter((n) => n !== ctx.optimistic) })) }
+          : data,
+      );
+    },
+    onSettled: () => {
+      if (qc.isMutating({ mutationKey: [...noteKeys.all(sid), "send"] }) === 1)
+        return qc.invalidateQueries({ queryKey: noteKeys.all(sid) });
+    },
   });
 }
 

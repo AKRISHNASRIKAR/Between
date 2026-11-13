@@ -2,7 +2,6 @@ import type { NoteBox } from "@lovenotes/contracts";
 import { router } from "expo-router";
 import { useState } from "react";
 import { FlatList, RefreshControl, useWindowDimensions, View } from "react-native";
-import Animated from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
   Chip,
@@ -11,7 +10,6 @@ import {
   EnvelopeBody,
   EnvelopeFlap,
   ErrorState,
-  enter,
   layout,
   NoteCard,
   PaperPlaneTilt,
@@ -21,6 +19,7 @@ import {
   TabHeader,
   Text,
 } from "@/design-system";
+import { useThemeSubscription } from "@/design-system/theme/ThemeProvider";
 import { useNotes } from "@/features/notes/hooks";
 import { partnerOf, useMe } from "@/features/space/hooks";
 
@@ -34,9 +33,13 @@ const shortDate = (iso: string) => new Date(iso).toLocaleDateString(undefined, {
 
 /** The note wall (SPEC §4.3): sealed envelopes for unopened notes to you, paper for the rest. */
 export default function Notes() {
+  useThemeSubscription();
   const insets = useSafeAreaInsets();
-  const { width } = useWindowDimensions();
-  const itemWidth = (Math.min(width, layout.maxContentWidth + layout.gutter * 2) - layout.gutter * 2 - 14) / 2;
+  const { width, fontScale } = useWindowDimensions();
+  const horizontalPadding = Math.max(layout.gutter, (width - layout.maxContentWidth) / 2);
+  const columns = width < 360 || fontScale > 1.2 ? 1 : 2;
+  const contentWidth = Math.min(width, layout.maxContentWidth + layout.gutter * 2) - layout.gutter * 2;
+  const itemWidth = (contentWidth - (columns - 1) * 12) / columns;
   const me = useMe();
   const space = me.data?.space;
   const myId = me.data?.profile.id;
@@ -49,6 +52,7 @@ export default function Notes() {
     <View style={{ gap: 16, paddingTop: insets.top + 16, paddingBottom: 16 }}>
       <TabHeader
         title="Notes"
+        subtitle={`A little something for ${partner?.displayName ?? "your person"}.`}
         action={{
           label: "Leave a note",
           icon: PaperPlaneTilt,
@@ -56,7 +60,7 @@ export default function Notes() {
           onPress: () => router.push("/notes/new"),
         }}
       />
-      <View className="flex-row gap-2">
+      <View className="flex-row flex-wrap gap-2">
         {FILTERS.map((f) => (
           <Chip key={f.box} label={f.label} family="pink" selected={box === f.box} onPress={() => setBox(f.box)} />
         ))}
@@ -66,7 +70,7 @@ export default function Notes() {
 
   if (notes.isPending) {
     return (
-      <View style={{ flex: 1, backgroundColor: palette.canvas, paddingHorizontal: layout.gutter }}>
+      <View style={{ flex: 1, backgroundColor: palette.canvas, paddingHorizontal: horizontalPadding }}>
         {header}
         <View className="flex-row gap-3">
           <View style={{ flex: 1 }}>
@@ -83,14 +87,17 @@ export default function Notes() {
   return (
     <FlatList
       style={{ flex: 1, backgroundColor: palette.canvas }}
-      contentContainerStyle={{ paddingHorizontal: layout.gutter, paddingBottom: 32 }}
+      contentContainerStyle={{ paddingHorizontal: horizontalPadding, paddingBottom: 32 }}
       data={items}
       keyExtractor={(n) => n.id}
-      numColumns={2}
-      columnWrapperStyle={{ gap: 14 }}
+      key={columns}
+      numColumns={columns}
+      columnWrapperStyle={columns > 1 ? { gap: 12 } : undefined}
       ItemSeparatorComponent={() => <View style={{ height: 14 }} />}
       ListHeaderComponent={header}
-      refreshControl={<RefreshControl refreshing={notes.isRefetching} onRefresh={() => notes.refetch()} />}
+      refreshControl={
+        <RefreshControl refreshing={notes.isRefetching} onRefresh={() => notes.refetch()} tintColor={palette.action} />
+      }
       onEndReached={() => notes.hasNextPage && !notes.isFetchingNextPage && notes.fetchNextPage()}
       onEndReachedThreshold={0.5}
       ListFooterComponent={
@@ -109,20 +116,21 @@ export default function Notes() {
             title={
               box === "inbox" ? "Nothing waiting yet" : box === "sent" ? "You haven't left one yet" : "No notes yet"
             }
+            action={{ label: "Leave a note", onPress: () => router.push("/notes/new") }}
             body={
               box === "inbox"
                 ? `When ${partner?.displayName ?? "your person"} leaves you something, it'll land here.`
-                : `Leave ${partner?.displayName ?? "them"} a little something — the pet will deliver it.`
+                : `Leave ${partner?.displayName ?? "them"} a little something — it’ll be waiting for them.`
             }
           />
         )
       }
-      renderItem={({ item, index }) => {
+      renderItem={({ item }) => {
         const mine = item.authorId === myId;
         const sealed = !mine && !item.openedAt;
         const who = mine ? `To ${partner?.displayName ?? "them"}` : `From ${partner?.displayName ?? "them"}`;
         return (
-          <Animated.View entering={index < 8 ? enter(index) : undefined} style={{ width: itemWidth }}>
+          <View style={{ width: itemWidth }}>
             <PressableScale
               accessibilityLabel={
                 sealed ? `Sealed note from ${partner?.displayName}. Open it.` : `${who}: ${item.body}`
@@ -137,7 +145,7 @@ export default function Notes() {
                       <EnvelopeFlap paper={item.paper} width={itemWidth} />
                     </View>
                   </View>
-                  <Text variant="caption" color="pink-deep" style={{ marginTop: 6 }}>
+                  <Text variant="caption" color="action" style={{ marginTop: 6 }}>
                     New · {who}
                   </Text>
                 </View>
@@ -148,11 +156,11 @@ export default function Notes() {
                   paper={item.paper}
                   footer={
                     <View className="flex-row items-center justify-between">
-                      <Text variant="caption" color="ink-tertiary" numberOfLines={1}>
+                      <Text variant="caption" color="ink-secondary" style={{ flex: 1 }}>
                         {who} · {shortDate(item.createdAt)}
                       </Text>
                       {item.reactedAt ? (
-                        <Text variant="caption" color="pink-deep" accessibilityLabel="Loved">
+                        <Text variant="caption" color="action" accessibilityLabel="Loved">
                           ♥︎
                         </Text>
                       ) : null}
@@ -161,7 +169,7 @@ export default function Notes() {
                 />
               )}
             </PressableScale>
-          </Animated.View>
+          </View>
         );
       }}
     />

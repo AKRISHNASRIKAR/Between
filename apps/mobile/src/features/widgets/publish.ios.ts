@@ -3,7 +3,7 @@ import { Asset } from "expo-asset";
 import { Directory, File } from "expo-file-system";
 import { widgetsDirectory } from "expo-widgets";
 import UsWidget from "./ios/UsWidget";
-import { type PetArt, petArtFor, toUsWidgetProps } from "./props";
+import { type PetArt, petArtFor, toUsWidgetProps, WIDGET_STALE_MS } from "./props";
 
 const ART: Record<PetArt, number> = {
   awake: require("../../../assets/widget/pet-awake.png"),
@@ -29,5 +29,20 @@ async function artUrl(kind: PetArt): Promise<string> {
 
 /** Show this snapshot on every "Us" widget (null = signed out: nothing personal). */
 export async function publishWidgets(snapshot: WidgetSnapshot | null): Promise<void> {
-  UsWidget.updateSnapshot(toUsWidgetProps(snapshot, await artUrl(petArtFor(snapshot))));
+  const image = snapshot?.pet ? await artUrl(petArtFor(snapshot)) : "";
+  const now = new Date();
+  const props = toUsWidgetProps(snapshot, image, now.getTime());
+  if (!snapshot) {
+    UsWidget.updateSnapshot(props);
+    return;
+  }
+  const expires = Date.parse(snapshot.generatedAt) + WIDGET_STALE_MS;
+  if (expires <= now.getTime()) {
+    UsWidget.updateSnapshot(props);
+    return;
+  }
+  UsWidget.updateTimeline([
+    { date: now, props },
+    { date: new Date(expires), props: toUsWidgetProps(snapshot, image, expires) },
+  ]);
 }

@@ -1,10 +1,12 @@
-import { MOODS, type MoodId } from "@lovenotes/contracts";
+import type { MoodId } from "@lovenotes/contracts";
 import { View } from "react-native";
+import { useThemeSubscription } from "@/design-system/theme/ThemeProvider";
 import { LockSimple } from "../Icon";
 import { MoodCreature, SleepingCreature } from "../illustrations/MoodCreature";
+import { moodVisual } from "../illustrations/registry";
 import { PressableScale } from "../PressableScale";
 import { Text } from "../Text";
-import { lift, moodCardFill, palette, radius, stroke } from "../tokens";
+import { lift, palette, radius, stroke } from "../tokens";
 
 type Props =
   | { state: "empty"; owner: string; onPress?: () => void; tilt: number }
@@ -21,13 +23,9 @@ type Props =
 
 /** DESIGN §7.3 VibeCard — tilted, tactile, one per person. */
 export function VibeCard(props: Props) {
-  const def = props.state === "mood" ? MOODS[props.mood] : null;
-  const bg =
-    props.state === "mood" && def
-      ? moodCardFill(def.family, def.tone)
-      : props.state === "hidden"
-        ? palette.sunken
-        : palette.canvas;
+  useThemeSubscription();
+  const def = props.state === "mood" ? moodVisual(props.mood) : null;
+  const bg = props.state === "mood" && def ? def.cardFill : props.state === "hidden" ? palette.sunken : palette.canvas;
   const pressable = (props.state === "empty" || props.state === "mood") && props.onPress;
 
   const body = (

@@ -14,6 +14,8 @@ export interface Storage {
   signedPutUrl(key: string, contentType: string, maxBytes: number): string;
   signedGetUrl(key: string): string;
   exists(key: string): Promise<{ bytes: number } | null>;
+  read(key: string, maxBytes: number): Promise<Uint8Array>;
+  write(key: string, data: Uint8Array, contentType: string): Promise<void>;
   deletePrefix(prefix: string): Promise<void>;
 }
 
@@ -46,7 +48,7 @@ export function readToken(token: string, mode: Claim["m"]): Claim | null {
 
 /** Keys are always spaces/{spaceId}/media/{mediaId}/{file} — never user-controlled paths. */
 export const safePath = (key: string) => {
-  if (!/^spaces\/[0-9a-f-]{36}\/media\/[0-9a-f-]{36}\/(main|thumb)\.(jpg|png|webp|heic)$/.test(key))
+  if (!/^spaces\/[0-9a-f-]{36}\/media\/[0-9a-f-]{36}\/(main|thumb)(-upload|-ready)?\.(jpg|png|webp|heic)$/.test(key))
     throw new Error("bad key");
   return join(ROOT, key);
 };
@@ -74,6 +76,16 @@ export const localStorage: Storage = {
     } catch {
       return null;
     }
+  },
+  async read(key, maxBytes) {
+    const file = Bun.file(safePath(key));
+    if (file.size > maxBytes) throw new Error("Object exceeds export/validation limit");
+    const bytes = new Uint8Array(await file.slice(0, maxBytes + 1).arrayBuffer());
+    if (bytes.byteLength > maxBytes) throw new Error("Object exceeds export/validation limit");
+    return bytes;
+  },
+  async write(key, data) {
+    await writeLocal(key, data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength) as ArrayBuffer);
   },
   async deletePrefix(prefix) {
     if (!/^spaces\/[0-9a-f-]{36}(\/media\/[0-9a-f-]{36})?\/?$/.test(prefix)) throw new Error("bad prefix");
@@ -111,6 +123,17 @@ function s3Storage(): Storage {
       } catch {
         return null;
       }
+    },
+    async read(key, maxBytes) {
+      safePath(key);
+      const file = client.file(key);
+      const bytes = new Uint8Array(await file.slice(0, maxBytes + 1).arrayBuffer());
+      if (bytes.byteLength > maxBytes) throw new Error("Object exceeds export/validation limit");
+      return bytes;
+    },
+    async write(key, data, contentType) {
+      safePath(key);
+      await client.write(key, data, { type: contentType });
     },
     async deletePrefix(prefix) {
       if (!/^spaces\/[0-9a-f-]{36}(\/media\/[0-9a-f-]{36})?\/?$/.test(prefix)) throw new Error("bad prefix");

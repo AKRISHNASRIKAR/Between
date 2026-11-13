@@ -21,7 +21,7 @@ describe("auth", () => {
 });
 
 describe("pairing", () => {
-  test("create → invite → accept hatches the egg for both", async () => {
+  test("create → invite → accept connects both without opting into a pet", async () => {
     const a = await signIn("a@test.dev", "Krishna");
     const b = await signIn("b@test.dev", "Ananya");
 
@@ -40,11 +40,12 @@ describe("pairing", () => {
     const joined = await b.req("POST", `/invites/${invite.json.code.replace("-", "").toLowerCase()}/accept`);
     expect(joined.status).toBe(200);
     expect(joined.json.members).toHaveLength(2);
-    expect(joined.json.pet.stage).toBe("baby");
-    expect(joined.json.pet.mood).toBe("excited");
+    expect(joined.json.pet.stage).toBe("egg");
+    expect(joined.json.pet.status).toBe("NONE");
+    expect(joined.json.pet.mood).toBe("content");
 
     const aMe = await a.req("GET", "/me");
-    expect(aMe.json.space.pet.stage).toBe("baby");
+    expect(aMe.json.space.pet.stage).toBe("egg");
   });
 
   test("invite codes are single-use and a third person can't join", async () => {
@@ -83,9 +84,9 @@ describe("pet", () => {
   test("naming together requires the partner to accept", async () => {
     const { a, b, spaceId } = await pairedCouple();
     await a.req("POST", `/spaces/${spaceId}/pet/name`, { action: "propose", name: "Mochi" });
-    const own = await a.req("POST", `/spaces/${spaceId}/pet/name`, { action: "accept" });
+    const own = await a.req("POST", `/spaces/${spaceId}/pet/name`, { action: "accept", name: "Mochi" });
     expect(own.json.error.code).toBe("PET_NAME_OWN_PROPOSAL");
-    const ok = await b.req("POST", `/spaces/${spaceId}/pet/name`, { action: "accept" });
+    const ok = await b.req("POST", `/spaces/${spaceId}/pet/name`, { action: "accept", name: "Mochi" });
     expect(ok.json.name).toBe("Mochi");
     expect(ok.json.proposedName).toBeNull();
   });
@@ -106,7 +107,7 @@ describe("pet", () => {
     const a = await signIn("a@test.dev");
     const s = (await a.req("POST", "/spaces", { timezone: "UTC" })).json;
     const r = await a.req("POST", `/spaces/${s.id}/pet/interactions`, { id: crypto.randomUUID(), kind: "feed" });
-    expect(r.json.error.code).toBe("PET_NOT_HATCHED");
+    expect(r.json.error.code).toBe("PET_INACTIVE");
   });
 });
 

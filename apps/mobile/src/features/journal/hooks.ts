@@ -1,7 +1,7 @@
 import type { JournalPage } from "@lovenotes/contracts";
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api, unwrap } from "@/lib/api";
-import { newId } from "@/lib/ids";
+import { rollbackOptimistic } from "@/lib/optimistic";
 
 export const journalKeys = {
   all: (sid: string) => ["space", sid, "journal"] as const,
@@ -10,7 +10,7 @@ export const journalKeys = {
   memories: (sid: string) => ["space", sid, "journal", "memories"] as const,
 };
 
-export function usePages(spaceId: string | undefined) {
+export function usePages(spaceId: string | undefined, enabled = true) {
   return useInfiniteQuery({
     queryKey: journalKeys.pages(spaceId ?? ""),
     queryFn: ({ pageParam }) =>
@@ -22,7 +22,7 @@ export function usePages(spaceId: string | undefined) {
       ),
     initialPageParam: null as string | null,
     getNextPageParam: (l) => l.nextCursor,
-    enabled: !!spaceId,
+    enabled: !!spaceId && enabled,
   });
 }
 
@@ -34,7 +34,7 @@ export function usePage(spaceId: string | undefined, id: string) {
   });
 }
 
-export function useMemories(spaceId: string | undefined) {
+export function useMemories(spaceId: string | undefined, enabled = true) {
   return useInfiniteQuery({
     queryKey: journalKeys.memories(spaceId ?? ""),
     queryFn: ({ pageParam }) =>
@@ -46,7 +46,7 @@ export function useMemories(spaceId: string | undefined) {
       ),
     initialPageParam: null as string | null,
     getNextPageParam: (l) => l.nextCursor,
-    enabled: !!spaceId,
+    enabled: !!spaceId && enabled,
   });
 }
 
@@ -56,15 +56,22 @@ const invalidateAll = (qc: ReturnType<typeof useQueryClient>, sid: string) =>
 export function useCreatePage(spaceId: string | undefined) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (v: { pageDate: string; title: string | null; body: string | null; mediaIds: string[] }) =>
+    mutationFn: (v: {
+      id: string;
+      blockId: string;
+      pageDate: string;
+      title: string | null;
+      body: string | null;
+      mediaIds: string[];
+    }) =>
       unwrap(
         api.spaces[":sid"].journal.pages.$post({
           param: { sid: spaceId ?? "" },
           json: {
-            id: newId(),
+            id: v.id,
             pageDate: v.pageDate,
             title: v.title,
-            block: { id: newId(), body: v.body, mediaIds: v.mediaIds },
+            block: { id: v.blockId, body: v.body, mediaIds: v.mediaIds },
           },
         }),
       ),
@@ -78,11 +85,11 @@ export function useCreatePage(spaceId: string | undefined) {
 export function useAddBlock(spaceId: string | undefined, pageId: string) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (v: { body: string | null; mediaIds: string[] }) =>
+    mutationFn: (v: { id: string; body: string | null; mediaIds: string[] }) =>
       unwrap(
         api.spaces[":sid"].journal.pages[":pid"].blocks.$post({
           param: { sid: spaceId ?? "", pid: pageId },
-          json: { id: newId(), ...v },
+          json: v,
         }),
       ),
     onSuccess: (p) => {
@@ -96,17 +103,31 @@ export function useLovePage(spaceId: string | undefined, pageId: string, myId: s
   const qc = useQueryClient();
   const key = journalKeys.page(spaceId ?? "", pageId);
   return useMutation({
+    mutationKey: key,
+    scope: { id: key.join(":") },
     mutationFn: (on: boolean) =>
       on
         ? unwrap(api.spaces[":sid"].journal.pages[":pid"].reaction.$put({ param: { sid: spaceId ?? "", pid: pageId } }))
         : unwrap(
             api.spaces[":sid"].journal.pages[":pid"].reaction.$delete({ param: { sid: spaceId ?? "", pid: pageId } }),
           ),
-    onMutate: (on) =>
+    onMutate: async (on) => {
+      await qc.cancelQueries({ queryKey: key });
+      const prev = qc.getQueryData<JournalPage>(key);
       qc.setQueryData<JournalPage>(key, (p) =>
-        p ? { ...p, lovedBy: on ? [...p.lovedBy, myId ?? ""] : p.lovedBy.filter((u) => u !== myId) } : p,
-      ),
-    onSuccess: (p) => qc.setQueryData(key, p),
+        p && myId
+          ? { ...p, lovedBy: on ? [...new Set([...p.lovedBy, myId])] : p.lovedBy.filter((u) => u !== myId) }
+          : p,
+      );
+      return { prev, optimistic: qc.getQueryData<JournalPage>(key) };
+    },
+    onError: (_error, _on, ctx) => rollbackOptimistic(qc, key, ctx),
+    onSuccess: (p, _on, ctx) => {
+      if (qc.getQueryData(key) === ctx?.optimistic) qc.setQueryData(key, p);
+    },
+    onSettled: () => {
+      if (qc.isMutating({ mutationKey: key }) === 1) return invalidateAll(qc, spaceId ?? "");
+    },
   });
 }
 

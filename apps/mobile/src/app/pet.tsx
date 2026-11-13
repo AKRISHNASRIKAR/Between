@@ -1,3 +1,4 @@
+import { Redirect } from "expo-router";
 import { View } from "react-native";
 import { BackButton } from "@/components/BackButton";
 import { Screen, Text } from "@/design-system";
@@ -21,6 +22,7 @@ export default function PetRoom() {
   const myId = me.data?.profile.id;
   const pet = space?.pet;
   if (!space || !pet) return null;
+  if (pet.status !== "ACTIVE") return <Redirect href="/today" />;
   const partner = partnerOf(space, myId);
   const name = pet.name ?? "Your pet";
   const who = (id: string | null) => (id === myId ? "You" : (partner?.displayName ?? "Your person"));

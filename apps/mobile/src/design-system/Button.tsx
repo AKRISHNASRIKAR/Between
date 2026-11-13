@@ -1,11 +1,12 @@
 import type { ComponentType, ReactNode } from "react";
 import { View, type ViewStyle } from "react-native";
+import { useThemeSubscription } from "@/design-system/theme/ThemeProvider";
 import { Dots } from "./Dots";
 import type { IconProps } from "./Icon";
 import { PressableScale } from "./PressableScale";
 import { Text } from "./Text";
 import { recipes } from "./theme/recipes";
-import { type ColorToken, type Family, palette, stroke } from "./tokens";
+import { type ColorToken, type Family, palette, space, stroke } from "./tokens";
 
 type Variant = "primary" | "secondary" | "quiet" | "accent" | "destructive";
 type Size = "lg" | "md";
@@ -39,11 +40,13 @@ export function Button({
   accessibilityHint,
   trailing,
 }: ButtonProps) {
+  useThemeSubscription();
   const look = recipes.button(variant, family, size);
   const fgToken = look.fg as ColorToken;
 
   const style: ViewStyle = {
-    height: look.height,
+    minHeight: look.height,
+    paddingVertical: space[3],
     paddingHorizontal: look.paddingHorizontal,
     borderRadius: look.radius,
     backgroundColor: look.bg,
@@ -57,18 +60,26 @@ export function Button({
   return (
     <PressableScale
       onPress={loading ? undefined : onPress}
-      disabled={disabled}
+      disabled={disabled || loading}
       accessibilityLabel={label}
       accessibilityHint={accessibilityHint}
-      accessibilityState={{ disabled: !!disabled, busy: !!loading }}
+      accessibilityState={{ disabled: !!disabled || !!loading, busy: !!loading }}
       style={style}
     >
       {loading ? (
         <Dots color={fgToken} />
       ) : (
-        <View className="flex-row items-center gap-2">
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: space[2],
+            maxWidth: "100%",
+          }}
+        >
           {Icon ? <Icon color={palette[fgToken]} size={20} /> : null}
-          <Text variant="button" color={fgToken} numberOfLines={1}>
+          <Text variant="button" color={fgToken} align="center" style={{ flexShrink: 1 }}>
             {label}
           </Text>
           {trailing}

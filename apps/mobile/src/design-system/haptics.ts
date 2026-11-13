@@ -1,9 +1,10 @@
 import * as Haptics from "expo-haptics";
 import { Platform } from "react-native";
+import { preferences } from "@/lib/preferences";
 
 /** Semantic haptics (DESIGN §10.4). Never call expo-haptics directly elsewhere. */
 const run = (fn: () => Promise<void>) => {
-  if (Platform.OS === "web") return;
+  if (Platform.OS === "web" || !preferences().haptics) return;
   fn().catch(() => {});
 };
 

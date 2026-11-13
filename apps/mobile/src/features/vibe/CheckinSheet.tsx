@@ -19,6 +19,7 @@ import {
   Text,
   TextField,
 } from "@/design-system";
+import { useThemeSubscription } from "@/design-system/theme/ThemeProvider";
 
 function MoodOption({
   mood,
@@ -31,6 +32,7 @@ function MoodOption({
   dimmed: boolean;
   onPress: () => void;
 }) {
+  useThemeSubscription();
   const style = useAnimatedStyle(() => ({
     transform: [{ scale: withSpring(selected ? scale.select : 1, spring.bouncy) }],
     opacity: withTiming(dimmed ? opacity.dimmed : 1, { duration: dur.fast }),
@@ -71,6 +73,7 @@ type Props = {
 
 /** Today's check-in (SPEC §4.1): pick a mood, optional note, then keep private or share. */
 export function CheckinSheet({ open, onClose, partnerName, initial, saving, onSave }: Props) {
+  useThemeSubscription();
   const [mood, setMood] = useState<MoodId | null>(initial?.mood ?? null);
   const [note, setNote] = useState(initial?.note ?? "");
 

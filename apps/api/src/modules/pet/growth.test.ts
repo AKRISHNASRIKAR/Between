@@ -56,3 +56,20 @@ describe("well-being", () => {
     expect(egg.lastCare).toEqual([]);
   });
 });
+
+for (const hours of [5 / 60, 12, 72, 720]) {
+  test(`server elapsed state remains forgiving after ${hours} hours`, () => {
+    const at = hoursAgo(hours);
+    const state = deriveWellbeing(
+      { stage: "baby", lastFedAt: at, lastPlayedAt: at, lastPettedAt: at, lastSharedActivityAt: null },
+      [],
+      now,
+    );
+    for (const value of [state.fullness.value, state.energy.value, state.love.value]) {
+      expect(value).toBeGreaterThanOrEqual(WELLBEING_FLOOR);
+      expect(value).toBeLessThanOrEqual(1);
+    }
+    if (hours >= 12) expect(state.energy.value).toBe(1);
+    if (hours <= 12) expect(state.love.value).toBeGreaterThan(0.95);
+  });
+}

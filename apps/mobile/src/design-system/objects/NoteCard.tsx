@@ -1,5 +1,6 @@
 import type { Paper } from "@lovenotes/contracts";
 import { View } from "react-native";
+import { useThemeSubscription } from "@/design-system/theme/ThemeProvider";
 import { Text } from "../Text";
 import { lift, palette, paperFill, radius, seededTilt } from "../tokens";
 
@@ -14,6 +15,7 @@ type Props = {
 
 /** A paper note with a strip of tape (DESIGN §7.3). Tilt is seeded by id so it never jumps. */
 export function NoteCard({ id, body, paper, size = "wall", footer }: Props) {
+  useThemeSubscription();
   const full = size === "full";
   return (
     <View style={{ transform: [{ rotate: `${seededTilt(id)}deg` }], paddingTop: 10 }}>

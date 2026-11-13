@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Pressable, TextInput, View } from "react-native";
 import Animated, { useAnimatedStyle, useSharedValue, withSequence, withTiming } from "react-native-reanimated";
+import { useThemeSubscription } from "@/design-system/theme/ThemeProvider";
 import { haptics } from "./haptics";
 import { Text } from "./Text";
 import { fonts, palette, radius, stroke } from "./tokens";
@@ -16,6 +17,7 @@ type Props = {
   keyboard?: "number-pad" | "default";
   alphabet?: RegExp;
   autoFocus?: boolean;
+  editable?: boolean;
   onComplete?: (v: string) => void;
 };
 
@@ -30,8 +32,10 @@ export function CodeField({
   keyboard = "default",
   alphabet = /[0-9A-Z]/,
   autoFocus,
+  editable = true,
   onComplete,
 }: Props) {
+  useThemeSubscription();
   const input = useRef<TextInput>(null);
   const [focused, setFocused] = useState(false);
   const shake = useSharedValue(0);
@@ -64,6 +68,7 @@ export function CodeField({
       </Text>
       <Pressable
         onPress={() => input.current?.focus()}
+        disabled={!editable}
         accessibilityLabel={label}
         accessibilityHint={error ?? undefined}
       >
@@ -72,7 +77,7 @@ export function CodeField({
         >
           {cells.map((ch, i) => (
             // biome-ignore lint/suspicious/noArrayIndexKey: cells are positional slots of a fixed-length code
-            <View key={i} className="flex-row items-center">
+            <View key={i} style={{ flex: 1, flexDirection: "row", alignItems: "center", marginLeft: i ? 3 : 0 }}>
               {groupAt && i === groupAt ? (
                 <Text variant="display-m" color="ink-tertiary" style={{ marginHorizontal: 4 }}>
                   –
@@ -80,14 +85,15 @@ export function CodeField({
               ) : null}
               <View
                 style={{
-                  width: length > 6 ? 34 : 44,
+                  flex: 1,
+                  minWidth: 0,
                   height: 52,
                   borderRadius: radius.sm,
                   borderWidth: stroke.regular,
                   borderColor: error
-                    ? palette["tomato-base"]
+                    ? palette["tomato-deep"]
                     : focused && i === activeIndex
-                      ? palette["teal-base"]
+                      ? palette.action
                       : palette["line-strong"],
                   backgroundColor: palette.paper,
                   alignItems: "center",
@@ -104,6 +110,8 @@ export function CodeField({
       </Pressable>
       <TextInput
         ref={input}
+        editable={editable}
+        accessibilityLabel={label}
         value={value}
         onChangeText={handle}
         autoFocus={autoFocus}

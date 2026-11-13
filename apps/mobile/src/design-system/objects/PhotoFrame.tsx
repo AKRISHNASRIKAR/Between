@@ -1,11 +1,13 @@
 import { Image } from "expo-image";
 import { View } from "react-native";
+import { useThemeSubscription } from "@/design-system/theme/ThemeProvider";
 import { lift, palette, radius, seededTilt } from "../tokens";
 
 type Props = { id: string; uri: string; width: number; aspect?: number; tilt?: boolean };
 
 /** DESIGN §7.3 MemoryCard: photo in a paper border with two tape corners. cacheKey = media id. */
 export function PhotoFrame({ id, uri, width, aspect = 4 / 3, tilt = true }: Props) {
+  useThemeSubscription();
   const inner = width - 12;
   return (
     <View style={{ width, transform: tilt ? [{ rotate: `${seededTilt(id, 2)}deg` }] : undefined }}>

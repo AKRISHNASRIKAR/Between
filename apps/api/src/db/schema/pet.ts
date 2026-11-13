@@ -1,5 +1,6 @@
 import { sql } from "drizzle-orm";
 import {
+  boolean,
   check,
   foreignKey,
   index,
@@ -24,6 +25,12 @@ export const pets = pgTable(
       .notNull()
       .unique()
       .references(() => spaces.id, { onDelete: "cascade" }),
+    status: text().notNull().default("NONE"),
+    decisionId: uuid(),
+    decisionBy: uuid().references(() => users.id, { onDelete: "set null" }),
+    proposedEnabled: boolean(),
+    pausedAt: ts(),
+    lastStateUpdateAt: ts().notNull().defaultNow(),
     species: text().notNull().default("dog"),
     name: text(),
     proposedName: text(),
@@ -41,7 +48,12 @@ export const pets = pgTable(
     version: integer().notNull().default(0),
     createdAt: createdAt(),
   },
-  (t) => [unique("pets_id_space_uq").on(t.id, t.spaceId), check("pets_bond_ck", sql`${t.bond} >= 0`)],
+  (t) => [
+    unique("pets_id_space_uq").on(t.id, t.spaceId),
+    check("pets_bond_ck", sql`${t.bond} >= 0`),
+    check("pets_status_ck", sql`${t.status} IN ('NONE','PENDING','ACTIVE','PAUSED')`),
+    check("pets_decision_ck", sql`(${t.decisionId} IS NULL) = (${t.proposedEnabled} IS NULL)`),
+  ],
 );
 
 export const petInteractions = pgTable(

@@ -2,6 +2,7 @@ import { router } from "expo-router";
 import { View } from "react-native";
 import Animated from "react-native-reanimated";
 import { ArrowRight, EnvelopeBody, EnvelopeFlap, enter, PressableScale, palette, radius, Text } from "@/design-system";
+import { useThemeSubscription } from "@/design-system/theme/ThemeProvider";
 import { partnerOf, useMe } from "@/features/space/hooks";
 import { useNotes } from "./hooks";
 
@@ -13,6 +14,7 @@ export function useWaitingNotes() {
 
 /** A Today "moment": an envelope that's waiting for you. Disappears once opened. */
 export function NoteWaitingMoment() {
+  useThemeSubscription();
   const me = useMe();
   const partner = partnerOf(me.data?.space, me.data?.profile.id);
   const waiting = useWaitingNotes();

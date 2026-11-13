@@ -11,3 +11,6 @@ export function onForegroundPush(_fn: (p: ForegroundPush) => void) {
   return () => {};
 }
 export async function unregisterPush() {}
+
+export function beginPushSession() {}
+export function suspendPushRegistration() {}

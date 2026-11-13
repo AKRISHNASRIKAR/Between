@@ -15,6 +15,8 @@ export type Profile = z.infer<typeof Profile>;
 export const Me = z.object({
   profile: Profile,
   space: Space.nullable(),
+  /** Closed spaces this member can still read/export, independent of their active space. */
+  retainedSpaces: z.array(z.object({ id: z.uuid(), name: z.string(), purgeAfter: z.string() })).optional(),
 });
 export type Me = z.infer<typeof Me>;
 

@@ -1,13 +1,14 @@
 import { useEffect, useMemo } from "react";
 import { StyleSheet, View } from "react-native";
 import Animated, {
+  cancelAnimation,
   Easing,
   useAnimatedStyle,
-  useReducedMotion,
   useSharedValue,
   withDelay,
   withTiming,
 } from "react-native-reanimated";
+import { useReducedMotion } from "@/lib/preferences";
 import { art, type ColorToken } from "../tokens";
 
 type Piece = {
@@ -24,6 +25,7 @@ function ConfettiPiece({ p, height }: { p: Piece; height: number }) {
   const t = useSharedValue(0);
   useEffect(() => {
     t.value = withDelay(p.delay, withTiming(1, { duration: 1600, easing: Easing.out(Easing.quad) }));
+    return () => cancelAnimation(t);
   }, [p.delay, t]);
   const style = useAnimatedStyle(() => ({
     opacity: t.value < 0.8 ? 1 : (1 - t.value) / 0.2,

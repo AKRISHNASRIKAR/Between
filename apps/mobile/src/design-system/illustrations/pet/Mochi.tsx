@@ -1,9 +1,8 @@
 import type { PetMood } from "@lovenotes/contracts";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import Animated, {
   cancelAnimation,
   useAnimatedStyle,
-  useReducedMotion,
   useSharedValue,
   withDelay,
   withRepeat,
@@ -12,6 +11,7 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import { Circle, Ellipse, G, Path } from "react-native-svg";
+import { useReducedMotion } from "@/lib/preferences";
 import { dur, ease, spring } from "../../motion";
 import { art } from "../../tokens";
 import { SoftShape, shadeOf } from "../soft";
@@ -20,14 +20,14 @@ import { PET } from "./paths";
 
 export type PetReaction = { kind: "pet" | "feed" | "play" | "hello"; n: number };
 
-type Props = { mood: PetMood; size: number; reaction?: PetReaction | null; stroking?: boolean };
+type Props = { mood: PetMood; size: number; reaction?: PetReaction | null; stroking?: boolean; active?: boolean };
 
 const ink = art.ink;
 const coat = art["butter-base"];
 const ears = art["orange-base"];
 const randBetween = (a: number, b: number) => a + Math.random() * (b - a);
 
-export function Mochi({ mood, size, reaction, stroking }: Props) {
+export function Mochi({ mood, size, reaction, stroking, active = true }: Props) {
   const reduced = useReducedMotion();
   const breathe = useSharedValue(1);
   const hop = useSharedValue(0);
@@ -38,8 +38,14 @@ export function Mochi({ mood, size, reaction, stroking }: Props) {
   const tail = useSharedValue(0);
   const happyEyes = useSharedValue(0);
 
+  const lastReaction = useRef<number | undefined>(undefined);
+
   // Idle breathing — slower when sleepy.
   useEffect(() => {
+    if (!active || reduced) {
+      breathe.value = 1;
+      return;
+    }
     const period = mood === "sleepy" ? 3000 : 2400;
     const amp = mood === "sleepy" ? 1.02 : 1.03;
     breathe.value = withRepeat(
@@ -50,11 +56,14 @@ export function Mochi({ mood, size, reaction, stroking }: Props) {
       -1,
     );
     return () => cancelAnimation(breathe);
-  }, [mood, breathe]);
+  }, [mood, breathe, active, reduced]);
 
-  // Blinks every 3–6s (kept under Reduce Motion — subtle). Not while sleeping.
+  // Blinks every 3–6s while visible, unless motion is reduced or the pet is sleeping.
   useEffect(() => {
-    if (mood === "sleepy") return;
+    if (!active || reduced || mood === "sleepy") {
+      blink.value = 1;
+      return;
+    }
     let alive = true;
     let t: ReturnType<typeof setTimeout>;
     const loop = () => {
@@ -71,17 +80,24 @@ export function Mochi({ mood, size, reaction, stroking }: Props) {
     return () => {
       alive = false;
       clearTimeout(t);
+      cancelAnimation(blink);
     };
-  }, [mood, blink]);
+  }, [mood, blink, active, reduced]);
 
   // Mood idles: tail wag speed, ear bounce, excited hops.
   useEffect(() => {
+    if (!active || reduced) {
+      tail.value = 0;
+      hop.value = 0;
+      earL.value = 0;
+      earR.value = 0;
+      return;
+    }
     const wag = mood === "excited" ? 160 : mood === "happy" ? 320 : 900;
     tail.value =
       mood === "sleepy"
         ? withTiming(0)
         : withRepeat(withSequence(withTiming(14, { duration: wag }), withTiming(-6, { duration: wag })), -1, true);
-    if (reduced) return;
     let alive = true;
     let t: ReturnType<typeof setTimeout>;
     const loop = () => {
@@ -103,19 +119,29 @@ export function Mochi({ mood, size, reaction, stroking }: Props) {
     return () => {
       alive = false;
       clearTimeout(t);
+      cancelAnimation(tail);
+      cancelAnimation(hop);
+      cancelAnimation(earL);
+      cancelAnimation(earR);
     };
-  }, [mood, reduced, tail, hop, earL, earR]);
+  }, [mood, reduced, active, tail, hop, earL, earR]);
 
   // Stroking: eyes squint happily, ears flatten.
   useEffect(() => {
+    if (!active || reduced) {
+      happyEyes.value = stroking && active ? 1 : 0;
+      return;
+    }
     happyEyes.value = withTiming(stroking ? 1 : 0, { duration: dur.fast });
     earL.value = withSpring(stroking ? 16 : 0, spring.gentle);
     earR.value = withSpring(stroking ? -16 : 0, spring.gentle);
-  }, [stroking, happyEyes, earL, earR]);
+  }, [stroking, active, reduced, happyEyes, earL, earR]);
 
   // One-shot reactions.
   useEffect(() => {
-    if (!reaction) return;
+    if (!reaction || lastReaction.current === reaction.n) return;
+    lastReaction.current = reaction.n;
+    if (!active || reduced) return;
     switch (reaction.kind) {
       case "feed":
         squash.value = withSequence(
@@ -128,14 +154,12 @@ export function Mochi({ mood, size, reaction, stroking }: Props) {
         );
         break;
       case "play":
-        hop.value = reduced
-          ? withSequence(withTiming(-4), withTiming(0))
-          : withSequence(
-              withSpring(-22, spring.bouncy),
-              withSpring(0, spring.bouncy),
-              withDelay(80, withSpring(-14, spring.bouncy)),
-              withSpring(0, spring.bouncy),
-            );
+        hop.value = withSequence(
+          withSpring(-22, spring.bouncy),
+          withSpring(0, spring.bouncy),
+          withDelay(80, withSpring(-14, spring.bouncy)),
+          withSpring(0, spring.bouncy),
+        );
         break;
       case "pet":
       case "hello":
@@ -150,7 +174,19 @@ export function Mochi({ mood, size, reaction, stroking }: Props) {
         );
         break;
     }
-  }, [reaction, squash, happyEyes, hop, earL, earR, reduced]);
+    return () => {
+      cancelAnimation(squash);
+      cancelAnimation(happyEyes);
+      cancelAnimation(hop);
+      cancelAnimation(earL);
+      cancelAnimation(earR);
+      squash.value = 1;
+      happyEyes.value = 0;
+      hop.value = 0;
+      earL.value = 0;
+      earR.value = 0;
+    };
+  }, [reaction, squash, happyEyes, hop, earL, earR, reduced, active]);
 
   const k = size / 200;
   const whole = useAnimatedStyle(() => ({
@@ -229,7 +265,7 @@ export function Mochi({ mood, size, reaction, stroking }: Props) {
           </Layer>
         </>
       )}
-      {sleepy && !reduced ? <Zzz size={size} /> : null}
+      {sleepy && !reduced && active ? <Zzz size={size} /> : null}
     </Animated.View>
   );
 }

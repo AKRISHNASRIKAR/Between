@@ -1,108 +1,66 @@
+import { useIsMutating } from "@tanstack/react-query";
 import { router } from "expo-router";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { View } from "react-native";
-import Animated from "react-native-reanimated";
-import {
-  ArrowRight,
-  Envelope,
-  enter,
-  lift,
-  PressableScale,
-  palette,
-  radius,
-  Screen,
-  Sparkle,
-  Text,
-} from "@/design-system";
-import { useMe } from "@/features/space/hooks";
+import { Button, Screen, ShareFat, Text, useToast } from "@/design-system";
+import { useCreateSpace, useMe } from "@/features/space/hooks";
+import { JoinCard } from "@/features/space/JoinCard";
+import { onboardingIntent } from "@/features/space/onboarding-intent";
+import { PairingCard, PairingDivider } from "@/features/space/PairingCard";
 import { pendingInvite } from "@/features/space/pending-invite";
-
-function Choice({
-  title,
-  body,
-  tone,
-  tilt,
-  icon,
-  onPress,
-}: {
-  title: string;
-  body: string;
-  tone: "butter" | "sky";
-  tilt: number;
-  icon: React.ReactNode;
-  onPress: () => void;
-}) {
-  return (
-    <View style={{ transform: [{ rotate: `${tilt}deg` }] }}>
-      <PressableScale
-        onPress={onPress}
-        accessibilityLabel={title}
-        accessibilityHint={body}
-        style={{
-          backgroundColor: palette[`${tone}-base`],
-          borderRadius: radius.lg,
-          padding: 20,
-          gap: 16,
-          ...lift[1],
-        }}
-      >
-        <View className="flex-row items-start justify-between">
-          {icon}
-          <ArrowRight size={22} color={palette.ink} weight="bold" />
-        </View>
-        <View className="gap-1">
-          <Text variant="display-m">{title}</Text>
-          <Text variant="body-sm" color="ink-secondary">
-            {body}
-          </Text>
-        </View>
-      </PressableScale>
-    </View>
-  );
-}
+import { humanError } from "@/lib/errors";
 
 export default function Start() {
   const me = useMe();
-  const name = me.data?.profile.displayName;
-
-  // Arrived through an invite link? Go straight to joining.
+  const create = useCreateSpace();
+  const toast = useToast();
+  const pairing = useIsMutating({ mutationKey: ["pairing"] }) > 0;
+  const restored = useRef(false);
   useEffect(() => {
-    pendingInvite.get().then((c) => c && router.push("/join"));
+    if (restored.current) return;
+    restored.current = true;
+    void Promise.all([onboardingIntent.take(), pendingInvite.get().catch(() => null)]).then(([intent, invite]) => {
+      if (invite || intent === "join") router.push("/join");
+      else if (intent === "create") router.push("/create");
+    });
   }, []);
   return (
     <Screen>
-      <View className="gap-10 pt-12">
-        <View className="gap-3">
-          <Text variant="label" color="ink-tertiary">
-            Hi {name}
+      <View style={{ gap: 24, paddingTop: 28, paddingBottom: 16 }}>
+        <View style={{ gap: 10 }}>
+          <Text variant="label" color="action">
+            A SPACE FOR TWO
           </Text>
-          <Text variant="display-l">Let's make your space.</Text>
+          <Text variant="display-l">Pair with your person.</Text>
           <Text variant="body" color="ink-secondary">
-            One of you starts it, the other joins with a code.
+            Little notes, new discoveries, and memories that belong to both of you.
           </Text>
         </View>
-        <View className="gap-5">
-          <Animated.View entering={enter(2)}>
-            <Choice
-              title="Start our space"
-              body="You'll get a code to send to your person."
-              tone="butter"
-              tilt={-1.5}
-              icon={<Sparkle size={28} color={palette.ink} weight="bold" />}
-              onPress={() => router.push("/create")}
+        <View>
+          <PairingCard>
+            <View style={{ gap: 6 }}>
+              <Text variant="display-m">Invite your partner</Text>
+              <Text variant="body-sm" color="ink-secondary">
+                Make your shared space and get a private code to send them.
+              </Text>
+            </View>
+            <Button
+              fullWidth
+              label="Create our invite"
+              icon={ShareFat}
+              loading={create.isPending}
+              disabled={pairing}
+              onPress={() =>
+                create.mutate({}, { onError: (error) => toast({ kind: "error", message: humanError(error) }) })
+              }
             />
-          </Animated.View>
-          <Animated.View entering={enter(4)}>
-            <Choice
-              title="I have an invite"
-              body="Enter the code they sent you."
-              tone="sky"
-              tilt={1.2}
-              icon={<Envelope size={28} color={palette.ink} weight="bold" />}
-              onPress={() => router.push("/join")}
-            />
-          </Animated.View>
+          </PairingCard>
+          <PairingDivider />
+          <JoinCard disabled={pairing} />
         </View>
+        {me.data?.retainedSpaces?.length ? (
+          <Button variant="quiet" label="Read or export a closed space" onPress={() => router.push("/closed-spaces")} />
+        ) : null}
       </View>
     </Screen>
   );

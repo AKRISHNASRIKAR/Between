@@ -2,6 +2,7 @@ import type { PetStage, PetWellbeing } from "@lovenotes/contracts";
 import { View } from "react-native";
 import Animated, { useAnimatedStyle, withSpring } from "react-native-reanimated";
 import { BowlFood, type Family, family, HandHeart, palette, radius, spring, TennisBall, Text } from "@/design-system";
+import { useThemeSubscription } from "@/design-system/theme/ThemeProvider";
 import { ago } from "@/lib/date";
 
 const ROWS = [
@@ -18,6 +19,7 @@ const ROWS = [
 const VERB = { feed: "fed", pet: "gave a scratch to", play: "played with" } as const;
 
 function SoftBar({ value, fam }: { value: number; fam: Family }) {
+  useThemeSubscription();
   const f = family(fam);
   const fill = useAnimatedStyle(() => ({ width: withSpring(`${Math.round(value * 100)}%`, spring.gentle) }));
   return (
@@ -49,6 +51,7 @@ export function WellbeingCard({
   petName: string;
   who: (userId: string) => string;
 }) {
+  useThemeSubscription();
   return (
     <View style={{ backgroundColor: palette.paper, borderRadius: radius.lg, padding: 20, gap: 14 }}>
       {ROWS.map(({ key, label, fam, Icon }) => {

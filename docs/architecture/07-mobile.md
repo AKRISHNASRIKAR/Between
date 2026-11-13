@@ -46,7 +46,7 @@ design-system/tokens.ts            palette (live), family(), art (fixed), spacin
 ```
 
 - `palette` is one object updated in place by `applyTheme()`, so existing `palette.x` reads follow the active theme. `family(f)` resolves an accent family in the active theme; `art` / `artFamily(f)` are the fixed light colours for illustrations and widgets.
-- `ThemeProvider` reads the saved preference synchronously (no flash of the wrong theme), follows the phone's appearance on *System*, and applies the theme before rendering. Everything below it is keyed by theme name, so a switch re-renders every screen; the navigator puts you back on the screen you were on. The query cache sits above the key and survives.
+- `ThemeProvider` reads the saved preference synchronously (no flash of the wrong theme), follows the phone's appearance on *System*, and applies the theme before rendering. Components that read `palette`, `family`, `lift`, or recipes call `useThemeSubscription()` at their render boundary, including memoized rows. Appearance changes redraw those consumers without remounting navigation, sheets, or draft fields. Add the subscription when introducing a new component that reads active theme tokens; pure helpers remain ordinary functions.
 - Guardrails in `bun run lint`: hex, literal font values and Tailwind colour classes are banned outside the design system, and every theme is checked for WCAG AA contrast.
 - `app.json` → `userInterfaceStyle: "automatic"` lets *System* see the phone's dark mode (native setting; needs a rebuild).
 

@@ -14,12 +14,15 @@ export const WidgetSnapshot = z.object({
   v: z.literal(1),
   /** `closed`: the space is read-only; the widget says so gently and stops nudging. */
   state: z.enum(["ready", "closed"]),
-  pet: z.object({ name: z.string(), stage: PetStage, mood: PetMood }),
+  pet: z.object({ name: z.string(), stage: PetStage, mood: PetMood }).nullable(),
   you: z.object({ name: z.string(), vibe: WidgetVibe }),
   partner: z.object({ name: z.string(), vibe: WidgetVibe }).nullable(),
   notesWaiting: z.number().int().min(0),
   /** The Daily question from the viewer's side. `none` when there isn't one (alone, or closed). */
   daily: z.enum(["yours", "waiting", "ready", "done", "none"]),
+  dailyId: z.uuid().nullable().optional(),
+  /** A resurfaced page, never its private contents. */
+  memoryId: z.uuid().nullable().optional(),
   generatedAt: z.iso.datetime(),
 });
 export type WidgetSnapshot = z.infer<typeof WidgetSnapshot>;
@@ -33,9 +36,11 @@ export function widgetFocus(s: WidgetSnapshot): { line: string; url: string } {
       line: s.notesWaiting === 1 ? `A note from ${partner}` : `${s.notesWaiting} notes from ${partner}`,
       url: "/notes",
     };
-  if (s.daily === "ready") return { line: "Ready to reveal ✦", url: "/daily" };
-  if (s.daily === "yours") return { line: "Today's question", url: "/daily" };
+  if (s.daily === "ready") return { line: "Ready to reveal ✦", url: s.dailyId ? `/quiz/${s.dailyId}` : "/daily" };
+  if (s.daily === "yours") return { line: "Today's question", url: s.dailyId ? `/quiz/${s.dailyId}` : "/daily" };
+  if (s.memoryId) return { line: "From this day last year", url: `/journal/${s.memoryId}` };
   if (!s.you.vibe) return { line: "How are you today?", url: "/today" };
+  if (!s.pet) return { line: "Your little corner for two", url: "/today" };
   return { line: `${s.pet.name} is ${PET_MOOD_WORD[s.pet.mood]}`, url: "/pet" };
 }
 

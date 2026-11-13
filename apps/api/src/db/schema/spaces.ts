@@ -1,5 +1,16 @@
 import { sql } from "drizzle-orm";
-import { check, customType, date, index, pgTable, primaryKey, text, uniqueIndex, uuid } from "drizzle-orm/pg-core";
+import {
+  boolean,
+  check,
+  customType,
+  date,
+  index,
+  pgTable,
+  primaryKey,
+  text,
+  uniqueIndex,
+  uuid,
+} from "drizzle-orm/pg-core";
 import { createdAt, id, ts } from "./_columns";
 import { users } from "./auth";
 
@@ -9,6 +20,7 @@ export const spaces = pgTable(
   "spaces",
   {
     id: id(),
+    petSetupComplete: boolean().notNull().default(false),
     name: text().notNull().default("our little corner"),
     togetherSince: date({ mode: "string" }),
     timezone: text().notNull(),

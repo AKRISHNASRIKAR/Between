@@ -1,5 +1,6 @@
 import type { ComponentType } from "react";
 import { View } from "react-native";
+import { useThemeSubscription } from "@/design-system/theme/ThemeProvider";
 import type { IconProps } from "./Icon";
 import { PressableScale } from "./PressableScale";
 import { Text } from "./Text";
@@ -19,6 +20,7 @@ type Props = {
  * action. No eyebrow — the tab bar already says where you are.
  */
 export function TabHeader({ title, subtitle, action }: Props) {
+  useThemeSubscription();
   const look = action ? recipes.actionButton(action.family) : null;
   return (
     <View style={{ flexDirection: "row", alignItems: "center", gap: 12, minHeight: 48 }}>

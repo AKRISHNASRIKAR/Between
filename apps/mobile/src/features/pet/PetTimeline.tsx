@@ -1,6 +1,7 @@
 import { fillPetCopy, MILESTONE_COPY } from "@lovenotes/contracts";
 import { View } from "react-native";
 import { family, palette, radius, Skeleton, Sparkle, Text } from "@/design-system";
+import { useThemeSubscription } from "@/design-system/theme/ThemeProvider";
 import { ago } from "@/lib/date";
 import { usePetTimeline } from "./hooks";
 import { type Entry, groupCare } from "./timeline";
@@ -10,6 +11,7 @@ const CARE_VERB = { feed: "fed", pet: "gave a scratch to", play: "played with" }
 const TIMES = ["", "", " · twice", " · three times"];
 
 function Row({ entry, petName, who }: { entry: Entry; petName: string; who: (id: string | null) => string }) {
+  useThemeSubscription();
   const { item, times } = entry;
   const milestone = item.type === "milestone";
   const orange = family("orange");
@@ -72,6 +74,7 @@ export function PetTimeline({
   petName: string;
   who: (userId: string | null) => string;
 }) {
+  useThemeSubscription();
   const timeline = usePetTimeline(spaceId);
   if (timeline.isPending) return <Skeleton height={160} radius="lg" />;
   const items = timeline.data?.items ?? [];

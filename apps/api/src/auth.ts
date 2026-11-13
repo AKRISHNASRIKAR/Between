@@ -6,6 +6,7 @@ import { db } from "./db/client";
 import * as schema from "./db/schema";
 import { env, isDev } from "./env";
 import { sendEmail } from "./lib/email";
+import { recordEvent } from "./modules/analytics";
 
 export const auth = betterAuth({
   baseURL: env.PUBLIC_API_URL,
@@ -15,6 +16,15 @@ export const auth = betterAuth({
   advanced: { database: { generateId: "uuid" } },
   user: {
     additionalFields: { timezone: { type: "string", required: false, defaultValue: "UTC", input: false } },
+  },
+  databaseHooks: {
+    user: {
+      create: {
+        after: async (user) => {
+          await recordEvent(user.id, null, "account_created", user.id).catch(() => {});
+        },
+      },
+    },
   },
   session: { expiresIn: 60 * 60 * 24 * 60, updateAge: 60 * 60 * 24 },
   trustedOrigins: [
@@ -32,7 +42,7 @@ export const auth = betterAuth({
       async sendVerificationOTP({ email, otp }) {
         await sendEmail({
           to: email,
-          subject: `${otp} is your Love Notes code`,
+          subject: `${otp} is your Between code`,
           text: `Your code is ${otp}. It expires in 10 minutes. If you didn't ask for this, you can ignore it.`,
         });
       },

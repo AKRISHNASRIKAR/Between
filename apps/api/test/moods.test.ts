@@ -75,7 +75,7 @@ describe("vibe privacy (SPEC D11)", () => {
 });
 
 describe("dev simulated partner", () => {
-  test("creates a partner who joins and hatches the egg, then acts", async () => {
+  test("creates a partner who joins without automatically enabling a pet, then acts", async () => {
     const { signIn } = await import("./helpers");
     const a = await signIn("solo@test.dev", "Krishna");
     const s = (await a.req("POST", "/spaces", { timezone: "Asia/Kolkata" })).json;
@@ -83,7 +83,8 @@ describe("dev simulated partner", () => {
     expect(created.json.partner.displayName).toBe("Ananya");
     const space = (await a.req("GET", `/spaces/${s.id}`)).json;
     expect(space.members).toHaveLength(2);
-    expect(space.pet.stage).toBe("baby");
+    expect(space.pet.stage).toBe("egg");
+    expect(space.pet.status).toBe("NONE");
 
     await a.req("POST", "/dev/partner/act", { type: "mood", mood: "joyful", visibility: "shared" });
     const vibe = await a.req("GET", `/spaces/${s.id}/vibe?date=${today()}`);

@@ -32,6 +32,30 @@ for (const [name, t] of Object.entries(THEMES)) {
     }
   check(name, "on-ink on ink", f["on-ink"], f.ink);
   pairs++;
+  const i = t.interaction;
+  for (const [label, fg, bg] of [
+    ["action label", i["on-action"], i.action],
+    ["selected label", i["on-action-soft"], i["action-soft"]],
+    ["highlight label", i["highlight-ink"], i.highlight],
+    ["action on canvas", i.action, f.canvas],
+    ["action on paper", i.action, f.paper],
+    ["identity you on canvas", i["identity-you"], f.canvas],
+    ["identity partner on canvas", i["identity-partner"], f.canvas],
+    ["identity you", i["identity-you"], f.paper],
+    ["identity partner", i["identity-partner"], f.paper],
+  ]) {
+    check(name, label, fg, bg);
+    pairs++;
+  }
+  for (const surface of [f.paper, f.sunken]) {
+    check(name, "control border", f["line-strong"], surface, 3);
+    check(name, "focus border", i.action, surface, 3);
+    pairs += 2;
+  }
+  for (const identity of [i["identity-you"], i["identity-partner"]]) {
+    check(name, "selected checkmark", f["on-ink"], identity);
+    pairs++;
+  }
   for (const fam of FAMILIES) {
     const s = t.families[fam];
     check(name, `${fam}-deep on canvas`, s.deep, f.canvas);

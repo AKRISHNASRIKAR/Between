@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Love Notes",
+    "name": "Between",
     "slug": "lovenotes",
     "scheme": "lovenotes",
     "version": "0.1.0",
@@ -52,8 +52,8 @@
       [
         "expo-image-picker",
         {
-          "photosPermission": "Love Notes needs your photos so you can add them to your shared journal.",
-          "cameraPermission": "Love Notes uses the camera so you can snap a memory for your shared journal."
+          "photosPermission": "Between needs your photos so you can add them to your shared journal.",
+          "cameraPermission": "Between uses the camera so you can snap a memory for your shared journal."
         }
       ],
       [
@@ -71,10 +71,16 @@
           "widgets": [
             {
               "name": "Us",
-              "displayName": "Love Notes",
-              "description": "Your pet, today's vibes, and anything waiting for you.",
+              "displayName": "Between",
+              "description": "A shared moment, today's vibes, and anything waiting for you.",
               "ios": {
-                "supportedFamilies": ["systemSmall", "systemMedium", "accessoryRectangular", "accessoryInline"]
+                "supportedFamilies": [
+                  "systemSmall",
+                  "systemMedium",
+                  "systemLarge",
+                  "accessoryRectangular",
+                  "accessoryInline"
+                ]
               }
             }
           ]
@@ -86,8 +92,8 @@
           "widgets": [
             {
               "name": "Us",
-              "label": "Love Notes",
-              "description": "Your pet, today's vibes, and anything waiting for you.",
+              "label": "Between",
+              "description": "A shared moment, today's vibes, and anything waiting for you.",
               "minWidth": "110dp",
               "minHeight": "110dp",
               "targetCellWidth": 2,

@@ -1,4 +1,5 @@
 import { LIMITS } from "@lovenotes/contracts";
+import { router } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import { useWindowDimensions, View } from "react-native";
 import Animated, { FadeIn } from "react-native-reanimated";
@@ -17,14 +18,17 @@ import {
   Text,
   TextField,
 } from "@/design-system";
+import { useThemeSubscription } from "@/design-system/theme/ThemeProvider";
 import { partnerOf, useMe, usePetName } from "@/features/space/hooks";
 import { humanError } from "@/lib/errors";
 import { kv } from "@/lib/kv";
+import { useReducedMotion } from "@/lib/preferences";
 
 type Phase = "egg" | "hatching" | "hatched";
 
 /** The pairing payoff: the egg cracks on both phones, then you name the pet together. */
 export default function Hatch() {
+  useThemeSubscription();
   const me = useMe();
   const space = me.data?.space;
   const myId = me.data?.profile.id;
@@ -32,6 +36,7 @@ export default function Hatch() {
   const pet = space?.pet;
   const naming = usePetName(space?.id);
   const egg = useRef<EggHandle>(null);
+  const reduced = useReducedMotion();
   const { height } = useWindowDimensions();
   const [phase, setPhase] = useState<Phase | null>(null);
   const [burst, setBurst] = useState(0);
@@ -40,13 +45,29 @@ export default function Hatch() {
   const [error, setError] = useState<string | null>(null);
 
   const seenKey = `hatch-seen:${space?.id}`;
+  const spaceId = space?.id;
   useEffect(() => {
-    if (!space) return;
-    kv.getItem(seenKey).then((v) => setPhase(v ? "hatched" : "egg"));
-  }, [space, seenKey]);
+    if (!spaceId) return;
+    let active = true;
+    kv.getItem(seenKey)
+      .then((v) => {
+        if (active) setPhase(v ? "hatched" : "egg");
+      })
+      .catch(() => {
+        if (active) setPhase("egg");
+      });
+    return () => {
+      active = false;
+    };
+  }, [spaceId, seenKey]);
 
   useEffect(() => {
     if (phase !== "egg") return;
+    if (reduced) {
+      setPhase("hatched");
+      kv.setItem(seenKey, "1");
+      return;
+    }
     const t = setTimeout(() => {
       setPhase("hatching");
       egg.current?.hatch(() => {
@@ -57,7 +78,7 @@ export default function Hatch() {
       });
     }, 900);
     return () => clearTimeout(t);
-  }, [phase, seenKey]);
+  }, [phase, seenKey, reduced]);
 
   if (!space || !pet || phase === null) return null;
 
@@ -66,6 +87,7 @@ export default function Hatch() {
   const showField = !pet.proposedName || proposing;
 
   const propose = () => {
+    if (naming.isPending) return;
     const n = name.trim();
     if (!n) return setError("Give them a name first.");
     setError(null);
@@ -77,7 +99,13 @@ export default function Hatch() {
 
   const footer =
     phase !== "hatched" ? null : showField ? (
-      <Button fullWidth label="Suggest this name" loading={naming.isPending} onPress={propose} />
+      <Button
+        fullWidth
+        label="Suggest this name"
+        loading={naming.isPending}
+        disabled={!name.trim()}
+        onPress={propose}
+      />
     ) : proposedByPartner ? (
       <>
         <Button
@@ -86,21 +114,36 @@ export default function Hatch() {
           loading={naming.isPending}
           onPress={() =>
             naming.mutate(
-              { action: "accept" },
+              { action: "accept", name: pet.proposedName ?? "" },
               { onSuccess: () => haptics.yay(), onError: (e) => setError(humanError(e)) },
             )
           }
         />
-        <Button fullWidth variant="quiet" label="Suggest another name" onPress={() => setProposing(true)} />
+        <Button
+          fullWidth
+          variant="quiet"
+          label="Suggest another name"
+          disabled={naming.isPending}
+          onPress={() => setProposing(true)}
+        />
       </>
     ) : (
-      <Button fullWidth variant="quiet" label="Suggest a different name" onPress={() => setProposing(true)} />
+      <Button
+        fullWidth
+        variant="quiet"
+        label="Suggest a different name"
+        disabled={naming.isPending}
+        onPress={() => setProposing(true)}
+      />
     );
 
   return (
     <View style={{ flex: 1, backgroundColor: palette.canvas }}>
       <Screen footer={footer}>
         <View className="flex-1 gap-8 pt-10">
+          {me.data?.retainedSpaces?.length ? (
+            <Button variant="quiet" label="Closed spaces" onPress={() => router.push("/closed-spaces")} />
+          ) : null}
           <View className="items-center" style={{ minHeight: 220 }}>
             {phase === "hatched" ? (
               <Animated.View entering={pop()}>
@@ -152,6 +195,7 @@ export default function Hatch() {
                     }}
                     placeholder="Mochi"
                     maxLength={LIMITS.petName.max}
+                    editable={!naming.isPending}
                     autoCapitalize="words"
                     error={error}
                     returnKeyType="done"

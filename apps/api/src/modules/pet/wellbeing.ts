@@ -14,7 +14,7 @@ export type WellbeingInput = {
 /** Fills to 1 right after care, then settles linearly back to the calm floor — never below. */
 function settle(last: Date | null, hours: number, now: Date): number {
   if (!last) return WELLBEING_FLOOR;
-  const t = (now.getTime() - last.getTime()) / (hours * HOUR_MS);
+  const t = Math.max(0, (now.getTime() - last.getTime()) / (hours * HOUR_MS));
   return Number((WELLBEING_FLOOR + (1 - WELLBEING_FLOOR) * Math.max(0, 1 - t)).toFixed(2));
 }
 
@@ -31,12 +31,13 @@ export function deriveWellbeing(p: WellbeingInput, recent: CareMoment[], now: Da
     return { fullness: calm, energy: calm, love: calm, lastCare: [] };
   }
   const loveFrom =
-    [p.lastPettedAt, p.lastSharedActivityAt]
+    [p.lastPettedAt, p.lastPlayedAt, p.lastSharedActivityAt]
       .filter((d): d is Date => !!d)
       .sort((a, b) => b.getTime() - a.getTime())[0] ?? null;
   const fullness = settle(p.lastFedAt, 20, now);
-  const energy = settle(p.lastPlayedAt, 24, now);
-  const love = settle(loveFrom, 36, now);
+  const restingHours = p.lastPlayedAt ? Math.max(0, (now.getTime() - p.lastPlayedAt.getTime()) / HOUR_MS) : 12;
+  const energy = Number(Math.min(1, 0.55 + restingHours * 0.075).toFixed(2));
+  const love = settle(loveFrom, 24 * 14, now);
 
   const latest = new Map<string, CareMoment>();
   for (const c of [...recent].sort((a, b) => b.at.getTime() - a.at.getTime()))

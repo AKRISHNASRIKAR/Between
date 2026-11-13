@@ -1,5 +1,6 @@
 import { MOOD_IDS, type Notice, noticeCopy, type PetMood } from "@lovenotes/contracts";
-import { useState } from "react";
+import { Redirect, useLocalSearchParams } from "expo-router";
+import { useEffect, useRef, useState } from "react";
 import { View } from "react-native";
 import { BackButton } from "@/components/BackButton";
 import {
@@ -22,8 +23,12 @@ import {
   TextField,
   type TypeVariant,
   type as typeScale,
+  useTheme,
   useToast,
 } from "@/design-system";
+
+import { COLOR_THEMES } from "@/design-system/theme/themes";
+import { AppearancePicker } from "@/features/settings/AppearancePicker";
 
 const SAMPLE_NOTICES: Notice[] = [
   { type: "note.waiting", noteId: "n", from: "Ananya" },
@@ -37,6 +42,18 @@ const SAMPLE_NOTICES: Notice[] = [
 /** Dev-only: every design-system primitive in every state, for review at multiple sizes. */
 export default function Gallery() {
   const toast = useToast();
+  const theme = useTheme();
+  const params = useLocalSearchParams<{ colors?: string; mode?: string; preview?: string }>();
+  const applied = useRef("");
+  useEffect(() => {
+    if (!__DEV__) return;
+    const signature = `${params.colors ?? ""}:${params.mode ?? ""}`;
+    if (applied.current === signature) return;
+    applied.current = signature;
+    const color = COLOR_THEMES.find((entry) => entry.id === params.colors);
+    if (color) theme.setColorTheme(color.id);
+    if (params.mode === "light" || params.mode === "dark" || params.mode === "system") theme.setPreference(params.mode);
+  }, [params.colors, params.mode, theme.setColorTheme, theme.setPreference]);
   const [sheet, setSheet] = useState(false);
   const [modal, setModal] = useState(false);
   const [code, setCode] = useState("AB2");
@@ -52,11 +69,28 @@ export default function Gallery() {
     </View>
   );
 
+  if (!__DEV__) return <Redirect href="/" />;
+
+  if (params.preview === "appearance")
+    return (
+      <Screen>
+        <View style={{ gap: 20, paddingVertical: 16 }}>
+          <BackButton />
+          <Text variant="display-l">Appearance</Text>
+          <AppearancePicker />
+        </View>
+      </Screen>
+    );
+
   return (
     <Screen>
       <View className="gap-10 pt-2 pb-10">
         <BackButton />
         <Text variant="display-l">Design system</Text>
+
+        <Section title="Appearance">
+          <AppearancePicker />
+        </Section>
 
         <Section title="Type">
           {(Object.keys(typeScale) as TypeVariant[]).map((v) => (

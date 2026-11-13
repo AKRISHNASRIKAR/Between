@@ -19,7 +19,8 @@ export function UsWidget({ snapshot, width }: { snapshot: WidgetSnapshot | null;
   const p = toUsWidgetProps(snapshot, "");
   const c = p.colors as Record<keyof typeof p.colors, Hex>;
   const wide = width >= 250;
-  const pet = (size: number) => <ImageWidget image={ART[petArtFor(snapshot)]} imageWidth={size} imageHeight={size} />;
+  const pet = (size: number) =>
+    p.hasPet ? <ImageWidget image={ART[petArtFor(snapshot)]} imageWidth={size} imageHeight={size} /> : null;
   const vibeRow = (dot: Hex, who: string, vibe: string | null) => (
     <FlexWidget style={{ flexDirection: "row", alignItems: "center", width: "match_parent", marginTop: 6 }}>
       <TextWidget text="●" style={{ fontSize: widgetType.dot, color: dot, marginRight: 6 }} />
@@ -47,7 +48,33 @@ export function UsWidget({ snapshot, width }: { snapshot: WidgetSnapshot | null;
         alignItems: wide ? "center" : "flex-start",
       }}
     >
-      {wide ? (
+      {!p.hasPet ? (
+        <FlexWidget style={{ width: "match_parent", height: "match_parent" }}>
+          <TextWidget text="Between" style={{ fontSize: widgetType.title, fontWeight: "600", color: c.ink }} />
+          {wide ? (
+            <>
+              <TextWidget
+                text="TODAY'S VIBES"
+                style={{ fontSize: widgetType.eyebrow, fontWeight: "700", color: c.muted }}
+              />
+              {vibeRow(c.you, "You", p.youVibe)}
+              {p.partnerName ? vibeRow(c.partner, p.partnerName, p.partnerVibe) : null}
+            </>
+          ) : (
+            <TextWidget
+              text={p.youVibe ? `You: ${p.youVibe}` : "Your little world for two"}
+              maxLines={1}
+              style={{ fontSize: widgetType.body, color: c.muted }}
+            />
+          )}
+          <FlexWidget style={{ flex: 1 }} />
+          <TextWidget
+            text={p.focusLine}
+            maxLines={2}
+            style={{ fontSize: widgetType.body, fontWeight: "600", color: c.accent }}
+          />
+        </FlexWidget>
+      ) : wide ? (
         <>
           <FlexWidget style={{ alignItems: "center", marginRight: 14 }}>
             {pet(84)}

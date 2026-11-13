@@ -1,8 +1,12 @@
 import { beforeEach, describe, expect, test } from "bun:test";
 import { WidgetSnapshot } from "@lovenotes/contracts";
+import { syncQuizContent } from "../src/modules/quizzes";
 import { pairedCouple, resetDb } from "./helpers";
 
-beforeEach(resetDb);
+beforeEach(async () => {
+  await resetDb();
+  await syncQuizContent();
+});
 
 const today = () => new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" });
 

@@ -12,7 +12,7 @@ import { addFuture, listFuture, setFutureDone } from "../future";
 import { addBlock, completeUpload, createPage, createUpload, findPageByDate } from "../journal";
 import { activeScope, membersRepo } from "../members";
 import { createNote, listNotes, openNote, reactToNote } from "../notes";
-import { careForPet, petNameStep } from "../pet";
+import { careForPet, petNameStep, petRepo } from "../pet";
 import { answer, complete, getDaily, getSession, listPacks, listSessions, startPack } from "../quizzes";
 import { acceptInvite, createInvite } from "../spaces";
 import { upsertVibe } from "../vibes";
@@ -93,7 +93,7 @@ export async function devPartnerAct(user: AuthedUser, action: DevPartnerAction):
       await petNameStep(scope, { action: "propose", name: action.name });
       break;
     case "pet.acceptName":
-      await petNameStep(scope, { action: "accept" });
+      await petNameStep(scope, { action: "accept", name: (await petRepo.get(db, scope))?.proposedName ?? "" });
       break;
     case "mood": {
       const mood = action.mood ?? MOOD_IDS[Math.floor(Math.random() * MOOD_IDS.length)] ?? "calm";

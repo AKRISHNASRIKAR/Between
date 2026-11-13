@@ -1,5 +1,6 @@
 import type { NoticePillar, PetMood, PetStage } from "@lovenotes/contracts";
 import { View } from "react-native";
+import { useThemeSubscription } from "@/design-system/theme/ThemeProvider";
 import { Pet } from "../illustrations/pet";
 import { Text } from "../Text";
 import { family, lift, palette, pillar, radius } from "../tokens";
@@ -25,6 +26,7 @@ type Props = {
  * Same words as the push (both come from `noticeCopy`), so the two never disagree.
  */
 export function NoticeCard({ title, body, pillar: p, pet }: Props) {
+  useThemeSubscription();
   const f = family(pillar[p]);
   return (
     <View

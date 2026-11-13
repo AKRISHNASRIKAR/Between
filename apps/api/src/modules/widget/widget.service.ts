@@ -2,6 +2,7 @@ import { MOODS, type MoodCheckin, type WidgetSnapshot } from "@lovenotes/contrac
 import type { SpaceScope } from "../../lib/scope";
 import { localDate } from "../../lib/time";
 import { withTx } from "../../lib/tx";
+import { findPageByDate } from "../journal";
 import { displayName, membersRepo } from "../members";
 import { countWaitingNotes } from "../notes";
 import { petRepo, petView } from "../pet";
@@ -17,7 +18,8 @@ const vibeOf = (c: MoodCheckin | null) => (c ? { mood: c.mood, label: MOODS[c.mo
  */
 export async function widgetSnapshot(scope: SpaceScope): Promise<WidgetSnapshot> {
   const today = localDate(new Date(), scope.timezone);
-  const [{ pet, members }, vibe, notesWaiting, daily] = await Promise.all([
+  const anniversary = `${Number(today.slice(0, 4)) - 1}${today.slice(4)}`;
+  const [{ pet, members }, vibe, notesWaiting, daily, memoryId] = await Promise.all([
     withTx(async (tx) => {
       const row = await petRepo.get(tx, scope);
       return { pet: row ? await petView(tx, scope, row) : null, members: await membersRepo.of(tx, scope) };
@@ -25,17 +27,21 @@ export async function widgetSnapshot(scope: SpaceScope): Promise<WidgetSnapshot>
     getVibe(scope, today),
     countWaitingNotes(scope),
     scope.writable ? getDaily(scope) : Promise.resolve(null),
+    findPageByDate(scope, anniversary),
   ]);
   const partner = scope.partnerId ? members.find((m) => m.id === scope.partnerId) : undefined;
 
   return {
     v: 1,
     state: scope.writable ? "ready" : "closed",
-    pet: {
-      name: pet?.name ?? "Your pet",
-      stage: pet?.stage ?? "egg",
-      mood: pet?.mood ?? "content",
-    },
+    pet:
+      pet?.status === "ACTIVE"
+        ? {
+            name: pet?.name ?? "Your pet",
+            stage: pet?.stage ?? "egg",
+            mood: pet?.mood ?? "content",
+          }
+        : null,
     you: { name: displayName(members, scope.userId), vibe: vibeOf(vibe.me) },
     partner: partner ? { name: partner.name || "Your person", vibe: vibeOf(vibe.partner) } : null,
     notesWaiting,
@@ -48,6 +54,8 @@ export async function widgetSnapshot(scope: SpaceScope): Promise<WidgetSnapshot>
         : daily.myCompletedAt
           ? "waiting"
           : "yours",
+    dailyId: daily?.id ?? null,
+    memoryId,
     generatedAt: new Date().toISOString(),
   };
 }

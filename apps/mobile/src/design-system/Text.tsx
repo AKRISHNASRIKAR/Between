@@ -1,4 +1,5 @@
 import { Text as RNText, type TextProps as RNTextProps, type TextStyle } from "react-native";
+import { useThemeSubscription } from "@/design-system/theme/ThemeProvider";
 import { type ColorToken, palette, type TypeVariant, type as typeScale } from "./tokens";
 
 export type TextProps = RNTextProps & {
@@ -9,6 +10,7 @@ export type TextProps = RNTextProps & {
 
 /** The only way to render text (DESIGN §3). Never set font properties directly. */
 export function Text({ variant = "body", color = "ink", align, style, children, ...rest }: TextProps) {
+  useThemeSubscription();
   const t = typeScale[variant];
   const base: TextStyle = {
     fontFamily: t.fontFamily,

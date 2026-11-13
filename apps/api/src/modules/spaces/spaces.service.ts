@@ -19,6 +19,7 @@ import type { AuthedUser } from "../../types";
 import { activityRepo } from "../activity";
 import { membersRepo } from "../members";
 import { announcePet, hatchPet, petRepo } from "../pet";
+import { queueStorageDeletion } from "../storage-jobs";
 import { generateInviteCode, hashInviteCode } from "./invite-code";
 import { spacesRepo } from "./spaces.repo";
 import { spaceView } from "./spaces.view";
@@ -134,6 +135,7 @@ export async function leaveSpace(scope: SpaceScope): Promise<void> {
 export async function purgeExpiredSpaces(now = new Date()) {
   const expired = await spacesRepo.expired(db, now);
   for (const s of expired) {
+    await queueStorageDeletion(`spaces/${s.id}/`);
     await storage.deletePrefix(`spaces/${s.id}/`).catch((e) => console.error("purge storage failed", s.id, e));
     await spacesRepo.purge(db, s.id);
   }

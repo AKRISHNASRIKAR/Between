@@ -1,9 +1,19 @@
 import { type QuizSession, withPartner } from "@lovenotes/contracts";
 import { router } from "expo-router";
 import { View } from "react-native";
-import { Button, CategoryCreature, Dots, PressableScale, quizColors, radius, Skeleton, Text } from "@/design-system";
+import {
+  ArrowRight,
+  CategoryCreature,
+  layout,
+  PressableScale,
+  palette,
+  radius,
+  Skeleton,
+  space,
+  Text,
+} from "@/design-system";
+import { useThemeSubscription } from "@/design-system/theme/ThemeProvider";
 
-/** DESIGN §7.3 QuestionOfTheDay: your turn · waiting · reveal ready · revealed. */
 export function DailyCard({
   daily,
   loading,
@@ -13,54 +23,55 @@ export function DailyCard({
   loading: boolean;
   partnerName: string;
 }) {
-  if (loading) return <Skeleton height={150} radius="lg" />;
+  useThemeSubscription();
+  if (loading) return <Skeleton height={200} radius="lg" />;
   if (!daily) return null;
   const q = daily.questions[0];
   const state = daily.readyAt ? (daily.revealSeenAt ? "seen" : "ready") : daily.myCompletedAt ? "waiting" : "yours";
-  const open = () => router.push(`/quiz/${daily.id}`);
-  // A fixed paint-chip swatch (DESIGN §2.6): its words use the swatch's own text colour in every theme.
-  const ink = quizColors("daily").text;
+  const action =
+    state === "yours"
+      ? "Answer today's question"
+      : state === "waiting"
+        ? "View your question"
+        : state === "ready"
+          ? "Reveal your answers"
+          : "Read your answers";
   return (
     <PressableScale
-      accessibilityLabel={`Today's question: ${q ? withPartner(q.promptSelf, partnerName) : ""}`}
-      onPress={open}
+      accessibilityLabel={`Today's question: ${q ? withPartner(q.promptSelf, partnerName) : ""}. ${action}`}
+      onPress={() => router.push(`/quiz/${daily.id}`)}
       style={{
-        backgroundColor: quizColors("daily").fill,
+        backgroundColor: palette.paper,
         borderRadius: radius.lg,
-        padding: 20,
-        gap: 12,
-        marginTop: 20,
+        borderCurve: "continuous",
+        borderWidth: 1,
+        borderColor: palette.line,
+        padding: layout.cardPadding,
+        gap: space[4],
       }}
     >
-      <View style={{ position: "absolute", top: -26, right: 16 }}>
-        <CategoryCreature category="daily" size={56} onBase />
+      <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: space[3] }}>
+        <Text variant="label" color="action">
+          One question, just for today
+        </Text>
+        <CategoryCreature category="daily" size={40} />
       </View>
-      <Text variant="label" style={{ color: ink }}>
-        Today's question
+      <Text variant="display-m">{q ? withPartner(q.promptSelf, partnerName) : "Something new to discover."}</Text>
+      <Text variant="body-sm" color="ink-secondary">
+        {state === "yours"
+          ? "Answer separately. Discover together."
+          : state === "waiting"
+            ? `Your answer is saved. ${partnerName} can reply in their own time.`
+            : state === "ready"
+              ? "You've both answered. A little discovery is waiting."
+              : "A small part of your story, saved together."}
       </Text>
-      <Text variant="display-m" style={{ color: ink }}>
-        {q ? withPartner(q.promptSelf, partnerName) : ""}
-      </Text>
-      {state === "yours" ? (
-        <Text variant="body-sm" style={{ color: ink }}>
-          Your turn — answers stay hidden until you've both replied.
+      <View style={{ flexDirection: "row", alignItems: "center", gap: space[3], minHeight: layout.minTouch }}>
+        <Text variant="body-sm-strong" color="action" style={{ flex: 1 }}>
+          {action}
         </Text>
-      ) : state === "waiting" ? (
-        <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-          <Dots tint={ink} />
-          <Text variant="body-sm" style={{ color: ink }}>
-            Waiting for {partnerName}
-          </Text>
-        </View>
-      ) : state === "ready" ? (
-        <View>
-          <Button label="Reveal ✦" onPress={open} />
-        </View>
-      ) : (
-        <Text variant="body-sm" style={{ color: ink }}>
-          Revealed · tap to see your answers
-        </Text>
-      )}
+        <ArrowRight size={20} color={palette.action} />
+      </View>
     </PressableScale>
   );
 }

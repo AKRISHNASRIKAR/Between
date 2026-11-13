@@ -1,11 +1,13 @@
 import { router, usePathname } from "expo-router";
 import { lift, PressableScale, palette, radius, Text } from "@/design-system";
+import { useThemeSubscription } from "@/design-system/theme/ThemeProvider";
 
 /**
  * Dev builds only: a small tab on the left edge that opens the simulated-partner panel from
  * any screen once you're in a space. Never rendered in release builds.
  */
 export function DevFab() {
+  useThemeSubscription();
   const path = usePathname();
   if (!__DEV__ || path.startsWith("/dev")) return null;
   return (

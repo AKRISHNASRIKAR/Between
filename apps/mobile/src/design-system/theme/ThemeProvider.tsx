@@ -1,14 +1,19 @@
-import { createContext, type ReactNode, useCallback, useContext, useMemo, useState } from "react";
+import { createContext, type ReactNode, useCallback, useContext, useMemo, useRef, useState } from "react";
 import { useColorScheme } from "react-native";
 import { kv } from "@/lib/kv";
 import { activeThemeName, applyTheme } from "../tokens";
-import { SYSTEM_THEME, THEMES, type ThemeName } from "./themes";
+import {
+  type AppearanceChoice,
+  decodeAppearance,
+  encodeAppearance,
+  resolveAppearance,
+  type ThemePreference,
+} from "./theme-preference";
+import { type ColorThemeId, THEMES, type ThemeName } from "./themes";
 
-/** What the person chose in Settings → Appearance. "system" follows the phone. */
-export type ThemePreference = "system" | ThemeName;
+export type { ThemePreference } from "./theme-preference";
 
 const KEY = "appearance";
-const isPreference = (v: string | null): v is ThemePreference => v === "system" || (!!v && v in THEMES);
 
 type ThemeState = {
   /** the theme on screen right now */
@@ -16,11 +21,20 @@ type ThemeState = {
   mode: "light" | "dark";
   preference: ThemePreference;
   setPreference: (p: ThemePreference) => void;
-  /** every theme, for the Appearance picker */
+  colorTheme: ColorThemeId;
+  setColorTheme: (id: ColorThemeId) => void;
+  /** Brightness choices remain independent from the color palette. */
   options: Array<{ value: ThemePreference; label: string }>;
 };
 
 const Ctx = createContext<ThemeState | null>(null);
+
+/** Subscribe a render boundary to palette changes without resetting its local state.
+ * Optional outside the app provider, where standalone artwork uses the default palette.
+ */
+export function useThemeSubscription() {
+  return useContext(Ctx)?.name;
+}
 
 /** The active theme and the Appearance preference. Use inside <ThemeProvider>. */
 export function useTheme(): ThemeState {
@@ -31,43 +45,49 @@ export function useTheme(): ThemeState {
 
 /**
  * Applies the theme app-wide (docs/architecture/07-mobile.md → Theme). The preference is read
- * synchronously, so the first frame is already in the right theme. Children are keyed by theme
- * name so every screen re-renders with the new palette when it changes.
+ * synchronously, so the first frame is already in the right theme. Components reading the
+ * mutable palette subscribe with useThemeSubscription; appearance changes preserve drafts.
  */
 export function ThemeProvider({ children }: { children: (name: ThemeName) => ReactNode }) {
   const system = useColorScheme();
-  const [preference, setPref] = useState<ThemePreference>(() => {
+  const [choice, setChoice] = useState<AppearanceChoice>(() => {
     try {
-      const saved = kv.getSync(KEY);
-      return isPreference(saved) ? saved : "system";
+      return decodeAppearance(kv.getSync(KEY));
     } catch {
-      return "system";
+      return decodeAppearance(null);
     }
   });
-
-  const name: ThemeName = preference === "system" ? SYSTEM_THEME[system === "dark" ? "dark" : "light"] : preference;
-  // Apply before anything below renders, so every palette read in this pass sees the new theme.
+  const latestChoice = useRef(choice);
+  const name = resolveAppearance(choice, system);
+  // Apply before descendants read tokens; the provider never keys or remounts its children.
   if (activeThemeName() !== name) applyTheme(name);
 
-  const setPreference = useCallback((p: ThemePreference) => {
-    setPref(p);
+  const update = useCallback((patch: Partial<AppearanceChoice>) => {
+    const next = { ...latestChoice.current, ...patch };
+    latestChoice.current = next;
+    setChoice(next);
     try {
-      kv.setSync(KEY, p);
+      kv.setSync(KEY, encodeAppearance(next));
     } catch {}
   }, []);
+  const setPreference = useCallback((appearance: ThemePreference) => update({ appearance }), [update]);
+  const setColorTheme = useCallback((colorTheme: ColorThemeId) => update({ colorTheme }), [update]);
 
   const value = useMemo<ThemeState>(
     () => ({
       name,
       mode: THEMES[name].mode,
-      preference,
+      preference: choice.appearance,
+      colorTheme: choice.colorTheme,
+      setColorTheme,
       setPreference,
       options: [
         { value: "system", label: "System" },
-        ...(Object.keys(THEMES) as ThemeName[]).map((k) => ({ value: k, label: THEMES[k].label })),
+        { value: "light", label: "Light" },
+        { value: "dark", label: "Dark" },
       ],
     }),
-    [name, preference, setPreference],
+    [name, choice.appearance, choice.colorTheme, setPreference, setColorTheme],
   );
 
   return <Ctx.Provider value={value}>{children(name)}</Ctx.Provider>;

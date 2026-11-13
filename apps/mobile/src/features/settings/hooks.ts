@@ -1,11 +1,36 @@
 import type { NotificationPrefs } from "@lovenotes/contracts";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { File, Paths } from "expo-file-system";
-import { Share } from "react-native";
+import { useToast } from "@/design-system";
 import { api, unwrap } from "@/lib/api";
+import { sessionCookie } from "@/lib/auth";
+import { API_URL } from "@/lib/config";
+import { humanError } from "@/lib/errors";
+import { shareArchive } from "@/lib/export-file";
 import { signOut } from "@/lib/session";
 
+/** A non-throwing event handler with sign-out loading and error feedback. */
+export function useSignOut() {
+  const toast = useToast();
+  return useMutation({
+    mutationKey: ["session", "sign-out"],
+    mutationFn: signOut,
+    retry: 0,
+    onError: (error) => toast({ kind: "error", message: humanError(error) }),
+  });
+}
+
 const prefsKey = ["me", "notification-prefs"] as const;
+
+export function useRetainedSpaceExport(spaceId: string | undefined) {
+  return useQuery({
+    queryKey: ["space", spaceId, "retained-export"],
+    queryFn: () => unwrap(api.spaces[":sid"].export.$get({ param: { sid: spaceId ?? "" } })),
+    enabled: !!spaceId,
+    // Archive contents and signed media URLs should never outlive their access window in storage.
+    gcTime: 0,
+    meta: { persist: false },
+  });
+}
 
 export function useNotificationPrefs() {
   return useQuery({ queryKey: prefsKey, queryFn: () => unwrap(api.me["notification-prefs"].$get()) });
@@ -26,16 +51,14 @@ export function useUpdatePrefs() {
   });
 }
 
-/** Download everything as JSON and hand it to the share sheet (Save to Files, AirDrop, …). */
+/** Export actual media with all authorized text/history in a portable streamed archive. */
 export function useExport(spaceId: string | undefined) {
   return useMutation({
     mutationFn: async () => {
-      const data = await unwrap(api.spaces[":sid"].export.$get({ param: { sid: spaceId ?? "" } }));
-      const file = new File(Paths.cache, `love-notes-export-${new Date().toISOString().slice(0, 10)}.json`);
-      if (file.exists) file.delete();
-      file.create();
-      file.write(JSON.stringify(data, null, 2));
-      await Share.share({ url: file.uri, title: "Love Notes export" });
+      if (!spaceId) throw new Error("Choose a space before exporting.");
+      // Check access before handing a browser download off to its native attachment handler.
+      await unwrap(api.spaces[":sid"].export.$get({ param: { sid: spaceId } }));
+      await shareArchive(`${API_URL}/v1/spaces/${spaceId}/export/archive`, await sessionCookie());
     },
   });
 }

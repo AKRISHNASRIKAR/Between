@@ -29,6 +29,7 @@ export const spacesRepo = {
     await tx
       .update(spaces)
       .set({
+        ...(input.petSetupComplete !== undefined && { petSetupComplete: true }),
         ...(input.name !== undefined && { name: input.name }),
         ...(input.togetherSince !== undefined && { togetherSince: input.togetherSince }),
         ...(input.timezone !== undefined && { timezone: input.timezone }),

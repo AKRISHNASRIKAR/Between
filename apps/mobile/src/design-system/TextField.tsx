@@ -1,8 +1,9 @@
 import { forwardRef, useState } from "react";
 import { Platform, TextInput, type TextInputProps, View } from "react-native";
+import { useThemeSubscription } from "@/design-system/theme/ThemeProvider";
 import { Text } from "./Text";
 import { recipes } from "./theme/recipes";
-import { fonts, palette, radius, stroke, type as typeScale } from "./tokens";
+import { fonts, type as typeScale } from "./tokens";
 
 export type TextFieldProps = TextInputProps & {
   label: string;
@@ -16,6 +17,7 @@ export const TextField = forwardRef<TextInput, TextFieldProps>(function TextFiel
   { label, error, help, editable = true, multiline, style, onFocus, onBlur, ...rest },
   ref,
 ) {
+  useThemeSubscription();
   const [focused, setFocused] = useState(false);
   const look = recipes.input({ focused, error: !!error, editable });
   return (

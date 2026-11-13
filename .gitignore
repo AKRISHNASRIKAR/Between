@@ -2,6 +2,7 @@ node_modules/
 .env
 .env.*
 !.env.example
+!.env.*.example
 *.tsbuildinfo
 .DS_Store
 
@@ -28,3 +29,17 @@ deploy/.env.production
 
 # Gradle cache for local Android builds (outside android/, which prebuild regenerates)
 /apps/mobile/.gradle-home
+
+# Local design research, screenshots, recordings, and tool output
+.design-system/
+.ui-review/
+.playwright-mcp/
+*.log
+
+# Test and generated build output
+coverage/
+test-results/
+playwright-report/
+*.ipa
+*.aab
+*.apk

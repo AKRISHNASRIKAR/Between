@@ -54,5 +54,7 @@ export async function pairedCouple(prefix = "c") {
   const space = (await a.req("POST", "/spaces", { timezone: "Asia/Kolkata" })).json;
   const invite = (await a.req("POST", `/spaces/${space.id}/invites`)).json;
   await b.req("POST", `/invites/${invite.code}/accept`);
+  const proposal = await a.req("POST", `/spaces/${space.id}/pet/decision`, { action: "propose", enabled: true });
+  await b.req("POST", `/spaces/${space.id}/pet/decision`, { action: "accept", decisionId: proposal.json.decisionId });
   return { a, b, spaceId: space.id as string };
 }

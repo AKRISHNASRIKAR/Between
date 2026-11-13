@@ -13,6 +13,7 @@ export * from "./illustrations/Confetti";
 export * from "./illustrations/MoodCreature";
 export * from "./illustrations/Props";
 export * from "./illustrations/pet";
+export { illustrations, moodVisual, quizVisual } from "./illustrations/registry";
 export * from "./motion";
 export * from "./objects/Envelope";
 export * from "./objects/FutureTicket";

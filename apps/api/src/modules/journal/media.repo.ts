@@ -1,7 +1,7 @@
 import type { Media } from "@lovenotes/contracts";
 import { and, asc, desc, eq, inArray, isNull, lt, or, sql } from "drizzle-orm";
 import type { Tx } from "../../db/client";
-import { journalBlocks, media } from "../../db/schema";
+import { journalBlocks, media, spaces } from "../../db/schema";
 import type { SpaceScope } from "../../lib/scope";
 import { storage } from "../../lib/storage";
 
@@ -24,9 +24,12 @@ export const toMedia = (r: MediaRow, pageId: string | null = null): Media => ({
 });
 
 export const mediaRepo = {
+  async lockSpace(tx: Tx, scope: SpaceScope) {
+    await tx.select({ id: spaces.id }).from(spaces).where(eq(spaces.id, scope.spaceId)).for("update");
+  },
   async bytesUsed(tx: Tx, scope: SpaceScope) {
     const [used] = await tx
-      .select({ n: sql<number>`coalesce(sum(${media.bytes}), 0)::bigint` })
+      .select({ n: sql<number>`coalesce(sum(${media.bytes} + ${media.thumbBytes}), 0)::bigint` })
       .from(media)
       .where(eq(media.spaceId, scope.spaceId));
     return Number(used?.n ?? 0);
@@ -44,10 +47,18 @@ export const mediaRepo = {
       .where(and(eq(media.id, id), eq(media.spaceId, scope.spaceId)));
     return row ?? null;
   },
-  async markReady(tx: Tx, scope: SpaceScope, id: string, bytes: number) {
+  async markReady(
+    tx: Tx,
+    scope: SpaceScope,
+    id: string,
+    bytes: number,
+    thumbBytes: number,
+    storageKey: string,
+    thumbKey: string,
+  ) {
     const [row] = await tx
       .update(media)
-      .set({ status: "ready", bytes })
+      .set({ status: "ready", bytes, thumbBytes, storageKey, thumbKey })
       .where(and(eq(media.id, id), eq(media.spaceId, scope.spaceId)))
       .returning();
     return row ?? null;
@@ -99,6 +110,13 @@ export const mediaRepo = {
 
   // ── Housekeeping (not space-scoped: they run for the whole system or one account) ──
 
+  async forArchive(tx: Tx, scope: SpaceScope, ids: string[]) {
+    if (!ids.length) return [];
+    return tx
+      .select()
+      .from(media)
+      .where(and(eq(media.spaceId, scope.spaceId), eq(media.status, "ready"), inArray(media.id, ids)));
+  },
   async uploadedBy(tx: Tx, userId: string) {
     return tx.select({ id: media.id, spaceId: media.spaceId }).from(media).where(eq(media.uploadedBy, userId));
   },
