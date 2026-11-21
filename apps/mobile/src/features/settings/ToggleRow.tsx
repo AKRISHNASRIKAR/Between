@@ -8,7 +8,9 @@ export function ToggleRow({
   hint,
   value,
   onChange,
+  leading,
 }: {
+  leading?: React.ReactNode;
   label: string;
   hint?: string;
   value: boolean;
@@ -17,8 +19,9 @@ export function ToggleRow({
   useThemeSubscription();
   return (
     <View style={{ flexDirection: "row", alignItems: "center", gap: 12, paddingVertical: 12, minHeight: 56 }}>
+      {leading}
       <View style={{ flex: 1, gap: 2 }}>
-        <Text variant="body">{label}</Text>
+        <Text variant="body-sm-strong">{label}</Text>
         {hint ? (
           <Text variant="caption" color="ink-tertiary">
             {hint}

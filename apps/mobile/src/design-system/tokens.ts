@@ -131,6 +131,13 @@ type TypeStyle = {
 /** Type scale (DESIGN §3.1). Use via <Text variant>. */
 export const type = {
   "display-xl": { fontFamily: fonts.display600, fontSize: 48, lineHeight: 50, letterSpacing: -1.2, maxScale: 1.2 },
+  "display-xl-italic": {
+    fontFamily: fonts.displayItalic,
+    fontSize: 48,
+    lineHeight: 50,
+    letterSpacing: -1.2,
+    maxScale: 1.2,
+  },
   "display-l": { fontFamily: fonts.display600, fontSize: 36, lineHeight: 40, letterSpacing: -0.8, maxScale: 1.25 },
   "display-m": { fontFamily: fonts.display500, fontSize: 28, lineHeight: 32, letterSpacing: -0.4, maxScale: 1.3 },
   heading: { fontFamily: fonts.ui700, fontSize: 18, lineHeight: 24, letterSpacing: -0.2, maxScale: 1.4 },

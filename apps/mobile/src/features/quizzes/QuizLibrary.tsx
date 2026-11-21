@@ -8,6 +8,7 @@ import {
   layout,
   PressableScale,
   palette,
+  QuizCard,
   radius,
   Skeleton,
   space,
@@ -20,6 +21,7 @@ import { DailyCard } from "./DailyCard";
 type Row =
   | { type: "heading"; id: string; title: string; body?: string }
   | { type: "pack"; id: string; pack: QuizPackSummary }
+  | { type: "packs"; id: string; packs: QuizPackSummary[] }
   | { type: "session"; id: string; session: QuizSessionSummary };
 export function QuizLibrary({
   packs,
@@ -69,7 +71,8 @@ export function QuizLibrary({
     title: "Find a little more",
     body: "Pick a topic. Answer in your own time.",
   });
-  rows.push(...packs.map((pack): Row => ({ type: "pack", id: pack.id, pack })));
+  // Know · Library: packs as saturated paint chips, two to a row.
+  if (packs.length) rows.push({ type: "packs", id: "grid", packs });
   rows.push({
     type: "heading",
     id: "reports",
@@ -131,6 +134,23 @@ export function QuizLibrary({
               ) : null}
             </View>
           );
+        if (item.type === "packs")
+          return (
+            <View style={{ flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between", rowGap: space[3] }}>
+              {item.packs.map((p) => (
+                <PressableScale
+                  key={p.id}
+                  disabled={starting}
+                  accessibilityRole="button"
+                  accessibilityLabel={`${p.title}. ${p.questionCount} questions. Start`}
+                  onPress={() => onStart(p.id)}
+                  style={{ width: "48.5%" }}
+                >
+                  <QuizCard category={p.category} title={p.title} meta={`${p.questionCount} questions`} />
+                </PressableScale>
+              ))}
+            </View>
+          );
         const pack = item.type === "pack" ? item.pack : item.session.pack;
         const session = item.type === "session" ? item.session : null;
         const ready = !!session?.readyAt;
@@ -175,6 +195,26 @@ export function QuizLibrary({
               <Text variant="caption" color={ready || session?.partnerCompletedAt ? "action" : "ink-secondary"}>
                 {status}
               </Text>
+              {session && !ready && session.questionCount > 0 ? (
+                <View
+                  accessibilityElementsHidden
+                  style={{
+                    height: space[1] + 2,
+                    borderRadius: radius.pill,
+                    backgroundColor: palette.sunken,
+                    overflow: "hidden",
+                  }}
+                >
+                  <View
+                    style={{
+                      height: "100%",
+                      width: `${Math.round((session.myAnsweredCount / session.questionCount) * 100)}%`,
+                      backgroundColor: palette.action,
+                      borderRadius: radius.pill,
+                    }}
+                  />
+                </View>
+              ) : null}
             </View>
             <CaretRight size={18} color={palette.action} />
           </PressableScale>

@@ -13,7 +13,8 @@
       "!**/.expo",
       "!**/expo-env.d.ts",
       "!**/nativewind-env.d.ts",
-      "!**/global.css"
+      "!**/global.css",
+      "!docs/design/redesign"
     ]
   },
   "formatter": {

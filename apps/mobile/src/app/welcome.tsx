@@ -142,17 +142,23 @@ export default function Welcome() {
             </View>
           </>
         ) : (
-          <View style={{ flex: 1, alignItems: "center", justifyContent: "center", gap: space[6] }}>
-            <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
-              <WelcomeKeepsake width={Math.min(width - layout.gutter * 2, 280)} />
+          <View style={{ flex: 1, justifyContent: "space-between", gap: space[6] }}>
+            {/* Welcome · Headline first (design decision 2026-11-21): words lead, the keepsake follows. */}
+            <View style={{ gap: space[3] }}>
+              <View accessible accessibilityRole="header" accessibilityLabel="A little world for two.">
+                <Text variant="display-xl">A little world</Text>
+                <Text variant="display-xl-italic">for two.</Text>
+              </View>
+              <Text variant="body" color="ink-secondary">
+                Notes, questions, memories and plans, private to you and one person.
+              </Text>
             </View>
-            <View style={{ gap: space[3], width: "100%" }}>
-              <Text variant="display-l" align="center" accessibilityRole="header">
-                Your story,{"\n"}just for two.
-              </Text>
-              <Text variant="body" color="ink-secondary" align="center">
-                Leave notes, discover each other, and keep your shared memories.
-              </Text>
+            <View
+              style={{ alignItems: "center" }}
+              accessibilityElementsHidden
+              importantForAccessibility="no-hide-descendants"
+            >
+              <WelcomeKeepsake width={Math.min(width - layout.gutter * 2, 280)} />
             </View>
           </View>
         )}

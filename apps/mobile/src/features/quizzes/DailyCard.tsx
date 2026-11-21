@@ -4,9 +4,11 @@ import { View } from "react-native";
 import {
   ArrowRight,
   CategoryCreature,
+  family,
   layout,
   PressableScale,
   palette,
+  pillar,
   radius,
   Skeleton,
   space,
@@ -41,22 +43,28 @@ export function DailyCard({
       accessibilityLabel={`Today's question: ${q ? withPartner(q.promptSelf, partnerName) : ""}. ${action}`}
       onPress={() => router.push(`/quiz/${daily.id}`)}
       style={{
-        backgroundColor: palette.paper,
+        // Know · Library (design decision 2026-11-21): a purple object with the "?" creature peeking over its edge.
+        backgroundColor: family(pillar.know).soft,
         borderRadius: radius.lg,
         borderCurve: "continuous",
-        borderWidth: 1,
-        borderColor: palette.line,
         padding: layout.cardPadding,
+        marginTop: space[6],
         gap: space[4],
       }}
     >
-      <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: space[3] }}>
-        <Text variant="label" color="action">
-          One question, just for today
-        </Text>
-        <CategoryCreature category="daily" size={40} />
+      <View
+        style={{ position: "absolute", right: space[5], top: -space[8] }}
+        accessibilityElementsHidden
+        importantForAccessibility="no-hide-descendants"
+      >
+        <CategoryCreature category="daily" size={56} />
       </View>
-      <Text variant="display-m">{q ? withPartner(q.promptSelf, partnerName) : "Something new to discover."}</Text>
+      <Text variant="label" style={{ color: family(pillar.know).deep }}>
+        One question, just for today
+      </Text>
+      <Text variant="display-m" style={{ paddingRight: space[10] }}>
+        {q ? withPartner(q.promptSelf, partnerName) : "Something new to discover."}
+      </Text>
       <Text variant="body-sm" color="ink-secondary">
         {state === "yours"
           ? "Answer separately. Discover together."

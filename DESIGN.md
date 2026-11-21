@@ -162,6 +162,7 @@ Line heights are absolute px. Letter spacing is in px (React Native units).
 | Token | Family / weight | Size | Line height | Tracking | Max font scale | Use |
 |---|---|---|---|---|---|---|
 | `display-xl` | Fraunces 600 | 48 | 50 | -1.2 | 1.2 | Screen hero ("Tuesday"), reveal results ("SAME BRAIN") |
+| `display-xl-italic` | Fraunces 400 italic | 48 | 50 | -1.2 | 1.2 | The soft second line of a one-time hero ("for two."), never alone |
 | `display-l` | Fraunces 600 | 36 | 40 | -0.8 | 1.25 | Screen titles ("Our future") |
 | `display-m` | Fraunces 500 | 28 | 32 | -0.4 | 1.3 | Card headlines, quiz questions |
 | `heading` | DM Sans 700 | 18 | 24 | -0.2 | 1.4 | Section headings, list item titles |

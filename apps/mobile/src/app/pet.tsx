@@ -31,21 +31,16 @@ export default function PetRoom() {
     <Screen>
       <View className="gap-6 pt-2 pb-10">
         <BackButton label="Close" />
+        <PetStage size={220} variant="room" />
         <View className="gap-1">
           <Text variant="label" color="orange-deep">
             {pet.ageDays === 0 ? "Born today" : `With you for ${pet.ageDays} ${pet.ageDays === 1 ? "day" : "days"}`}
           </Text>
-          <Text variant="display-xl">{name}</Text>
+          <Text variant="display-l">{name}</Text>
           <Text variant="body" color="ink-secondary">
-            is feeling {moodWords[pet.mood]}.
+            is feeling {moodWords[pet.mood]}. Swipe across {name} for a scratch.
           </Text>
         </View>
-        <View className="pt-6">
-          <PetStage size={240} />
-        </View>
-        <Text variant="body-sm" color="ink-tertiary" align="center">
-          Swipe across {name} to give them a scratch.
-        </Text>
         <WellbeingCard wellbeing={pet.wellbeing} stage={pet.stage} petName={name} who={who} />
         <PetTimeline spaceId={space.id} petName={name} who={who} />
       </View>

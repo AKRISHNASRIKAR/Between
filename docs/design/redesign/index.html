@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Between · Redesign board (offline)</title>
+<link rel="stylesheet" href="kit.css">
+<style>:root{--board:#ECE8DF;--board-ink:#202B3B;--board-sub:#5A6475}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"DM Sans",system-ui,sans-serif;background:var(--board);color:var(--board-ink);-webkit-font-smoothing:antialiased}
+button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
+
+/* ---------- board chrome ---------- */
+.top{position:sticky;top:0;z-index:50;background:rgba(236,232,223,.92);backdrop-filter:saturate(1.2) blur(8px);border-bottom:1px solid #D8D2C6}
+.top-in{max-width:1680px;margin:0 auto;padding:14px 32px;display:flex;gap:24px;align-items:center;flex-wrap:wrap}
+.brand{font-family:Fraunces;font-weight:600;font-size:22px;letter-spacing:-.4px}
+.brand small{font-family:"DM Sans";font-weight:500;font-size:12px;color:var(--board-sub);margin-left:8px;letter-spacing:.2px}
+.nav{display:flex;gap:4px;flex-wrap:wrap;flex:1}
+.nav a{font-size:13px;font-weight:600;color:var(--board-sub);text-decoration:none;padding:6px 10px;border-radius:999px}
+.nav a:hover{background:#fff8;color:var(--board-ink)}
+.themes{display:flex;gap:6px;align-items:center}
+.sw{width:30px;height:30px;border-radius:999px;border:2px solid transparent;display:grid;place-items:center}
+.sw i{width:20px;height:20px;border-radius:999px;display:block;overflow:hidden;position:relative}
+.sw i:after{content:"";position:absolute;right:0;bottom:0;width:10px;height:10px;background:var(--h)}
+.sw[aria-pressed=true]{border-color:var(--board-ink)}
+.mode{font-size:12px;font-weight:700;padding:7px 12px;border-radius:999px;background:#fff;border:1px solid #D8D2C6}
+.wrap{max-width:1680px;margin:0 auto;padding:40px 32px 120px}
+.intro{display:grid;grid-template-columns:1.2fr 1fr;gap:48px;margin-bottom:56px;align-items:end}
+.intro h1{font-family:Fraunces;font-weight:600;font-size:56px;line-height:58px;letter-spacing:-1.6px}
+.intro h1 em{font-style:italic;font-weight:400}
+.intro p{font-size:16px;line-height:25px;color:var(--board-sub);max-width:60ch}
+.principles{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.pr{background:#F7F4EC;border-radius:16px;padding:14px 16px;font-size:13px;line-height:19px;color:var(--board-sub)}
+.pr b{display:block;color:var(--board-ink);font-size:14px;margin-bottom:2px}
+section.sec{margin-top:72px;scroll-margin-top:80px}
+.sec-h{display:flex;align-items:baseline;gap:16px;border-top:1.5px solid var(--board-ink);padding-top:14px;margin-bottom:8px}
+.sec-h .n{font-family:Fraunces;font-weight:600;font-size:15px}
+.sec-h h2{font-family:Fraunces;font-weight:600;font-size:34px;letter-spacing:-.8px}
+.sec-d{color:var(--board-sub);font-size:15px;line-height:23px;max-width:80ch;margin-bottom:28px}
+.row{display:flex;gap:40px;flex-wrap:wrap;align-items:flex-start}
+figure.shot{width:360px;display:flex;flex-direction:column;gap:14px}
+figure.shot figcaption{padding:0 6px}
+.tag{display:inline-block;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:3px 8px;border-radius:999px;background:var(--board-ink);color:#F7F4EC;margin-bottom:6px}
+.tag.alt{background:#fff;color:var(--board-ink);border:1px solid #CFC8BA}
+.tag.rec{background:#2E7D5B}
+figcaption h3{font-size:16px;font-weight:700;margin-bottom:4px}
+figcaption ul{padding-left:16px;font-size:13px;line-height:19px;color:var(--board-sub)}
+figcaption li{margin:2px 0}
+
+</style>
+</head>
+<body>
+<header class="top"><div class="top-in">
+  <div class="brand">Between<small>Redesign board · offline · Nov 2026</small></div>
+  <nav class="nav" id="nav"></nav>
+  <div class="themes" id="themes"></div>
+  <button class="mode" id="mode">Light</button>
+  <a class="mode" href="studio.html" style="text-decoration:none;color:inherit;background:#202B3B;color:#F7F4EC;border-color:#202B3B">Open the studio →</a>
+</div></header>
+
+<main class="wrap">
+  <div class="intro">
+    <div class="v g16">
+      <h1>Every page,<br><em>a little more</em> between you.</h1>
+      <p>A redesign pass over all of Between's screens: three new home layouts to choose between, then onboarding, Know, Notes, Memories, Plans, the pet room, check-ins and settings. Every screen sticks to DESIGN.md: theme roles only, Fraunces / DM Sans / Caveat, paper objects, and one primary action per screen. Use the swatches at the top right to try each palette in light and dark. Every phone scrolls.</p>
+    </div>
+    <div class="principles">
+      <div class="pr"><b>One next thing</b>The home screen leads with the single most meaningful pending moment, not a list of equal cards.</div>
+      <div class="pr"><b>Two people, visibly</b>Your side and theirs show up as a pair everywhere: vibes, answers, authorship.</div>
+      <div class="pr"><b>Objects, not cards</b>Envelopes, tickets, taped pages and paint chips. Every pillar gets its own material.</div>
+      <div class="pr"><b>A real ending</b>Every feed has a "that's everything" stopping point, so nothing scrolls forever.</div>
+    </div>
+  </div>
+  <div id="board"></div>
+</main>
+
+<script src="kit.js"></script>
+<script>
+/* ============================================================
+   RENDER
+   ============================================================ */
+const TAGS={rec:["Recommended","rec"],alt:["Alternative","alt"],new:["New page",""],re:["Redesign",""],state:["State","alt"]};
+function render(){
+  _id=0;
+  document.getElementById("board").innerHTML=SECTIONS.map(s=>`
+   <section class="sec" id="${s.id}">
+    <div class="sec-h"><span class="n">${s.n}</span><h2>${s.title}</h2></div>
+    <p class="sec-d">${s.desc}</p>
+    <div class="row">${s.shots.map(x=>`<figure class="shot">${x.html}<figcaption><span class="tag ${TAGS[x.tag][1]}">${TAGS[x.tag][0]}</span><h3>${x.title}</h3><ul>${x.notes.map(n=>`<li>${n}</li>`).join("")}</ul></figcaption></figure>`).join("")}</div>
+    ${s.extra||""}
+   </section>`).join("");
+}
+document.getElementById("nav").innerHTML=SECTIONS.map(s=>`<a href="#${s.id}">${s.title.replace(/&amp;/g,"&").split(" · ")[0]}</a>`).join("");
+document.getElementById("themes").innerHTML=Object.entries(T).map(([id,t])=>`<button class="sw" data-id="${id}" title="${t.label}" style="--h:${t.light.highlight}"><i style="background:${t.light.action}"></i></button>`).join("");
+document.querySelectorAll(".sw").forEach(b=>b.onclick=()=>{cur.id=b.dataset.id;applyTheme()});
+document.getElementById("mode").onclick=()=>{cur.mode=cur.mode==="dark"?"light":"dark";applyTheme()};
+applyTheme(); render();
+</script>
+</body>
+</html>

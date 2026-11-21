@@ -1,3 +1,4 @@
+import { MOODS, type MoodId, PET_MOOD_WORD } from "@lovenotes/contracts";
 import { useQuery } from "@tanstack/react-query";
 import { router } from "expo-router";
 import { useState } from "react";
@@ -7,6 +8,9 @@ import {
   Button,
   Gear,
   layout,
+  MoodCreature,
+  moodCardFill,
+  Pet,
   PressableScale,
   palette,
   radius,
@@ -18,6 +22,7 @@ import {
   useToast,
 } from "@/design-system";
 import { MomentCard } from "@/features/home/MomentCard";
+import { MomentDeck } from "@/features/home/MomentDeck";
 import { type HomeMoment, homeMoments } from "@/features/home/moments";
 import { useDaily } from "@/features/quizzes/hooks";
 import { partnerOf, useMe } from "@/features/space/hooks";
@@ -28,7 +33,44 @@ import { widgetKey } from "@/features/widgets/useWidgetSync";
 import { api, unwrap } from "@/lib/api";
 import { humanError } from "@/lib/errors";
 
-const monthDay = (d: Date) => d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+const longDate = (d: Date) => d.toLocaleDateString(undefined, { weekday: "long", day: "numeric", month: "long" });
+const COUNT_TITLE = ["", "One little thing", "Two little things", "Three little things"];
+
+/** One person's vibe as a compact pill (Home · The Deck). An empty pill invites a check-in. */
+function VibePill({ mood, who, onPress }: { mood: MoodId | null; who: string; onPress?: () => void }) {
+  return (
+    <PressableScale
+      disabled={!onPress}
+      onPress={onPress}
+      accessibilityLabel={mood ? `${who}: ${MOODS[mood].label}` : `${who}: not shared yet`}
+      style={{
+        flex: 1,
+        flexDirection: "row",
+        alignItems: "center",
+        gap: spacing[2],
+        minHeight: layout.minTouch + spacing[1],
+        paddingVertical: spacing[1],
+        paddingLeft: spacing[1],
+        paddingRight: spacing[3],
+        borderRadius: radius.pill,
+        backgroundColor: mood ? moodCardFill(MOODS[mood].family, "base") : "transparent",
+        borderWidth: mood ? 0 : 1.5,
+        borderStyle: "dashed",
+        borderColor: palette["line-strong"],
+      }}
+    >
+      {mood ? <MoodCreature mood={mood} size={spacing[10]} /> : <View style={{ width: spacing[10] }} />}
+      <View style={{ flexShrink: 1 }}>
+        <Text variant="body-sm-strong" numberOfLines={1}>
+          {mood ? MOODS[mood].label : "Not shared yet"}
+        </Text>
+        <Text variant="caption" color="ink-tertiary" numberOfLines={1}>
+          {who}
+        </Text>
+      </View>
+    </PressableScale>
+  );
+}
 
 /** One easy action, a few real moments, and a natural stopping point. */
 export default function Today() {
@@ -67,6 +109,8 @@ export default function Today() {
     (daily.isPending && !daily.data);
   const failed = me.isError || snapshot.isError || vibe.isError || daily.isError;
   const complete = !loading && !failed && caughtUp;
+  const pendingCount = moments.filter((moment) => moment.pending).length;
+  const pet = space?.pet?.status === "ACTIVE" ? space.pet : undefined;
   const openMoment = (moment: HomeMoment) => {
     if (moment.kind === "note") router.push("/notes");
     else if (moment.kind === "quiz" && daily.data) router.push(`/quiz/${daily.data.id}`);
@@ -82,10 +126,30 @@ export default function Today() {
           <View
             style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: spacing[4] }}
           >
-            <Text variant="label" color="ink-tertiary">
-              {monthDay(now)}
-              {partnerHere ? " · together here" : ""}
-            </Text>
+            <View style={{ flexDirection: "row", alignItems: "center", gap: spacing[2], flex: 1 }}>
+              <View style={{ flexDirection: "row" }}>
+                <Avatar
+                  size={28}
+                  name={me.data?.profile.displayName ?? null}
+                  uri={me.data?.profile.avatarUrl}
+                  who="you"
+                />
+                {partner ? (
+                  <View style={{ marginLeft: -spacing[3] }}>
+                    <Avatar
+                      size={28}
+                      name={partner.displayName}
+                      uri={partner.avatarUrl}
+                      who="partner"
+                      online={partnerHere}
+                    />
+                  </View>
+                ) : null}
+              </View>
+              <Text variant="body-sm" color="ink-secondary" numberOfLines={1} style={{ flexShrink: 1 }}>
+                {partnerHere ? `${partnerName} is here` : `${me.data?.profile.displayName ?? "You"} & ${partnerName}`}
+              </Text>
+            </View>
             <PressableScale
               accessibilityLabel="Open your settings"
               onPress={() => router.push("/settings")}
@@ -99,25 +163,16 @@ export default function Today() {
               <Gear size={24} color={palette.action} />
             </PressableScale>
           </View>
-          <View style={{ gap: spacing[2] }}>
+          <View style={{ gap: spacing[1] }}>
+            <Text variant="label" color="ink-tertiary">
+              {longDate(now)}
+            </Text>
             <Text variant="display-l" accessibilityRole="header">
-              Between you two.
-            </Text>
-            <Text variant="body-sm" color="ink-secondary">
-              Your little world, today.
-            </Text>
-          </View>
-          <View style={{ flexDirection: "row", alignItems: "center", gap: spacing[3] }}>
-            <View style={{ flexDirection: "row" }}>
-              <Avatar name={me.data?.profile.displayName ?? null} uri={me.data?.profile.avatarUrl} who="you" />
-              {partner ? (
-                <View style={{ marginLeft: -spacing[2] }}>
-                  <Avatar name={partner.displayName} uri={partner.avatarUrl} who="partner" />
-                </View>
-              ) : null}
-            </View>
-            <Text variant="body-sm" color="ink-secondary" style={{ flex: 1 }}>
-              {me.data?.profile.displayName ?? "You"} & {partnerName}
+              {loading
+                ? "Between you two."
+                : complete
+                  ? "All caught up"
+                  : (COUNT_TITLE[pendingCount] ?? "A few little things")}
             </Text>
           </View>
         </View>
@@ -152,18 +207,67 @@ export default function Today() {
             />
           </View>
         ) : null}
-        <View style={{ gap: spacing[3] }}>
-          {moments.map((moment, index) => (
-            <MomentCard
-              key={moment.kind}
-              moment={moment}
-              primary={index === 0 && moment.pending}
-              onPress={() => openMoment(moment)}
-              vibe={vibe.data}
-              pet={space?.pet}
-            />
-          ))}
-        </View>
+        {caughtUp ? (
+          <View>
+            {moments.map((moment) => (
+              <MomentCard
+                key={moment.kind}
+                moment={moment}
+                primary={false}
+                onPress={() => openMoment(moment)}
+                vibe={vibe.data}
+                pet={space?.pet}
+              />
+            ))}
+          </View>
+        ) : (
+          <MomentDeck
+            moments={moments}
+            onOpen={openMoment}
+            vibe={vibe.data}
+            pet={space?.pet}
+            partnerName={partnerName}
+          />
+        )}
+
+        {vibe.data ? (
+          <View style={{ gap: spacing[2] }}>
+            <Text variant="label" color="ink-tertiary">
+              Today's vibes
+            </Text>
+            <View style={{ flexDirection: "row", gap: spacing[2] }}>
+              <VibePill mood={vibe.data.me?.mood ?? null} who="You" onPress={() => setCheckinOpen(true)} />
+              {partner ? <VibePill mood={vibe.data.partner?.mood ?? null} who={partnerName} /> : null}
+            </View>
+          </View>
+        ) : null}
+
+        {pet ? (
+          <PressableScale
+            onPress={() => router.push("/pet")}
+            accessibilityLabel={`${pet.name ?? "Your pet"} is ${PET_MOOD_WORD[pet.mood]}. Open the pet room`}
+            style={{ flexDirection: "row", alignItems: "center", gap: spacing[3] }}
+          >
+            <Pet stage={pet.stage} mood={complete ? "sleepy" : pet.mood} size={spacing[16]} />
+            <View
+              style={{
+                flex: 1,
+                backgroundColor: palette.paper,
+                borderWidth: 1.5,
+                borderColor: palette.ink,
+                borderRadius: radius.md,
+                paddingVertical: spacing[2],
+                paddingHorizontal: spacing[3],
+              }}
+            >
+              <Text variant="body-sm">
+                {complete
+                  ? `${pet.name ?? "Your little one"} is dozing. Nothing needs you right now.`
+                  : `${pet.name ?? "Your little one"} is ${PET_MOOD_WORD[pet.mood]} and keeping an eye on things.`}
+              </Text>
+            </View>
+          </PressableScale>
+        ) : null}
 
         {!loading ? (
           <View style={{ gap: spacing[3], alignItems: "center", paddingVertical: spacing[4] }}>

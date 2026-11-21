@@ -15,6 +15,7 @@ import {
   Ball,
   Bowl,
   BowlFood,
+  Button,
   dur,
   fadeIn,
   HandHeart,
@@ -39,12 +40,18 @@ import { useRealtime } from "@/features/space/realtime-sync";
 import { humanError } from "@/lib/errors";
 import { useReducedMotion } from "@/lib/preferences";
 
-type Props = { size: number; onPressPet?: () => void; compact?: boolean };
+type Props = {
+  size: number;
+  onPressPet?: () => void;
+  compact?: boolean;
+  /** "room" (Pet room · Room scene, design decision 2026-11-21): the pet in a room of its own, actions docked below. */
+  variant?: "rug" | "room";
+};
 
 const dayOfYear = () => Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86_400_000);
 
 /** The pet on its rug, with speech bubble and the three interactions (DESIGN §7.3 PetCard). */
-export function PetStage({ size: requested, onPressPet, compact }: Props) {
+export function PetStage({ size: requested, onPressPet, compact, variant = "rug" }: Props) {
   useThemeSubscription();
   // Never wider than the screen: the stage is 1.5× the pet to leave room for props.
   const { width } = useWindowDimensions();
@@ -186,8 +193,9 @@ export function PetStage({ size: requested, onPressPet, compact }: Props) {
     seed: dayOfYear(),
   });
 
-  return (
-    <View className="items-center" style={{ gap: compact ? 12 : 20 }}>
+  const room = variant === "room";
+  const scene = (
+    <>
       {/* Speech bubble: tail is a sibling centered under the bubble (no % offsets). */}
       <Animated.View key={line} entering={fadeIn} style={{ alignItems: "center" }} accessibilityLiveRegion="polite">
         <View
@@ -231,6 +239,7 @@ export function PetStage({ size: requested, onPressPet, compact }: Props) {
         <View
           style={{
             position: "absolute",
+            display: room ? "none" : "flex",
             bottom: size * 0.1,
             width: size * 1.1,
             height: size * 0.16,
@@ -259,7 +268,89 @@ export function PetStage({ size: requested, onPressPet, compact }: Props) {
           </Animated.View>
         ) : null}
       </View>
+    </>
+  );
 
+  if (room)
+    return (
+      <View style={{ gap: 20 }}>
+        <View
+          style={{
+            width,
+            alignSelf: "center",
+            alignItems: "center",
+            paddingTop: 24,
+            backgroundColor: palette["orange-soft"],
+            borderBottomLeftRadius: radius.xl,
+            borderBottomRightRadius: radius.xl,
+            overflow: "hidden",
+          }}
+        >
+          {/* A window and a floor: Mochi has a place of its own. */}
+          <View
+            accessibilityElementsHidden
+            importantForAccessibility="no-hide-descendants"
+            style={{
+              position: "absolute",
+              left: layout.gutter + 8,
+              top: 20,
+              width: 88,
+              height: 108,
+              borderTopLeftRadius: 44,
+              borderTopRightRadius: 44,
+              borderBottomLeftRadius: 8,
+              borderBottomRightRadius: 8,
+              backgroundColor: palette["sky-soft"],
+              borderWidth: 6,
+              borderColor: palette.paper,
+            }}
+          />
+          <View
+            accessibilityElementsHidden
+            importantForAccessibility="no-hide-descendants"
+            style={{
+              position: "absolute",
+              left: 0,
+              right: 0,
+              bottom: 0,
+              height: size * 0.32,
+              backgroundColor: palette["orange-base"],
+              opacity: 0.22,
+            }}
+          />
+          {scene}
+        </View>
+        <View style={{ flexDirection: "row", gap: 8 }}>
+          <View style={{ flex: 1 }}>
+            <Button size="md" fullWidth label="Feed" icon={BowlFood} onPress={() => doInteract("feed")} />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Button
+              size="md"
+              fullWidth
+              variant="secondary"
+              label="Pet"
+              icon={HandHeart}
+              onPress={() => doInteract("pet")}
+            />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Button
+              size="md"
+              fullWidth
+              variant="secondary"
+              label="Play"
+              icon={TennisBall}
+              onPress={() => doInteract("play")}
+            />
+          </View>
+        </View>
+      </View>
+    );
+
+  return (
+    <View className="items-center" style={{ gap: compact ? 12 : 20 }}>
+      {scene}
       <View className="flex-row gap-4">
         <PetAction
           label="Feed"
